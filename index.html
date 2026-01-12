@@ -1,0 +1,894 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Your Custom Neon Sign</title>
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Pacifico&family=Permanent+Marker&family=Dancing+Script:wght@400;700&family=Satisfy&display=swap" rel="stylesheet">
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="neon-generator-container">
+        <!-- Step 1: Text & Color -->
+        <div class="step-container active" id="step1">
+            <div class="left-panel">
+                <div class="header-section">
+                    <div>
+                        <h1 class="main-title">Create Your Custom Neon Sign</h1>
+                        <p class="main-subtitle">Get your neon sign in just 4 steps..</p>
+                    </div>
+                </div>
+                
+                <div class="step-tabs">
+                    <button class="step-tab active" data-step="1">
+                        <span class="step-number">01</span>
+                        <span class="step-label">Text & Color</span>
+                    </button>
+                    <button class="step-tab" data-step="2">
+                        <span class="step-number">02</span>
+                        <span class="step-label">Sign Size</span>
+                    </button>
+                    <button class="step-tab" data-step="3">
+                        <span class="step-number">03</span>
+                        <span class="step-label">Sign Shape</span>
+                    </button>
+                    <button class="step-tab" data-step="4">
+                        <span class="step-number">04</span>
+                        <span class="step-label">More options</span>
+                    </button>
+                </div>
+                
+                <div class="content-section">
+                    <h2 class="section-title">Enter text or upload your logo</h2>
+                    
+                    <div class="input-row">
+                        <textarea class="text-input" id="neonText" placeholder="Type here.." maxlength="200" rows="3"></textarea>
+                        <button class="upload-logo-btn" id="uploadLogoBtn">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                                <path d="M12 5V19M5 12H19" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                            </svg>
+                            Upload logo
+                        </button>
+                        <input type="file" id="logoInput" accept="image/*" hidden>
+                    </div>
+                    
+                    <div class="uploaded-preview-inline hidden" id="uploadedPreview">
+                        <img src="" alt="Uploaded logo" id="uploadedImage">
+                        <button class="remove-upload" id="removeUpload">×</button>
+                    </div>
+                    
+                    <h2 class="section-title">Pick Neon Font Style</h2>
+                    <p class="section-description">Pick from over 50 typefaces. Prices vary by the amount of LED neon required.</p>
+                    
+                    <div class="font-dropdown" id="fontDropdown">
+                        <button class="dropdown-trigger" id="fontTrigger">
+                            <span id="selectedFontName">Select font</span>
+                            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                                <path d="M5 7.5L10 12.5L15 7.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                            </svg>
+                        </button>
+                        <div class="dropdown-menu hidden" id="fontDropdownMenu">
+                            <button class="dropdown-item" data-font="pacifico" data-family="'Pacifico', cursive">Pacifico</button>
+                            <button class="dropdown-item" data-font="satisfy" data-family="'Satisfy', cursive">Satisfy</button>
+                            <button class="dropdown-item" data-font="dancing" data-family="'Dancing Script', cursive">Dancing Script</button>
+                            <button class="dropdown-item" data-font="marker" data-family="'Permanent Marker', cursive">Permanent Marker</button>
+                            <button class="dropdown-item" data-font="inter" data-family="'Inter', sans-serif">Inter</button>
+                            <button class="dropdown-item" data-font="serif" data-family="Georgia, serif">Georgia</button>
+                        </div>
+                    </div>
+                    
+                    <h3 class="subsection-title">Suggested fonts</h3>
+                    
+                    <div class="suggested-fonts-grid">
+                        <div class="font-card" data-font="pacifico" data-family="'Pacifico', cursive">
+                            <div class="font-preview" style="font-family: 'Pacifico', cursive;">your text</div>
+                            <div class="font-name">Font Name</div>
+                        </div>
+                        <div class="font-card" data-font="satisfy" data-family="'Satisfy', cursive">
+                            <div class="font-preview" style="font-family: 'Satisfy', cursive;">your text</div>
+                            <div class="font-name">Font Name</div>
+                        </div>
+                        <div class="font-card" data-font="dancing" data-family="'Dancing Script', cursive">
+                            <div class="font-preview" style="font-family: 'Dancing Script', cursive;">your text</div>
+                            <div class="font-name">Font Name</div>
+                        </div>
+                        <div class="font-card" data-font="marker" data-family="'Permanent Marker', cursive">
+                            <div class="font-preview" style="font-family: 'Permanent Marker', cursive;">your text</div>
+                            <div class="font-name">Font Name</div>
+                        </div>
+                    </div>
+                    
+                    <h2 class="section-title">Select Neon LED color</h2>
+                    
+                    <div class="color-picker-grid">
+                        <button class="color-option" data-color="#FFFFFF" data-name="White">
+                            <div class="color-swatch" style="background: #FFFFFF;"></div>
+                        </button>
+                        <button class="color-option active" data-color="#C8FF00" data-name="Lime">
+                            <div class="color-swatch" style="background: #C8FF00;"></div>
+                        </button>
+                        <button class="color-option" data-color="#FF1744" data-name="Red">
+                            <div class="color-swatch" style="background: #FF1744;"></div>
+                        </button>
+                        <button class="color-option" data-color="#FFEB3B" data-name="Yellow">
+                            <div class="color-swatch" style="background: #FFEB3B;"></div>
+                        </button>
+                        <button class="color-option" data-color="#FFA726" data-name="Orange">
+                            <div class="color-swatch" style="background: #FFA726;"></div>
+                        </button>
+                        <button class="color-option" data-color="#FF1493" data-name="Pink">
+                            <div class="color-swatch" style="background: #FF1493;"></div>
+                        </button>
+                        <button class="color-option" data-color="#9D00FF" data-name="Purple">
+                            <div class="color-swatch" style="background: #9D00FF;"></div>
+                        </button>
+                        <button class="color-option" data-color="#2196F3" data-name="Blue">
+                            <div class="color-swatch" style="background: #2196F3;"></div>
+                        </button>
+                        <button class="color-option" data-color="#00BCD4" data-name="Cyan">
+                            <div class="color-swatch" style="background: #00BCD4;"></div>
+                        </button>
+                        <button class="color-option" data-color="#00E5A0" data-name="Teal">
+                            <div class="color-swatch" style="background: #00E5A0;"></div>
+                        </button>
+                        <button class="color-option" data-color="#4CAF50" data-name="Green">
+                            <div class="color-swatch" style="background: #4CAF50;"></div>
+                        </button>
+                        <button class="color-option" data-color="#00ACC1" data-name="Dark Cyan">
+                            <div class="color-swatch" style="background: #00ACC1;"></div>
+                        </button>
+                        <button class="custom-color-btn" id="customColorBtn">
+                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                                <path d="M8 3V13M3 8H13" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                            </svg>
+                            Custom Color
+                        </button>
+                    </div>
+                    <input type="color" id="customColorPicker" hidden>
+                    
+                    <div class="multicolor-toggle">
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="multicolorToggle">
+                            <span class="toggle-slider"></span>
+                        </label>
+                        <div>
+                            <span class="toggle-text">Set multicolour</span>
+                            <p class="multicolor-help hidden" id="multicolorHelp">Click on any character in the preview to change its color individually.</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="navigation-buttons">
+                    <button class="btn-next" onclick="goToStep(2)">
+                        Next
+                        <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                            <path d="M7.5 15L12.5 10L7.5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+            
+            <div class="right-panel">
+                <button class="preview-eye-btn" aria-label="Preview">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                        <path d="M2 12C2 12 5 5 12 5C19 5 22 12 22 12C22 12 19 19 12 19C5 19 2 12 2 12Z" stroke="currentColor" stroke-width="2"/>
+                        <circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="2"/>
+                    </svg>
+                </button>
+                
+                <div class="preview-container">
+                    <div class="background-image-wrapper" id="bgImageWrapper">
+                        <img src="/image.png" alt="Background" class="background-image" id="backgroundImage">
+                    </div>
+                    
+                    <label class="neon-toggle">
+                        <input type="checkbox" id="neonToggle" checked>
+                        <span class="toggle-label">ON</span>
+                    </label>
+                    
+                    <div class="neon-preview-wrapper">
+                        <div class="size-indicator" id="sizeIndicator">23"</div>
+                        <div class="neon-text-preview" id="neonPreview">your text</div>
+                        <img class="neon-logo-preview hidden" id="neonLogoPreview" src="" alt="Logo preview">
+                        <div class="brightness-control" id="brightnessControl">10</div>
+                    </div>
+                </div>
+                
+                <div class="preview-controls">
+                    <div class="theme-mode-toggle">
+                        <button class="mode-btn" data-mode="light">
+                            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                                <circle cx="10" cy="10" r="4" fill="currentColor"/>
+                                <path d="M10 2V4M10 16V18M18 10H16M4 10H2M15.657 4.343L14.243 5.757M5.757 14.243L4.343 15.657M15.657 15.657L14.243 14.243M5.757 5.757L4.343 4.343" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                            </svg>
+                            Light
+                        </button>
+                        <button class="mode-btn active" data-mode="dark">
+                            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                                <path d="M17 10.5C16.3 13.5 13.5 16 10 16C6 16 3 13 3 9C3 5.5 5.5 2.7 8.5 2C7.5 3 7 4.5 7 6C7 9.3 9.7 12 13 12C14.5 12 15.9 11.4 17 10.5Z" fill="currentColor"/>
+                            </svg>
+                            Dark
+                        </button>
+                    </div>
+                    
+                    <button class="save-preview-btn" aria-label="Save preview">
+                        <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                            <rect x="3" y="4" width="14" height="12" rx="2" stroke="currentColor" stroke-width="1.5"/>
+                            <circle cx="10" cy="10" r="2.5" stroke="currentColor" stroke-width="1.5"/>
+                            <path d="M14 7H14.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Step 2: Sign Size -->
+        <div class="step-container" id="step2">
+            <div class="left-panel">
+                <div class="header-section">
+                    <div>
+                        <h1 class="main-title">Create Your Custom Neon Sign</h1>
+                        <p class="main-subtitle">Get your neon sign in just 4 steps..</p>
+                    </div>
+                </div>
+                
+                <div class="step-tabs">
+                    <button class="step-tab completed" data-step="1">
+                        <span class="step-number">01</span>
+                        <span class="step-label">Text & Color</span>
+                    </button>
+                    <button class="step-tab active" data-step="2">
+                        <span class="step-number">02</span>
+                        <span class="step-label">Sign Size</span>
+                    </button>
+                    <button class="step-tab" data-step="3">
+                        <span class="step-number">03</span>
+                        <span class="step-label">Sign Shape</span>
+                    </button>
+                    <button class="step-tab" data-step="4">
+                        <span class="step-number">04</span>
+                        <span class="step-label">More options</span>
+                    </button>
+                </div>
+                
+                <div class="content-section">
+                    <div class="size-mode-toggle">
+                        <button class="size-mode-btn active" data-mode="preset">
+                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                                <rect x="2" y="4" width="12" height="8" rx="1" stroke="currentColor" stroke-width="1.5"/>
+                            </svg>
+                            Select size
+                        </button>
+                        <button class="size-mode-btn" data-mode="custom">
+                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                                <path d="M2 2L14 14M14 2L2 14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                                <rect x="2" y="2" width="12" height="12" rx="1" stroke="currentColor" stroke-width="1.5" fill="none"/>
+                            </svg>
+                            Custom size
+                        </button>
+                    </div>
+                    
+                    <h2 class="section-title" id="sizeModeTitle">Select size</h2>
+
+                    <div class="custom-size-inputs hidden" id="customSizeInputs">
+                        <div class="custom-dimension-row">
+                            <div class="dimension-input-group">
+                                <label class="dimension-label">Width (inches)</label>
+                                <input type="number" class="dimension-input" id="customWidth" placeholder="Enter width" min="10" max="200" value="38">
+                            </div>
+                            <div class="dimension-input-group">
+                                <label class="dimension-label">Height (inches)</label>
+                                <input type="number" class="dimension-input" id="customHeight" placeholder="Enter height" min="5" max="100" value="17">
+                            </div>
+                        </div>
+                        <div class="custom-size-note">
+                            Custom sizes are calculated based on the LED neon required. Larger sizes cost more.
+                        </div>
+                    </div>
+
+                    <div class="size-grid" id="sizeGrid">
+                        <div class="size-card active" data-size="mini" data-width="23" data-height="10" data-original="438.99" data-price="438.99">
+                            <div class="size-visual">
+                                <div class="size-rect"></div>
+                                <svg class="checkmark" width="20" height="20" viewBox="0 0 20 20" fill="none">
+                                    <path d="M4 10L8 14L16 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                </svg>
+                            </div>
+                            <div class="size-info">
+                                <div class="size-name">Mini</div>
+                                <div class="size-dimensions">23"x10"</div>
+                                <div class="size-pricing">
+                                    <span class="original-price">$438.99</span>
+                                    <span class="sale-price">$438.99</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="size-card" data-size="small" data-width="29" data-height="13" data-original="438.99" data-price="438.99">
+                            <div class="size-visual">
+                                <div class="size-rect"></div>
+                            </div>
+                            <div class="size-info">
+                                <div class="size-name">Small</div>
+                                <div class="size-dimensions">29"x13"</div>
+                                <div class="size-pricing">
+                                    <span class="original-price">$438.99</span>
+                                    <span class="sale-price">$438.99</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="size-card" data-size="medium" data-width="38" data-height="17" data-original="438.99" data-price="438.99">
+                            <div class="size-visual">
+                                <div class="size-rect"></div>
+                            </div>
+                            <div class="size-info">
+                                <div class="size-name">Medium</div>
+                                <div class="size-dimensions">38"x17"</div>
+                                <div class="size-pricing">
+                                    <span class="original-price">$438.99</span>
+                                    <span class="sale-price">$438.99</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="size-card" data-size="large" data-width="49" data-height="21" data-original="438.99" data-price="438.99">
+                            <div class="size-visual">
+                                <div class="size-rect"></div>
+                            </div>
+                            <div class="size-info">
+                                <div class="size-name">Large</div>
+                                <div class="size-dimensions">49"x21"</div>
+                                <div class="size-pricing">
+                                    <span class="original-price">$438.99</span>
+                                    <span class="sale-price">$438.99</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="size-card" data-size="xl" data-width="64" data-height="28" data-original="438.99" data-price="438.99">
+                            <div class="size-visual">
+                                <div class="size-rect"></div>
+                            </div>
+                            <div class="size-info">
+                                <div class="size-name">XL</div>
+                                <div class="size-dimensions">64"x28"</div>
+                                <div class="size-pricing">
+                                    <span class="original-price">$438.99</span>
+                                    <span class="sale-price">$438.99</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="size-card" data-size="xxl" data-width="84" data-height="35" data-original="438.99" data-price="438.99">
+                            <div class="size-visual">
+                                <div class="size-rect"></div>
+                            </div>
+                            <div class="size-info">
+                                <div class="size-name">XXL</div>
+                                <div class="size-dimensions">84"x35"</div>
+                                <div class="size-pricing">
+                                    <span class="original-price">$438.99</span>
+                                    <span class="sale-price">$438.99</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="size-card" data-size="xxxl" data-width="109" data-height="47" data-original="438.99" data-price="438.99">
+                            <div class="size-visual">
+                                <div class="size-rect"></div>
+                            </div>
+                            <div class="size-info">
+                                <div class="size-name">XXXL</div>
+                                <div class="size-dimensions">109"x47"</div>
+                                <div class="size-pricing">
+                                    <span class="original-price">$438.99</span>
+                                    <span class="sale-price">$438.99</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="size-card" data-size="4xl" data-width="141" data-height="61" data-original="438.99" data-price="438.99">
+                            <div class="size-visual">
+                                <div class="size-rect"></div>
+                            </div>
+                            <div class="size-info">
+                                <div class="size-name">4XL</div>
+                                <div class="size-dimensions">141"x61"</div>
+                                <div class="size-pricing">
+                                    <span class="original-price">$438.99</span>
+                                    <span class="sale-price">$438.99</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <h2 class="section-title">Location</h2>
+                    
+                    <div class="radio-group">
+                        <label class="radio-option active">
+                            <input type="radio" name="location" value="indoor" checked>
+                            <span class="radio-circle"></span>
+                            <span class="radio-text">Indoor</span>
+                        </label>
+                        
+                        <label class="radio-option">
+                            <input type="radio" name="location" value="outdoor">
+                            <span class="radio-circle"></span>
+                            <span class="radio-text">Outdoor</span>
+                            <span class="extra-price">+$65</span>
+                        </label>
+                    </div>
+                    
+                    <p class="warning-text">Indoor signs are not intended for outdoor use or any place they could get wet. Misuse will void the warranty.</p>
+                </div>
+                
+                <div class="navigation-buttons">
+                    <button class="btn-back" onclick="goToStep(1)">
+                        <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                            <path d="M12.5 15L7.5 10L12.5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                        </svg>
+                        Back
+                    </button>
+                    <button class="btn-next" onclick="goToStep(3)">
+                        Next
+                        <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                            <path d="M7.5 15L12.5 10L7.5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+            
+            <div class="right-panel">
+                <button class="preview-eye-btn" aria-label="Preview">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                        <path d="M2 12C2 12 5 5 12 5C19 5 22 12 22 12C22 12 19 19 12 19C5 19 2 12 2 12Z" stroke="currentColor" stroke-width="2"/>
+                        <circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="2"/>
+                    </svg>
+                </button>
+                
+                <div class="preview-container">
+                    <div class="background-image-wrapper" id="bgImageWrapper2">
+                        <img src="/image.png" alt="Background" class="background-image" id="backgroundImage2">
+                    </div>
+                    
+                    <label class="neon-toggle">
+                        <input type="checkbox" id="neonToggle2" checked>
+                        <span class="toggle-label">ON</span>
+                    </label>
+                    
+                    <div class="neon-preview-wrapper">
+                        <div class="size-indicator" id="sizeIndicator2">23"</div>
+                        <div class="neon-text-preview" id="neonPreview2">your text</div>
+                        <img class="neon-logo-preview hidden" id="neonLogoPreview2" src="" alt="Logo preview">
+                        <div class="brightness-control" id="brightnessControl2">10</div>
+                    </div>
+                </div>
+                
+                <div class="preview-controls">
+                    <div class="theme-mode-toggle">
+                        <button class="mode-btn" data-mode="light">
+                            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                                <circle cx="10" cy="10" r="4" fill="currentColor"/>
+                                <path d="M10 2V4M10 16V18M18 10H16M4 10H2M15.657 4.343L14.243 5.757M5.757 14.243L4.343 15.657M15.657 15.657L14.243 14.243M5.757 5.757L4.343 4.343" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                            </svg>
+                            Light
+                        </button>
+                        <button class="mode-btn active" data-mode="dark">
+                            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                                <path d="M17 10.5C16.3 13.5 13.5 16 10 16C6 16 3 13 3 9C3 5.5 5.5 2.7 8.5 2C7.5 3 7 4.5 7 6C7 9.3 9.7 12 13 12C14.5 12 15.9 11.4 17 10.5Z" fill="currentColor"/>
+                            </svg>
+                            Dark
+                        </button>
+                    </div>
+                    
+                    <button class="save-preview-btn" aria-label="Save preview">
+                        <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                            <rect x="3" y="4" width="14" height="12" rx="2" stroke="currentColor" stroke-width="1.5"/>
+                            <circle cx="10" cy="10" r="2.5" stroke="currentColor" stroke-width="1.5"/>
+                            <path d="M14 7H14.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Step 3: Sign Shape -->
+        <div class="step-container" id="step3">
+            <div class="left-panel">
+                <div class="header-section">
+                    <div>
+                        <h1 class="main-title">Create Your Custom Neon Sign</h1>
+                        <p class="main-subtitle">Get your neon sign in just 4 steps..</p>
+                    </div>
+                </div>
+                
+                <div class="step-tabs">
+                    <button class="step-tab completed" data-step="1">
+                        <span class="step-number">01</span>
+                        <span class="step-label">Text & Color</span>
+                    </button>
+                    <button class="step-tab completed" data-step="2">
+                        <span class="step-number">02</span>
+                        <span class="step-label">Sign Size</span>
+                    </button>
+                    <button class="step-tab active" data-step="3">
+                        <span class="step-number">03</span>
+                        <span class="step-label">Sign Shape</span>
+                    </button>
+                    <button class="step-tab" data-step="4">
+                        <span class="step-number">04</span>
+                        <span class="step-label">More options</span>
+                    </button>
+                </div>
+                
+                <div class="content-section">
+                    <h2 class="section-title">Select your acrylic backboard</h2>
+                    
+                    <div class="shape-grid">
+                        <div class="shape-card" data-shape="cut-to-shape" data-price="0">
+                            <div class="shape-preview">
+                                <div class="shape-text">your text</div>
+                            </div>
+                            <div class="shape-info">
+                                <div class="shape-name">Cut to shape</div>
+                                <div class="shape-price">FREE</div>
+                            </div>
+                        </div>
+                        
+                        <div class="shape-card active" data-shape="cut-to-letter" data-price="15">
+                            <div class="shape-preview">
+                                <div class="shape-text underlined">your text</div>
+                                <svg class="checkmark-shape" width="24" height="24" viewBox="0 0 24 24" fill="none">
+                                    <path d="M5 12L10 17L20 7" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                </svg>
+                            </div>
+                            <div class="shape-info">
+                                <div class="shape-name">Cut to letter</div>
+                                <div class="shape-price">+$15</div>
+                            </div>
+                        </div>
+                        
+                        <div class="shape-card" data-shape="cut-rectangle" data-price="30">
+                            <div class="shape-preview">
+                                <div class="shape-text boxed">your text</div>
+                            </div>
+                            <div class="shape-info">
+                                <div class="shape-name">Cut rectangle</div>
+                                <div class="shape-price">+$30</div>
+                            </div>
+                        </div>
+                        
+                        <div class="shape-card" data-shape="open-box" data-price="45">
+                            <div class="shape-preview">
+                                <div class="shape-text open-boxed">your text</div>
+                            </div>
+                            <div class="shape-info">
+                                <div class="shape-name">Open box</div>
+                                <div class="shape-price">+$45</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="section-header-with-link">
+                        <h2 class="section-title">Choose a backboard color</h2>
+                        <a href="#" class="see-examples-link">See examples</a>
+                    </div>
+                    
+                    <div class="backboard-colors-grid">
+                        <label class="backboard-color-option">
+                            <input type="radio" name="backboard" value="clear" checked>
+                            <div class="backboard-visual">
+                                <div class="backboard-swatch clear"></div>
+                            </div>
+                            <div class="backboard-info">
+                                <div class="backboard-name">Standard clear acrylic</div>
+                                <div class="backboard-price">FREE</div>
+                            </div>
+                        </label>
+                        
+                        <label class="backboard-color-option">
+                            <input type="radio" name="backboard" value="glossy-white">
+                            <div class="backboard-visual">
+                                <div class="backboard-swatch glossy-white"></div>
+                            </div>
+                            <div class="backboard-info">
+                                <div class="backboard-name">Glossy White acrylic</div>
+                                <div class="backboard-price">FREE</div>
+                            </div>
+                        </label>
+                        
+                        <label class="backboard-color-option">
+                            <input type="radio" name="backboard" value="glossy-black">
+                            <div class="backboard-visual">
+                                <div class="backboard-swatch glossy-black"></div>
+                            </div>
+                            <div class="backboard-info">
+                                <div class="backboard-name">Glossy Black acrylic</div>
+                                <div class="backboard-price">FREE</div>
+                            </div>
+                        </label>
+                        
+                        <label class="backboard-color-option">
+                            <input type="radio" name="backboard" value="silver">
+                            <div class="backboard-visual">
+                                <div class="backboard-swatch silver"></div>
+                            </div>
+                            <div class="backboard-info">
+                                <div class="backboard-name">Silver acrylic</div>
+                                <div class="backboard-price">FREE</div>
+                            </div>
+                        </label>
+                        
+                        <label class="backboard-color-option">
+                            <input type="radio" name="backboard" value="gold">
+                            <div class="backboard-visual">
+                                <div class="backboard-swatch gold"></div>
+                            </div>
+                            <div class="backboard-info">
+                                <div class="backboard-name">Gold acrylic</div>
+                                <div class="backboard-price">FREE</div>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+                
+                <div class="navigation-buttons">
+                    <button class="btn-back" onclick="goToStep(2)">
+                        <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                            <path d="M12.5 15L7.5 10L12.5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                        </svg>
+                        Back
+                    </button>
+                    <button class="btn-next" onclick="goToStep(4)">
+                        Next
+                        <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                            <path d="M7.5 15L12.5 10L7.5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+            
+            <div class="right-panel">
+                <button class="preview-eye-btn" aria-label="Preview">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                        <path d="M2 12C2 12 5 5 12 5C19 5 22 12 22 12C22 12 19 19 12 19C5 19 2 12 2 12Z" stroke="currentColor" stroke-width="2"/>
+                        <circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="2"/>
+                    </svg>
+                </button>
+                
+                <div class="preview-container">
+                    <div class="background-image-wrapper" id="bgImageWrapper3">
+                        <img src="/image.png" alt="Background" class="background-image" id="backgroundImage3">
+                    </div>
+                    
+                    <label class="neon-toggle">
+                        <input type="checkbox" id="neonToggle3" checked>
+                        <span class="toggle-label">ON</span>
+                    </label>
+                    
+                    <div class="neon-preview-wrapper">
+                        <div class="size-indicator" id="sizeIndicator3">23"</div>
+                        <div class="neon-text-preview" id="neonPreview3">your text</div>
+                        <img class="neon-logo-preview hidden" id="neonLogoPreview3" src="" alt="Logo preview">
+                        <div class="brightness-control" id="brightnessControl3">10</div>
+                    </div>
+                </div>
+                
+                <div class="preview-controls">
+                    <div class="theme-mode-toggle">
+                        <button class="mode-btn" data-mode="light">
+                            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                                <circle cx="10" cy="10" r="4" fill="currentColor"/>
+                                <path d="M10 2V4M10 16V18M18 10H16M4 10H2M15.657 4.343L14.243 5.757M5.757 14.243L4.343 15.657M15.657 15.657L14.243 14.243M5.757 5.757L4.343 4.343" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                            </svg>
+                            Light
+                        </button>
+                        <button class="mode-btn active" data-mode="dark">
+                            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                                <path d="M17 10.5C16.3 13.5 13.5 16 10 16C6 16 3 13 3 9C3 5.5 5.5 2.7 8.5 2C7.5 3 7 4.5 7 6C7 9.3 9.7 12 13 12C14.5 12 15.9 11.4 17 10.5Z" fill="currentColor"/>
+                            </svg>
+                            Dark
+                        </button>
+                    </div>
+                    
+                    <button class="save-preview-btn" aria-label="Save preview">
+                        <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                            <rect x="3" y="4" width="14" height="12" rx="2" stroke="currentColor" stroke-width="1.5"/>
+                            <circle cx="10" cy="10" r="2.5" stroke="currentColor" stroke-width="1.5"/>
+                            <path d="M14 7H14.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Step 4: More Options -->
+        <div class="step-container" id="step4">
+            <div class="left-panel">
+                <div class="header-section">
+                    <div>
+                        <h1 class="main-title">Create Your Custom Neon Sign</h1>
+                        <p class="main-subtitle">Get your neon sign in just 4 steps..</p>
+                    </div>
+                </div>
+                
+                <div class="step-tabs">
+                    <button class="step-tab completed" data-step="1">
+                        <span class="step-number">01</span>
+                        <span class="step-label">Text & Color</span>
+                    </button>
+                    <button class="step-tab completed" data-step="2">
+                        <span class="step-number">02</span>
+                        <span class="step-label">Sign Size</span>
+                    </button>
+                    <button class="step-tab completed" data-step="3">
+                        <span class="step-number">03</span>
+                        <span class="step-label">Sign Shape</span>
+                    </button>
+                    <button class="step-tab active" data-step="4">
+                        <span class="step-number">04</span>
+                        <span class="step-label">More options</span>
+                    </button>
+                </div>
+                
+                <div class="content-section">
+                    <h2 class="section-title">Power Adapter</h2>
+                    
+                    <div class="power-adapter-grid">
+                        <label class="radio-pill">
+                            <input type="radio" name="power" value="usa" checked>
+                            <span class="pill-text">USA / CANADA (120V)</span>
+                        </label>
+                        
+                        <label class="radio-pill">
+                            <input type="radio" name="power" value="uk">
+                            <span class="pill-text">UK / IRELAND (230)</span>
+                        </label>
+                        
+                        <label class="radio-pill">
+                            <input type="radio" name="power" value="europe">
+                            <span class="pill-text">EUROPE (230)</span>
+                        </label>
+                        
+                        <label class="radio-pill">
+                            <input type="radio" name="power" value="australia">
+                            <span class="pill-text">AUSTRALIA / NZ (230V)</span>
+                        </label>
+                        
+                        <label class="radio-pill">
+                            <input type="radio" name="power" value="japan">
+                            <span class="pill-text">JAPAN (100V)</span>
+                        </label>
+                        
+                        <label class="radio-pill">
+                            <input type="radio" name="power" value="other">
+                            <span class="pill-text">Other</span>
+                        </label>
+                    </div>
+                    
+                    <h2 class="section-title">Hanging Options</h2>
+                    
+                    <div class="radio-group">
+                        <label class="radio-option active">
+                            <input type="radio" name="hanging" value="none" checked>
+                            <span class="radio-circle"></span>
+                            <span class="radio-text">No Hanging Kit</span>
+                        </label>
+                        
+                        <label class="radio-option">
+                            <input type="radio" name="hanging" value="wall">
+                            <span class="radio-circle"></span>
+                            <span class="radio-text">Wall Mounting</span>
+                            <span class="extra-price">+$15</span>
+                        </label>
+                        
+                        <label class="radio-option">
+                            <input type="radio" name="hanging" value="sign">
+                            <span class="radio-circle"></span>
+                            <span class="radio-text">Sign Hanging</span>
+                            <span class="extra-price">+$15</span>
+                        </label>
+                    </div>
+                    
+                    <div class="checkbox-options">
+                        <label class="checkbox-option">
+                            <input type="checkbox" id="remoteDimmer">
+                            <span class="checkbox-circle"></span>
+                            <span class="checkbox-text">Remote and Dimmer</span>
+                            <span class="free-badge">Free</span>
+                        </label>
+                        
+                        <label class="checkbox-option">
+                            <input type="checkbox" id="waterProof">
+                            <span class="checkbox-circle"></span>
+                            <span class="checkbox-text">Water Proof</span>
+                            <span class="extra-price">+$30</span>
+                        </label>
+                    </div>
+                    
+                    <div class="discount-code-section">
+                        <input type="text" class="discount-input" placeholder="Have a Discount Code?" id="discountCode">
+                        <button class="apply-btn">Apply</button>
+                    </div>
+                    
+                    <div class="price-summary">
+                        <div class="original-total">$483.99</div>
+                        <div class="final-price">$351.99</div>
+                        <div class="discount-badge">20% off - Limited time</div>
+                    </div>
+                </div>
+                
+                <div class="navigation-buttons">
+                    <button class="btn-back" onclick="goToStep(3)">
+                        <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                            <path d="M12.5 15L7.5 10L12.5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                        </svg>
+                        Back
+                    </button>
+                    <button class="btn-final">Preview & Buy</button>
+                </div>
+            </div>
+            
+            <div class="right-panel">
+                <button class="preview-eye-btn" aria-label="Preview">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                        <path d="M2 12C2 12 5 5 12 5C19 5 22 12 22 12C22 12 19 19 12 19C5 19 2 12 2 12Z" stroke="currentColor" stroke-width="2"/>
+                        <circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="2"/>
+                    </svg>
+                </button>
+                
+                <div class="preview-container">
+                    <div class="background-image-wrapper" id="bgImageWrapper4">
+                        <img src="/image.png" alt="Background" class="background-image" id="backgroundImage4">
+                    </div>
+                    
+                    <label class="neon-toggle">
+                        <input type="checkbox" id="neonToggle4" checked>
+                        <span class="toggle-label">ON</span>
+                    </label>
+                    
+                    <div class="neon-preview-wrapper">
+                        <div class="size-indicator" id="sizeIndicator4">23"</div>
+                        <div class="neon-text-preview" id="neonPreview4">your text</div>
+                        <img class="neon-logo-preview hidden" id="neonLogoPreview4" src="" alt="Logo preview">
+                        <div class="brightness-control" id="brightnessControl4">10</div>
+                    </div>
+                </div>
+                
+                <div class="preview-controls">
+                    <div class="theme-mode-toggle">
+                        <button class="mode-btn" data-mode="light">
+                            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                                <circle cx="10" cy="10" r="4" fill="currentColor"/>
+                                <path d="M10 2V4M10 16V18M18 10H16M4 10H2M15.657 4.343L14.243 5.757M5.757 14.243L4.343 15.657M15.657 15.657L14.243 14.243M5.757 5.757L4.343 4.343" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                            </svg>
+                            Light
+                        </button>
+                        <button class="mode-btn active" data-mode="dark">
+                            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                                <path d="M17 10.5C16.3 13.5 13.5 16 10 16C6 16 3 13 3 9C3 5.5 5.5 2.7 8.5 2C7.5 3 7 4.5 7 6C7 9.3 9.7 12 13 12C14.5 12 15.9 11.4 17 10.5Z" fill="currentColor"/>
+                            </svg>
+                            Dark
+                        </button>
+                    </div>
+                    
+                    <button class="save-preview-btn" aria-label="Save preview">
+                        <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                            <rect x="3" y="4" width="14" height="12" rx="2" stroke="currentColor" stroke-width="1.5"/>
+                            <circle cx="10" cy="10" r="2.5" stroke="currentColor" stroke-width="1.5"/>
+                            <path d="M14 7H14.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="script.js"></script>
+</body>
+</html>

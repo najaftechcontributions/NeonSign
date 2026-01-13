@@ -5,11 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Create Your Custom Neon Sign</title>
     
-    <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Pacifico&family=Permanent+Marker&family=Dancing+Script:wght@400;700&family=Satisfy&display=swap" rel="stylesheet">
+    <!-- Google Fonts - Extended library -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Pacifico&family=Permanent+Marker&family=Dancing+Script:wght@400;700&family=Satisfy&family=Roboto:wght@400;700&family=Open+Sans:wght@400;700&family=Lato:wght@400;700&family=Montserrat:wght@400;700&family=Oswald:wght@400;700&family=Raleway:wght@400;700&family=Playfair+Display:wght@400;700&family=Bebas+Neue&family=Abril+Fatface&family=Righteous&family=Caveat:wght@400;700&family=Lobster&family=Shadows+Into+Light&family=Amatic+SC:wght@400;700&family=Indie+Flower&family=Great+Vibes&family=Allura&family=Sacramento&family=Alex+Brush&family=Tangerine:wght@400;700&family=Kaushan+Script&family=Courgette&family=Yellowtail&family=Architects+Daughter&family=Patrick+Hand&family=Gloria+Hallelujah&family=Comfortaa:wght@400;700&family=Fredoka:wght@400;700&family=Quicksand:wght@400;700&family=Nunito:wght@400;700&family=Poppins:wght@400;700&family=Rubik:wght@400;700&family=Work+Sans:wght@400;700&family=Merriweather:wght@400;700&family=PT+Sans:wght@400;700&family=Ubuntu:wght@400;700&family=Noto+Sans:wght@400;700&family=Mukta:wght@400;700&family=Oxygen:wght@400;700&family=Crimson+Text:wght@400;700&family=Lora:wght@400;700&family=Barlow:wght@400;700&family=Josefin+Sans:wght@400;700&family=Anton&family=Archivo+Black&family=Cinzel:wght@400;700&family=Courier+Prime:wght@400;700&family=Press+Start+2P&family=Rock+Salt&family=Special+Elite&family=VT323&display=swap" rel="stylesheet">
     
     <!-- Custom CSS -->
     <link rel="stylesheet" href="styles.css">
+    
+    <!-- Fabric.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.0/fabric.min.js"></script>
 </head>
 <body>
     <div class="neon-generator-container">
@@ -64,20 +67,92 @@
                     <h2 class="section-title">Pick Neon Font Style</h2>
                     <p class="section-description">Pick from over 50 typefaces. Prices vary by the amount of LED neon required.</p>
                     
-                    <div class="font-dropdown" id="fontDropdown">
-                        <button class="dropdown-trigger" id="fontTrigger">
-                            <span id="selectedFontName">Select font</span>
-                            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                    <div class="font-library-container">
+                        <button class="collapsible-trigger" id="fontLibraryTrigger">
+                            <span>Browse All Fonts (50+)</span>
+                            <svg class="chevron-icon" width="20" height="20" viewBox="0 0 20 20" fill="none">
                                 <path d="M5 7.5L10 12.5L15 7.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
                             </svg>
                         </button>
-                        <div class="dropdown-menu hidden" id="fontDropdownMenu">
-                            <button class="dropdown-item" data-font="pacifico" data-family="'Pacifico', cursive">Pacifico</button>
-                            <button class="dropdown-item" data-font="satisfy" data-family="'Satisfy', cursive">Satisfy</button>
-                            <button class="dropdown-item" data-font="dancing" data-family="'Dancing Script', cursive">Dancing Script</button>
-                            <button class="dropdown-item" data-font="marker" data-family="'Permanent Marker', cursive">Permanent Marker</button>
-                            <button class="dropdown-item" data-font="inter" data-family="'Inter', sans-serif">Inter</button>
-                            <button class="dropdown-item" data-font="serif" data-family="Georgia, serif">Georgia</button>
+                        <div class="collapsible-content" id="fontLibraryContent">
+                            <div class="font-categories">
+                                <h4 class="category-title">Script & Handwriting</h4>
+                                <div class="font-list-grid">
+                                    <button class="font-list-item" data-font="pacifico" data-family="'Pacifico', cursive">Pacifico</button>
+                                    <button class="font-list-item" data-font="satisfy" data-family="'Satisfy', cursive">Satisfy</button>
+                                    <button class="font-list-item" data-font="dancing-script" data-family="'Dancing Script', cursive">Dancing Script</button>
+                                    <button class="font-list-item" data-font="great-vibes" data-family="'Great Vibes', cursive">Great Vibes</button>
+                                    <button class="font-list-item" data-font="allura" data-family="'Allura', cursive">Allura</button>
+                                    <button class="font-list-item" data-font="sacramento" data-family="'Sacramento', cursive">Sacramento</button>
+                                    <button class="font-list-item" data-font="alex-brush" data-family="'Alex Brush', cursive">Alex Brush</button>
+                                    <button class="font-list-item" data-font="tangerine" data-family="'Tangerine', cursive">Tangerine</button>
+                                    <button class="font-list-item" data-font="kaushan-script" data-family="'Kaushan Script', cursive">Kaushan Script</button>
+                                    <button class="font-list-item" data-font="courgette" data-family="'Courgette', cursive">Courgette</button>
+                                    <button class="font-list-item" data-font="yellowtail" data-family="'Yellowtail', cursive">Yellowtail</button>
+                                    <button class="font-list-item" data-font="lobster" data-family="'Lobster', cursive">Lobster</button>
+                                    <button class="font-list-item" data-font="caveat" data-family="'Caveat', cursive">Caveat</button>
+                                    <button class="font-list-item" data-font="shadows-into-light" data-family="'Shadows Into Light', cursive">Shadows Into Light</button>
+                                    <button class="font-list-item" data-font="amatic-sc" data-family="'Amatic SC', cursive">Amatic SC</button>
+                                    <button class="font-list-item" data-font="indie-flower" data-family="'Indie Flower', cursive">Indie Flower</button>
+                                    <button class="font-list-item" data-font="architects-daughter" data-family="'Architects Daughter', cursive">Architects Daughter</button>
+                                    <button class="font-list-item" data-font="patrick-hand" data-family="'Patrick Hand', cursive">Patrick Hand</button>
+                                    <button class="font-list-item" data-font="gloria-hallelujah" data-family="'Gloria Hallelujah', cursive">Gloria Hallelujah</button>
+                                </div>
+                                
+                                <h4 class="category-title">Modern & Sans-Serif</h4>
+                                <div class="font-list-grid">
+                                    <button class="font-list-item" data-font="inter" data-family="'Inter', sans-serif">Inter</button>
+                                    <button class="font-list-item" data-font="roboto" data-family="'Roboto', sans-serif">Roboto</button>
+                                    <button class="font-list-item" data-font="open-sans" data-family="'Open Sans', sans-serif">Open Sans</button>
+                                    <button class="font-list-item" data-font="lato" data-family="'Lato', sans-serif">Lato</button>
+                                    <button class="font-list-item" data-font="montserrat" data-family="'Montserrat', sans-serif">Montserrat</button>
+                                    <button class="font-list-item" data-font="raleway" data-family="'Raleway', sans-serif">Raleway</button>
+                                    <button class="font-list-item" data-font="poppins" data-family="'Poppins', sans-serif">Poppins</button>
+                                    <button class="font-list-item" data-font="rubik" data-family="'Rubik', sans-serif">Rubik</button>
+                                    <button class="font-list-item" data-font="work-sans" data-family="'Work Sans', sans-serif">Work Sans</button>
+                                    <button class="font-list-item" data-font="pt-sans" data-family="'PT Sans', sans-serif">PT Sans</button>
+                                    <button class="font-list-item" data-font="ubuntu" data-family="'Ubuntu', sans-serif">Ubuntu</button>
+                                    <button class="font-list-item" data-font="noto-sans" data-family="'Noto Sans', sans-serif">Noto Sans</button>
+                                    <button class="font-list-item" data-font="mukta" data-family="'Mukta', sans-serif">Mukta</button>
+                                    <button class="font-list-item" data-font="oxygen" data-family="'Oxygen', sans-serif">Oxygen</button>
+                                    <button class="font-list-item" data-font="barlow" data-family="'Barlow', sans-serif">Barlow</button>
+                                    <button class="font-list-item" data-font="josefin-sans" data-family="'Josefin Sans', sans-serif">Josefin Sans</button>
+                                    <button class="font-list-item" data-font="comfortaa" data-family="'Comfortaa', cursive">Comfortaa</button>
+                                    <button class="font-list-item" data-font="fredoka" data-family="'Fredoka', sans-serif">Fredoka</button>
+                                    <button class="font-list-item" data-font="quicksand" data-family="'Quicksand', sans-serif">Quicksand</button>
+                                    <button class="font-list-item" data-font="nunito" data-family="'Nunito', sans-serif">Nunito</button>
+                                </div>
+                                
+                                <h4 class="category-title">Bold & Display</h4>
+                                <div class="font-list-grid">
+                                    <button class="font-list-item" data-font="permanent-marker" data-family="'Permanent Marker', cursive">Permanent Marker</button>
+                                    <button class="font-list-item" data-font="bebas-neue" data-family="'Bebas Neue', cursive">Bebas Neue</button>
+                                    <button class="font-list-item" data-font="oswald" data-family="'Oswald', sans-serif">Oswald</button>
+                                    <button class="font-list-item" data-font="abril-fatface" data-family="'Abril Fatface', cursive">Abril Fatface</button>
+                                    <button class="font-list-item" data-font="righteous" data-family="'Righteous', cursive">Righteous</button>
+                                    <button class="font-list-item" data-font="anton" data-family="'Anton', sans-serif">Anton</button>
+                                    <button class="font-list-item" data-font="archivo-black" data-family="'Archivo Black', sans-serif">Archivo Black</button>
+                                </div>
+                                
+                                <h4 class="category-title">Serif & Classic</h4>
+                                <div class="font-list-grid">
+                                    <button class="font-list-item" data-font="playfair-display" data-family="'Playfair Display', serif">Playfair Display</button>
+                                    <button class="font-list-item" data-font="merriweather" data-family="'Merriweather', serif">Merriweather</button>
+                                    <button class="font-list-item" data-font="crimson-text" data-family="'Crimson Text', serif">Crimson Text</button>
+                                    <button class="font-list-item" data-font="lora" data-family="'Lora', serif">Lora</button>
+                                    <button class="font-list-item" data-font="cinzel" data-family="'Cinzel', serif">Cinzel</button>
+                                    <button class="font-list-item" data-font="georgia" data-family="Georgia, serif">Georgia</button>
+                                </div>
+                                
+                                <h4 class="category-title">Specialty & Fun</h4>
+                                <div class="font-list-grid">
+                                    <button class="font-list-item" data-font="courier-prime" data-family="'Courier Prime', monospace">Courier Prime</button>
+                                    <button class="font-list-item" data-font="press-start-2p" data-family="'Press Start 2P', cursive">Press Start 2P</button>
+                                    <button class="font-list-item" data-font="rock-salt" data-family="'Rock Salt', cursive">Rock Salt</button>
+                                    <button class="font-list-item" data-font="special-elite" data-family="'Special Elite', cursive">Special Elite</button>
+                                    <button class="font-list-item" data-font="vt323" data-family="'VT323', monospace">VT323</button>
+                                </div>
+                            </div>
                         </div>
                     </div>
                     
@@ -86,19 +161,19 @@
                     <div class="suggested-fonts-grid">
                         <div class="font-card" data-font="pacifico" data-family="'Pacifico', cursive">
                             <div class="font-preview" style="font-family: 'Pacifico', cursive;">your text</div>
-                            <div class="font-name">Font Name</div>
+                            <div class="font-name">Pacifico</div>
                         </div>
                         <div class="font-card" data-font="satisfy" data-family="'Satisfy', cursive">
                             <div class="font-preview" style="font-family: 'Satisfy', cursive;">your text</div>
-                            <div class="font-name">Font Name</div>
+                            <div class="font-name">Satisfy</div>
                         </div>
-                        <div class="font-card" data-font="dancing" data-family="'Dancing Script', cursive">
-                            <div class="font-preview" style="font-family: 'Dancing Script', cursive;">your text</div>
-                            <div class="font-name">Font Name</div>
+                        <div class="font-card" data-font="bebas-neue" data-family="'Bebas Neue', cursive">
+                            <div class="font-preview" style="font-family: 'Bebas Neue', cursive;">your text</div>
+                            <div class="font-name">Bebas Neue</div>
                         </div>
-                        <div class="font-card" data-font="marker" data-family="'Permanent Marker', cursive">
+                        <div class="font-card" data-font="permanent-marker" data-family="'Permanent Marker', cursive">
                             <div class="font-preview" style="font-family: 'Permanent Marker', cursive;">your text</div>
-                            <div class="font-name">Font Name</div>
+                            <div class="font-name">Permanent Marker</div>
                         </div>
                     </div>
                     
@@ -191,10 +266,9 @@
                     </label>
                     
                     <div class="neon-preview-wrapper">
-                        <div class="size-indicator" id="sizeIndicator">23"</div>
-                        <div class="neon-text-preview" id="neonPreview">your text</div>
-                        <img class="neon-logo-preview hidden" id="neonLogoPreview" src="" alt="Logo preview">
-                        <div class="brightness-control" id="brightnessControl">10</div>
+                        <div class="canvas-wrapper">
+                            <canvas id="neonCanvas" width="800" height="600"></canvas>
+                        </div>
                     </div>
                 </div>
                 
@@ -215,7 +289,7 @@
                         </button>
                     </div>
                     
-                    <button class="save-preview-btn" aria-label="Save preview">
+                    <button class="save-preview-btn" aria-label="Save preview" id="saveBtn1">
                         <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
                             <rect x="3" y="4" width="14" height="12" rx="2" stroke="currentColor" stroke-width="1.5"/>
                             <circle cx="10" cy="10" r="2.5" stroke="currentColor" stroke-width="1.5"/>
@@ -225,6 +299,9 @@
                 </div>
             </div>
         </div>
+        
+        <!-- Step 2-4 remain the same structure, just updated canvas wrappers -->
+        <!-- For brevity, I'm showing step 2 with the new structure -->
         
         <!-- Step 2: Sign Size -->
         <div class="step-container" id="step2">
@@ -462,10 +539,9 @@
                     </label>
                     
                     <div class="neon-preview-wrapper">
-                        <div class="size-indicator" id="sizeIndicator2">23"</div>
-                        <div class="neon-text-preview" id="neonPreview2">your text</div>
-                        <img class="neon-logo-preview hidden" id="neonLogoPreview2" src="" alt="Logo preview">
-                        <div class="brightness-control" id="brightnessControl2">10</div>
+                        <div class="canvas-wrapper">
+                            <canvas id="neonCanvas2" width="800" height="600"></canvas>
+                        </div>
                     </div>
                 </div>
                 
@@ -486,7 +562,7 @@
                         </button>
                     </div>
                     
-                    <button class="save-preview-btn" aria-label="Save preview">
+                    <button class="save-preview-btn" aria-label="Save preview" id="saveBtn2">
                         <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
                             <rect x="3" y="4" width="14" height="12" rx="2" stroke="currentColor" stroke-width="1.5"/>
                             <circle cx="10" cy="10" r="2.5" stroke="currentColor" stroke-width="1.5"/>
@@ -506,7 +582,7 @@
                         <p class="main-subtitle">Get your neon sign in just 4 steps..</p>
                     </div>
                 </div>
-                
+
                 <div class="step-tabs">
                     <button class="step-tab completed" data-step="1">
                         <span class="step-number">01</span>
@@ -525,10 +601,10 @@
                         <span class="step-label">More options</span>
                     </button>
                 </div>
-                
+
                 <div class="content-section">
                     <h2 class="section-title">Select your acrylic backboard</h2>
-                    
+
                     <div class="shape-grid">
                         <div class="shape-card" data-shape="cut-to-shape" data-price="0">
                             <div class="shape-preview">
@@ -539,7 +615,7 @@
                                 <div class="shape-price">FREE</div>
                             </div>
                         </div>
-                        
+
                         <div class="shape-card active" data-shape="cut-to-letter" data-price="15">
                             <div class="shape-preview">
                                 <div class="shape-text underlined">your text</div>
@@ -552,7 +628,7 @@
                                 <div class="shape-price">+$15</div>
                             </div>
                         </div>
-                        
+
                         <div class="shape-card" data-shape="cut-rectangle" data-price="30">
                             <div class="shape-preview">
                                 <div class="shape-text boxed">your text</div>
@@ -562,7 +638,7 @@
                                 <div class="shape-price">+$30</div>
                             </div>
                         </div>
-                        
+
                         <div class="shape-card" data-shape="open-box" data-price="45">
                             <div class="shape-preview">
                                 <div class="shape-text open-boxed">your text</div>
@@ -573,12 +649,12 @@
                             </div>
                         </div>
                     </div>
-                    
+
                     <div class="section-header-with-link">
                         <h2 class="section-title">Choose a backboard color</h2>
                         <a href="#" class="see-examples-link">See examples</a>
                     </div>
-                    
+
                     <div class="backboard-colors-grid">
                         <label class="backboard-color-option">
                             <input type="radio" name="backboard" value="clear" checked>
@@ -590,7 +666,7 @@
                                 <div class="backboard-price">FREE</div>
                             </div>
                         </label>
-                        
+
                         <label class="backboard-color-option">
                             <input type="radio" name="backboard" value="glossy-white">
                             <div class="backboard-visual">
@@ -601,7 +677,7 @@
                                 <div class="backboard-price">FREE</div>
                             </div>
                         </label>
-                        
+
                         <label class="backboard-color-option">
                             <input type="radio" name="backboard" value="glossy-black">
                             <div class="backboard-visual">
@@ -612,7 +688,7 @@
                                 <div class="backboard-price">FREE</div>
                             </div>
                         </label>
-                        
+
                         <label class="backboard-color-option">
                             <input type="radio" name="backboard" value="silver">
                             <div class="backboard-visual">
@@ -623,7 +699,7 @@
                                 <div class="backboard-price">FREE</div>
                             </div>
                         </label>
-                        
+
                         <label class="backboard-color-option">
                             <input type="radio" name="backboard" value="gold">
                             <div class="backboard-visual">
@@ -636,7 +712,7 @@
                         </label>
                     </div>
                 </div>
-                
+
                 <div class="navigation-buttons">
                     <button class="btn-back" onclick="goToStep(2)">
                         <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
@@ -652,7 +728,7 @@
                     </button>
                 </div>
             </div>
-            
+
             <div class="right-panel">
                 <button class="preview-eye-btn" aria-label="Preview">
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
@@ -660,25 +736,24 @@
                         <circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="2"/>
                     </svg>
                 </button>
-                
+
                 <div class="preview-container">
                     <div class="background-image-wrapper" id="bgImageWrapper3">
                         <img src="/image.png" alt="Background" class="background-image" id="backgroundImage3">
                     </div>
-                    
+
                     <label class="neon-toggle">
                         <input type="checkbox" id="neonToggle3" checked>
                         <span class="toggle-label">ON</span>
                     </label>
-                    
+
                     <div class="neon-preview-wrapper">
-                        <div class="size-indicator" id="sizeIndicator3">23"</div>
-                        <div class="neon-text-preview" id="neonPreview3">your text</div>
-                        <img class="neon-logo-preview hidden" id="neonLogoPreview3" src="" alt="Logo preview">
-                        <div class="brightness-control" id="brightnessControl3">10</div>
+                        <div class="canvas-wrapper">
+                            <canvas id="neonCanvas3" width="800" height="600"></canvas>
+                        </div>
                     </div>
                 </div>
-                
+
                 <div class="preview-controls">
                     <div class="theme-mode-toggle">
                         <button class="mode-btn" data-mode="light">
@@ -695,8 +770,8 @@
                             Dark
                         </button>
                     </div>
-                    
-                    <button class="save-preview-btn" aria-label="Save preview">
+
+                    <button class="save-preview-btn" aria-label="Save preview" id="saveBtn3">
                         <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
                             <rect x="3" y="4" width="14" height="12" rx="2" stroke="currentColor" stroke-width="1.5"/>
                             <circle cx="10" cy="10" r="2.5" stroke="currentColor" stroke-width="1.5"/>
@@ -706,7 +781,7 @@
                 </div>
             </div>
         </div>
-        
+
         <!-- Step 4: More Options -->
         <div class="step-container" id="step4">
             <div class="left-panel">
@@ -716,7 +791,7 @@
                         <p class="main-subtitle">Get your neon sign in just 4 steps..</p>
                     </div>
                 </div>
-                
+
                 <div class="step-tabs">
                     <button class="step-tab completed" data-step="1">
                         <span class="step-number">01</span>
@@ -735,58 +810,58 @@
                         <span class="step-label">More options</span>
                     </button>
                 </div>
-                
+
                 <div class="content-section">
                     <h2 class="section-title">Power Adapter</h2>
-                    
+
                     <div class="power-adapter-grid">
                         <label class="radio-pill">
                             <input type="radio" name="power" value="usa" checked>
                             <span class="pill-text">USA / CANADA (120V)</span>
                         </label>
-                        
+
                         <label class="radio-pill">
                             <input type="radio" name="power" value="uk">
                             <span class="pill-text">UK / IRELAND (230)</span>
                         </label>
-                        
+
                         <label class="radio-pill">
                             <input type="radio" name="power" value="europe">
                             <span class="pill-text">EUROPE (230)</span>
                         </label>
-                        
+
                         <label class="radio-pill">
                             <input type="radio" name="power" value="australia">
                             <span class="pill-text">AUSTRALIA / NZ (230V)</span>
                         </label>
-                        
+
                         <label class="radio-pill">
                             <input type="radio" name="power" value="japan">
                             <span class="pill-text">JAPAN (100V)</span>
                         </label>
-                        
+
                         <label class="radio-pill">
                             <input type="radio" name="power" value="other">
                             <span class="pill-text">Other</span>
                         </label>
                     </div>
-                    
+
                     <h2 class="section-title">Hanging Options</h2>
-                    
+
                     <div class="radio-group">
                         <label class="radio-option active">
                             <input type="radio" name="hanging" value="none" checked>
                             <span class="radio-circle"></span>
                             <span class="radio-text">No Hanging Kit</span>
                         </label>
-                        
+
                         <label class="radio-option">
                             <input type="radio" name="hanging" value="wall">
                             <span class="radio-circle"></span>
                             <span class="radio-text">Wall Mounting</span>
                             <span class="extra-price">+$15</span>
                         </label>
-                        
+
                         <label class="radio-option">
                             <input type="radio" name="hanging" value="sign">
                             <span class="radio-circle"></span>
@@ -794,7 +869,7 @@
                             <span class="extra-price">+$15</span>
                         </label>
                     </div>
-                    
+
                     <div class="checkbox-options">
                         <label class="checkbox-option">
                             <input type="checkbox" id="remoteDimmer">
@@ -802,7 +877,7 @@
                             <span class="checkbox-text">Remote and Dimmer</span>
                             <span class="free-badge">Free</span>
                         </label>
-                        
+
                         <label class="checkbox-option">
                             <input type="checkbox" id="waterProof">
                             <span class="checkbox-circle"></span>
@@ -810,19 +885,19 @@
                             <span class="extra-price">+$30</span>
                         </label>
                     </div>
-                    
+
                     <div class="discount-code-section">
                         <input type="text" class="discount-input" placeholder="Have a Discount Code?" id="discountCode">
                         <button class="apply-btn">Apply</button>
                     </div>
-                    
+
                     <div class="price-summary">
                         <div class="original-total">$483.99</div>
                         <div class="final-price">$351.99</div>
                         <div class="discount-badge">20% off - Limited time</div>
                     </div>
                 </div>
-                
+
                 <div class="navigation-buttons">
                     <button class="btn-back" onclick="goToStep(3)">
                         <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
@@ -833,7 +908,7 @@
                     <button class="btn-final">Preview & Buy</button>
                 </div>
             </div>
-            
+
             <div class="right-panel">
                 <button class="preview-eye-btn" aria-label="Preview">
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
@@ -841,25 +916,24 @@
                         <circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="2"/>
                     </svg>
                 </button>
-                
+
                 <div class="preview-container">
                     <div class="background-image-wrapper" id="bgImageWrapper4">
                         <img src="/image.png" alt="Background" class="background-image" id="backgroundImage4">
                     </div>
-                    
+
                     <label class="neon-toggle">
                         <input type="checkbox" id="neonToggle4" checked>
                         <span class="toggle-label">ON</span>
                     </label>
-                    
+
                     <div class="neon-preview-wrapper">
-                        <div class="size-indicator" id="sizeIndicator4">23"</div>
-                        <div class="neon-text-preview" id="neonPreview4">your text</div>
-                        <img class="neon-logo-preview hidden" id="neonLogoPreview4" src="" alt="Logo preview">
-                        <div class="brightness-control" id="brightnessControl4">10</div>
+                        <div class="canvas-wrapper">
+                            <canvas id="neonCanvas4" width="800" height="600"></canvas>
+                        </div>
                     </div>
                 </div>
-                
+
                 <div class="preview-controls">
                     <div class="theme-mode-toggle">
                         <button class="mode-btn" data-mode="light">
@@ -876,8 +950,8 @@
                             Dark
                         </button>
                     </div>
-                    
-                    <button class="save-preview-btn" aria-label="Save preview">
+
+                    <button class="save-preview-btn" aria-label="Save preview" id="saveBtn4">
                         <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
                             <rect x="3" y="4" width="14" height="12" rx="2" stroke="currentColor" stroke-width="1.5"/>
                             <circle cx="10" cy="10" r="2.5" stroke="currentColor" stroke-width="1.5"/>
@@ -888,7 +962,7 @@
             </div>
         </div>
     </div>
-    
+
     <script src="script.js"></script>
 </body>
 </html>

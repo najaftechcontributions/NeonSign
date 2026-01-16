@@ -1,577 +1,1000 @@
-// Global state
-const state = {
+// ===========================
+// CONFIGURATION (Customizable)
+// ===========================
+const CONFIG = {
+    // Mobile settings
+    mobileBreakpoint: 768,
+    maxMobileLinesCount: 3,
+    maxDesktopLinesCount: 4,
+    
+    // Text rendering
+    defaultPlaceholderText: 'Your Text',
+    baseFontSize: 80,
+    minFontSize: 20,
+    textBoundingRatioMobile: { width: 0.8, height: 0.7 },
+    textBoundingRatioDesktop: { width: 0.85, height: 0.75 },
+    
+    // RGB animation
+    rgbCycleSpeed: 500,
+    rgbColorSequence: ['#FF0000', '#FF7F00', '#FFFF00', '#00FF00', '#0000FF', '#4B0082', '#9400D3'],
+    
+    // Pricing
+    rgbSurcharge: 50,
+    outdoorSurcharge: 65,
+    basePromotionPercentage: 0.20,
+    costPerInch: 1.9,
+    shippingPerInch: 0.4,
+    localShippingConstant: 15,
+    minProfitPercentage: 0.25,
+    fixedMinProfit: 100,
+    currencyConversion: 1.0,
+    minimumPriceFloor: 438.99,
+    
+    // Premium fonts (multiplier applied to price)
+    premiumFonts: {
+        'abril-fatface': 1.15,
+        'playfair-display': 1.1
+    },
+    
+    // Plan generation
+    planScalingFactor: 1.3,
+    planNames: ['Mini', 'Small', 'Medium', 'Large', 'XL', 'XXL', 'XXXL', '4XL']
+};
+
+// ===========================
+// GLOBAL STATE OBJECT
+// ===========================
+const appState = {
+    // Text content
+    text: '',
+    userHasEnteredText: false,
+    
+    // Font
+    fontFamily: "'Pacifico', cursive",
+    fontKey: 'pacifico',
+    fontSizePx: CONFIG.baseFontSize,
+    lineHeightPx: CONFIG.baseFontSize * 1.2,
+    
+    // Color
+    colorValue: '#FFFFFF',
+    colorName: 'White',
+    rgbSurcharge: 0,
+    rgbMode: false,
+    rgbAnimationTimer: null,
+    
+    // Type (indoor/outdoor)
+    type: 'indoor',
+    outdoorSurcharge: 0,
+    
+    // Backboard & cut options
+    backboard: 'clear',
+    cutTo: 'cut-to-letter',
+    cutToPrice: 15,
+    
+    // Extras
+    extras: [],
+    
+    // Selected plan
+    plan: {
+        id: 'mini',
+        name: 'Mini',
+        widthIn: 23,
+        heightIn: 10,
+        price: 438.99
+    },
+    
+    // Pricing
+    totalPrice: 438.99,
+    discountPrice: 351.19,
+    originalDiscountPrice: 351.19,
+    discountApplied: false,
+    activeDiscount: null,
+    discountCode: null,
+    
+    // Preview/export
+    svgMarkup: '',
+    svgWidthPx: 800,
+    svgHeightPx: 600,
+    
+    // Measured dimensions from canvas
+    measuredWidthIn: 23,
+    measuredHeightIn: 10,
+    
+    // UI state
     currentStep: 1,
     inputType: 'text',
-    text: 'your text',
     logoFile: null,
     logoDataUrl: null,
-    color: '#C8FF00',
-    colorName: 'Lime',
-    font: 'pacifico',
-    fontFamily: "'Pacifico', cursive",
-    size: 'mini',
-    sizeWidth: 23,
-    sizeHeight: 10,
-    sizePrice: 438.99,
-    shape: 'cut-to-letter',
-    shapePrice: 15,
-    location: 'indoor',
-    locationPrice: 0,
-    backboard: 'clear',
-    powerAdapter: 'usa',
-    hanging: 'none',
-    hangingPrice: 0,
-    remoteDimmer: false,
-    waterProof: false,
-    waterProofPrice: 0,
     multicolor: false,
     characterColors: {},
     selectedCharIndex: null,
     themeMode: 'dark',
-    neonOn: true,
-    brightness: 10
+    neonGlowEnabled: true,
+    generatedPlans: []
 };
 
-// Fabric.js canvases
-const canvases = {};
-const animationFrames = {};
+// ===========================
+// CANVAS MANAGEMENT
+// ===========================
+const canvasInstances = {};
+const animationHandles = {};
 
-// Initialize
-document.addEventListener('DOMContentLoaded', function() {
-    initializeCanvases();
-    initializeStep1();
-    initializeStep2();
-    initializeStep3();
-    initializeStep4();
-    initializeStepTabs();
-    initializePreviewControls();
-    updateAllPreviews();
+// ===========================
+// INITIALIZATION
+// ===========================
+document.addEventListener('DOMContentLoaded', () => {
+    setupCanvases();
+    attachEventListeners();
+    generateInitialPlans();
+    renderAllPreviews();
+    recalculateTotalPrice();
 });
 
-// Initialize Fabric.js canvases
-function initializeCanvases() {
-    for (let i = 1; i <= 4; i++) {
-        const canvasId = i === 1 ? 'neonCanvas' : `neonCanvas${i}`;
-        const canvasElement = document.getElementById(canvasId);
+function setupCanvases() {
+    for (let step = 1; step <= 4; step++) {
+        const canvasId = step === 1 ? 'neonCanvas' : `neonCanvas${step}`;
+        const elem = document.getElementById(canvasId);
         
-        if (canvasElement) {
-            canvases[canvasId] = new fabric.Canvas(canvasId, {
+        if (elem) {
+            canvasInstances[canvasId] = new fabric.Canvas(canvasId, {
                 width: 800,
                 height: 600,
                 backgroundColor: 'transparent',
-                selection: false,
-                renderOnAddRemove: true
-            });
-            
-            // Enable retina scaling for crisp rendering
-            const pixelRatio = window.devicePixelRatio || 1;
-            canvases[canvasId].setDimensions({
-                width: 800,
-                height: 600
-            }, {
-                cssOnly: false,
-                backstoreOnly: false
+                selection: false
             });
         }
     }
 }
 
-// Step navigation
-function initializeStepTabs() {
-    document.querySelectorAll('.step-tab').forEach(tab => {
-        tab.addEventListener('click', function() {
-            const step = parseInt(this.getAttribute('data-step'));
-            goToStep(step);
+// ===========================
+// EVENT LISTENERS
+// ===========================
+function attachEventListeners() {
+    // Text input (debounced)
+    const textInput = document.getElementById('neonText');
+    if (textInput) {
+        textInput.addEventListener('input', debounce(handleTextInput, 300));
+    }
+    
+    // Font selection
+    attachFontListeners();
+    
+    // Color selection
+    attachColorListeners();
+    
+    // Size/plan selection
+    attachPlanListeners();
+    
+    // Indoor/outdoor toggle
+    attachLocationListeners();
+    
+    // Shape/backboard selection
+    attachShapeListeners();
+    
+    // Extras (hanging, waterproof, etc.)
+    attachExtrasListeners();
+    
+    // Step navigation
+    attachStepNavigationListeners();
+    
+    // Preview controls
+    attachPreviewControlListeners();
+    
+    // Discount handling
+    attachDiscountListeners();
+    
+    // Checkout
+    attachCheckoutListener();
+}
+
+// ===========================
+// TEXT INPUT HANDLER (Debounced)
+// ===========================
+function handleTextInput(event) {
+    let inputText = event.target.value.trim();
+    
+    // Apply line limit based on viewport
+    const isMobile = window.innerWidth < CONFIG.mobileBreakpoint;
+    const maxLines = isMobile ? CONFIG.maxMobileLinesCount : CONFIG.maxDesktopLinesCount;
+    const lines = inputText.split('\n');
+    
+    if (lines.length > maxLines) {
+        inputText = lines.slice(0, maxLines).join('\n');
+        event.target.value = inputText;
+    }
+    
+    // Update state
+    appState.text = inputText || CONFIG.defaultPlaceholderText;
+    appState.userHasEnteredText = inputText.length > 0;
+    
+    // Render preview
+    renderAllPreviews();
+    
+    // Read measured dimensions (simulated - real implementation would measure from canvas)
+    const measurements = getMeasuredDimensions();
+    appState.measuredWidthIn = measurements.widthIn;
+    appState.measuredHeightIn = measurements.heightIn;
+    
+    // Regenerate plans
+    generatePlansFromMeasurements();
+    
+    // Recalculate pricing
+    recalculateTotalPrice();
+}
+
+// Debounce utility
+function debounce(func, wait) {
+    let timeout;
+    return function executedFunction(...args) {
+        const later = () => {
+            clearTimeout(timeout);
+            func(...args);
+        };
+        clearTimeout(timeout);
+        timeout = setTimeout(later, wait);
+    };
+}
+
+// ===========================
+// FONT SELECTION
+// ===========================
+function attachFontListeners() {
+    // Font cards
+    document.querySelectorAll('.font-card').forEach(card => {
+        card.addEventListener('click', () => {
+            const fontKey = card.getAttribute('data-font');
+            const fontFamily = card.getAttribute('data-family');
+            selectFont(fontKey, fontFamily);
+        });
+    });
+    
+    // Font library items
+    document.querySelectorAll('.font-list-item').forEach(item => {
+        item.addEventListener('click', () => {
+            const fontKey = item.getAttribute('data-font');
+            const fontFamily = item.getAttribute('data-family');
+            selectFont(fontKey, fontFamily);
+            
+            // Close collapsible
+            const content = document.getElementById('fontLibraryContent');
+            const trigger = document.getElementById('fontLibraryTrigger');
+            if (content) content.classList.remove('open');
+            if (trigger) trigger.classList.remove('open');
+        });
+    });
+    
+    // Font library toggle
+    const trigger = document.getElementById('fontLibraryTrigger');
+    const content = document.getElementById('fontLibraryContent');
+    if (trigger && content) {
+        trigger.addEventListener('click', () => {
+            content.classList.toggle('open');
+            trigger.classList.toggle('open');
+        });
+    }
+}
+
+function selectFont(fontKey, fontFamily) {
+    appState.fontKey = fontKey;
+    appState.fontFamily = fontFamily;
+    
+    renderAllPreviews();
+    
+    const measurements = getMeasuredDimensions();
+    appState.measuredWidthIn = measurements.widthIn;
+    appState.measuredHeightIn = measurements.heightIn;
+    
+    generatePlansFromMeasurements();
+    recalculateTotalPrice();
+}
+
+// ===========================
+// COLOR SELECTION
+// ===========================
+function attachColorListeners() {
+    // Standard colors
+    document.querySelectorAll('.color-option').forEach(option => {
+        option.addEventListener('click', (e) => {
+            const colorValue = option.getAttribute('data-color');
+            const colorName = option.getAttribute('data-name');
+
+            if (appState.multicolor && appState.selectedCharIndex !== null) {
+                appState.characterColors[appState.selectedCharIndex] = colorValue;
+                renderAllPreviews();
+            } else {
+                // Update active state
+                document.querySelectorAll('.color-option').forEach(opt => opt.classList.remove('active'));
+                option.classList.add('active');
+
+                selectColor(colorValue, colorName);
+            }
+        });
+    });
+    
+    // Custom color picker
+    const customBtn = document.getElementById('customColorBtn');
+    const customPicker = document.getElementById('customColorPicker');
+    
+    if (customBtn && customPicker) {
+        customBtn.addEventListener('click', () => customPicker.click());
+        
+        customPicker.addEventListener('input', (e) => {
+            const colorValue = e.target.value;
+            
+            if (appState.multicolor && appState.selectedCharIndex !== null) {
+                appState.characterColors[appState.selectedCharIndex] = colorValue;
+            } else {
+                selectColor(colorValue, 'Custom');
+            }
+            
+            renderAllPreviews();
+        });
+    }
+    
+    // Multicolor toggle
+    const multiToggle = document.getElementById('multicolorToggle');
+    const multiHelp = document.getElementById('multicolorHelp');
+    
+    if (multiToggle) {
+        multiToggle.addEventListener('change', () => {
+            appState.multicolor = multiToggle.checked;
+            
+            if (!multiToggle.checked) {
+                appState.characterColors = {};
+                appState.selectedCharIndex = null;
+            }
+            
+            if (multiHelp) {
+                multiHelp.classList.toggle('hidden', !multiToggle.checked);
+            }
+            
+            renderAllPreviews();
+        });
+    }
+}
+
+function selectColor(colorValue, colorName) {
+    // Check if this is RGB mode
+    if (colorName === 'RGB Color Changing' || colorValue === 'rgb') {
+        startRgbMode();
+    } else {
+        // Stop RGB mode if active
+        if (appState.rgbMode) {
+            stopRgbMode();
+        }
+
+        appState.colorValue = colorValue;
+        appState.colorName = colorName;
+        appState.rgbSurcharge = 0;
+    }
+
+    renderAllPreviews();
+    recalculateTotalPrice();
+}
+
+function startRgbMode() {
+    appState.rgbMode = true;
+    appState.colorName = 'RGB Color Changing';
+    appState.rgbSurcharge = CONFIG.rgbSurcharge;
+    
+    let colorIndex = 0;
+    
+    appState.rgbAnimationTimer = setInterval(() => {
+        appState.colorValue = CONFIG.rgbColorSequence[colorIndex];
+        colorIndex = (colorIndex + 1) % CONFIG.rgbColorSequence.length;
+        renderAllPreviews();
+    }, CONFIG.rgbCycleSpeed);
+    
+    recalculateTotalPrice();
+}
+
+function stopRgbMode() {
+    appState.rgbMode = false;
+    appState.rgbSurcharge = 0;
+    
+    if (appState.rgbAnimationTimer) {
+        clearInterval(appState.rgbAnimationTimer);
+        appState.rgbAnimationTimer = null;
+    }
+}
+
+// ===========================
+// PLAN/SIZE SELECTION
+// ===========================
+function attachPlanListeners() {
+    // Size mode toggle
+    document.querySelectorAll('.size-mode-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('.size-mode-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            
+            const mode = btn.getAttribute('data-mode');
+            toggleSizeMode(mode);
+        });
+    });
+    
+    // Custom size inputs
+    const customWidth = document.getElementById('customWidth');
+    const customHeight = document.getElementById('customHeight');
+    
+    if (customWidth) {
+        customWidth.addEventListener('input', debounce(() => {
+            const width = parseInt(customWidth.value) || 38;
+            const height = parseInt(customHeight.value) || Math.round(width * 0.45);
+            
+            appState.plan.widthIn = width;
+            appState.plan.heightIn = height;
+            appState.plan.name = 'Custom';
+            appState.plan.id = 'custom';
+            
+            recalculatePlanPrice();
+            recalculateTotalPrice();
+        }, 300));
+    }
+    
+    if (customHeight) {
+        customHeight.addEventListener('input', debounce(() => {
+            const height = parseInt(customHeight.value) || 17;
+            appState.plan.heightIn = height;
+            
+            recalculatePlanPrice();
+            recalculateTotalPrice();
+        }, 300));
+    }
+    
+    // Pre-defined size cards (delegated event handling)
+    document.addEventListener('click', (e) => {
+        const sizeCard = e.target.closest('.size-card');
+        if (sizeCard) {
+            selectPlan(sizeCard);
+        }
+    });
+}
+
+function toggleSizeMode(mode) {
+    const sizeGrid = document.getElementById('sizeGrid');
+    const customInputs = document.getElementById('customSizeInputs');
+    const title = document.getElementById('sizeModeTitle');
+    
+    if (mode === 'custom') {
+        sizeGrid?.classList.add('hidden');
+        customInputs?.classList.remove('hidden');
+        if (title) title.textContent = 'Enter custom size';
+    } else {
+        sizeGrid?.classList.remove('hidden');
+        customInputs?.classList.add('hidden');
+        if (title) title.textContent = 'Select size';
+    }
+}
+
+function selectPlan(cardElement) {
+    // Remove active state from all cards
+    document.querySelectorAll('.size-card').forEach(c => c.classList.remove('active'));
+    cardElement.classList.add('active');
+    
+    // Update state
+    appState.plan.id = cardElement.getAttribute('data-size');
+    appState.plan.name = cardElement.querySelector('.size-name')?.textContent || 'Mini';
+    appState.plan.widthIn = parseInt(cardElement.getAttribute('data-width')) || 23;
+    appState.plan.heightIn = parseInt(cardElement.getAttribute('data-height')) || 10;
+    appState.plan.price = parseFloat(cardElement.getAttribute('data-price')) || 438.99;
+    
+    recalculateTotalPrice();
+}
+
+function generatePlansFromMeasurements() {
+    const baseWidth = appState.measuredWidthIn;
+    const baseHeight = appState.measuredHeightIn;
+    
+    appState.generatedPlans = [];
+    
+    for (let i = 0; i < CONFIG.planNames.length; i++) {
+        const scaleFactor = Math.pow(CONFIG.planScalingFactor, i);
+        const scaledWidth = Math.round(baseWidth * scaleFactor);
+        const scaledHeight = Math.round(baseHeight * scaleFactor);
+        
+        const planPrice = calculatePlanPrice(scaledWidth, scaledHeight);
+        
+        appState.generatedPlans.push({
+            id: CONFIG.planNames[i].toLowerCase().replace(/\s/g, '-'),
+            name: CONFIG.planNames[i],
+            widthIn: scaledWidth,
+            heightIn: scaledHeight,
+            price: planPrice
+        });
+    }
+    
+    // Update UI with generated plans
+    updatePlanCardsInUI();
+    
+    // Select first plan by default if none selected
+    if (!appState.plan.id || appState.plan.id === 'custom') {
+        appState.plan = { ...appState.generatedPlans[0] };
+    }
+}
+
+function generateInitialPlans() {
+    // Use default measurements for initial load
+    appState.measuredWidthIn = 23;
+    appState.measuredHeightIn = 10;
+    generatePlansFromMeasurements();
+}
+
+function updatePlanCardsInUI() {
+    const sizeGrid = document.getElementById('sizeGrid');
+    if (!sizeGrid) return;
+    
+    // Note: In a full implementation, you would dynamically generate HTML here
+    // For now, we'll update existing cards with calculated prices
+    const cards = sizeGrid.querySelectorAll('.size-card');
+    
+    appState.generatedPlans.forEach((plan, index) => {
+        if (cards[index]) {
+            cards[index].setAttribute('data-width', plan.widthIn);
+            cards[index].setAttribute('data-height', plan.heightIn);
+            cards[index].setAttribute('data-price', plan.price);
+            
+            const dimensions = cards[index].querySelector('.size-dimensions');
+            if (dimensions) dimensions.textContent = `${plan.widthIn}"x${plan.heightIn}"`;
+            
+            const priceElem = cards[index].querySelector('.sale-price');
+            if (priceElem) priceElem.textContent = `$${plan.price.toFixed(2)}`;
+        }
+    });
+}
+
+// ===========================
+// PRICING CALCULATIONS
+// ===========================
+function calculatePlanPrice(widthIn, heightIn) {
+    const area = widthIn * heightIn;
+    
+    // Base product cost
+    const costPerInchAdjusted = appState.rgbMode 
+        ? CONFIG.costPerInch * 1.2 
+        : CONFIG.costPerInch;
+    
+    const productCost = area * costPerInchAdjusted;
+    const shippingCost = (area * CONFIG.shippingPerInch) + CONFIG.localShippingConstant;
+    const totalCosts = productCost + shippingCost;
+    
+    // Profit calculation
+    const percentageProfit = totalCosts * CONFIG.minProfitPercentage;
+    const profit = Math.max(percentageProfit, CONFIG.fixedMinProfit);
+    
+    // Base price
+    let basePrice = (totalCosts + profit) * CONFIG.currencyConversion;
+    
+    // Premium font multiplier
+    if (CONFIG.premiumFonts[appState.fontKey]) {
+        basePrice *= CONFIG.premiumFonts[appState.fontKey];
+    }
+    
+    // Apply minimum floor
+    basePrice = Math.max(basePrice, CONFIG.minimumPriceFloor);
+    
+    // Round to .99
+    return Math.floor(basePrice) + 0.99;
+}
+
+function recalculatePlanPrice() {
+    appState.plan.price = calculatePlanPrice(appState.plan.widthIn, appState.plan.heightIn);
+}
+
+function recalculateTotalPrice() {
+    // Start with plan price
+    let total = appState.plan.price;
+    
+    // Add extras
+    appState.extras.forEach(extra => {
+        total += extra.price;
+    });
+    
+    // Add surcharges
+    total += appState.outdoorSurcharge;
+    total += appState.rgbSurcharge;
+    total += appState.cutToPrice;
+    
+    // Round to .99
+    total = Math.floor(total) + 0.99;
+    
+    appState.totalPrice = total;
+    
+    // Apply base promotion
+    let discounted = total * (1 - CONFIG.basePromotionPercentage);
+    
+    // Apply additional discount if exists
+    if (appState.discountApplied && appState.activeDiscount) {
+        if (appState.activeDiscount.type === 'percentage') {
+            discounted *= (1 - appState.activeDiscount.value);
+        } else if (appState.activeDiscount.type === 'amount') {
+            discounted -= appState.activeDiscount.value;
+        }
+    }
+    
+    discounted = Math.max(discounted, 0);
+    discounted = Math.floor(discounted) + 0.99;
+    
+    appState.discountPrice = discounted;
+    
+    if (!appState.activeDiscount) {
+        appState.originalDiscountPrice = discounted;
+    }
+    
+    // Update UI
+    updatePricingUI();
+}
+
+function updatePricingUI() {
+    const originalElem = document.querySelector('.original-total');
+    const finalElem = document.querySelector('.final-price');
+    
+    if (originalElem) {
+        originalElem.textContent = `$${appState.totalPrice.toFixed(2)}`;
+    }
+    
+    if (finalElem) {
+        finalElem.textContent = `$${appState.discountPrice.toFixed(2)}`;
+    }
+}
+
+// ===========================
+// LOCATION (Indoor/Outdoor)
+// ===========================
+function attachLocationListeners() {
+    document.querySelectorAll('input[name="location"]').forEach(radio => {
+        radio.addEventListener('change', (e) => {
+            const parent = e.target.closest('.radio-option');
+            document.querySelectorAll('.radio-group .radio-option').forEach(opt => 
+                opt.classList.remove('active')
+            );
+            parent?.classList.add('active');
+            
+            appState.type = e.target.value;
+            appState.outdoorSurcharge = e.target.value === 'outdoor' 
+                ? CONFIG.outdoorSurcharge 
+                : 0;
+            
+            recalculateTotalPrice();
         });
     });
 }
 
-function goToStep(step) {
-    // Stop all animations before switching
-    Object.keys(animationFrames).forEach(key => {
-        if (animationFrames[key]) {
-            cancelAnimationFrame(animationFrames[key]);
-            animationFrames[key] = null;
-        }
+// ===========================
+// SHAPE & BACKBOARD
+// ===========================
+function attachShapeListeners() {
+    // Shape cards
+    document.querySelectorAll('.shape-card').forEach(card => {
+        card.addEventListener('click', () => {
+            document.querySelectorAll('.shape-card').forEach(c => c.classList.remove('active'));
+            card.classList.add('active');
+            
+            appState.cutTo = card.getAttribute('data-shape');
+            appState.cutToPrice = parseFloat(card.getAttribute('data-price')) || 0;
+            
+            recalculateTotalPrice();
+        });
     });
     
+    // Backboard selection
+    document.querySelectorAll('input[name="backboard"]').forEach(radio => {
+        radio.addEventListener('change', (e) => {
+            appState.backboard = e.target.value;
+        });
+    });
+}
+
+// ===========================
+// EXTRAS (Hanging, Waterproof, etc.)
+// ===========================
+function attachExtrasListeners() {
+    // Hanging options
+    document.querySelectorAll('input[name="hanging"]').forEach(radio => {
+        radio.addEventListener('change', (e) => {
+            const parent = e.target.closest('.radio-option');
+            document.querySelectorAll('#step4 .radio-group .radio-option').forEach(opt => 
+                opt.classList.remove('active')
+            );
+            parent?.classList.add('active');
+            
+            const hangingType = e.target.value;
+            const hangingPrice = (hangingType === 'wall' || hangingType === 'sign') ? 15 : 0;
+            
+            // Remove old hanging extra
+            appState.extras = appState.extras.filter(ex => ex.id !== 'hanging');
+            
+            // Add new hanging extra if applicable
+            if (hangingPrice > 0) {
+                appState.extras.push({
+                    id: 'hanging',
+                    description: `${hangingType} hanging`,
+                    price: hangingPrice
+                });
+            }
+            
+            recalculateTotalPrice();
+        });
+    });
+    
+    // Waterproof checkbox
+    const waterproofCheck = document.getElementById('waterProof');
+    if (waterproofCheck) {
+        waterproofCheck.addEventListener('change', (e) => {
+            appState.extras = appState.extras.filter(ex => ex.id !== 'waterproof');
+            
+            if (e.target.checked) {
+                appState.extras.push({
+                    id: 'waterproof',
+                    description: 'Waterproof protection',
+                    price: 30
+                });
+            }
+            
+            recalculateTotalPrice();
+        });
+    }
+    
+    // Remote & dimmer checkbox
+    const remoteDimmerCheck = document.getElementById('remoteDimmer');
+    if (remoteDimmerCheck) {
+        remoteDimmerCheck.addEventListener('change', (e) => {
+            // Free feature, just for tracking
+            appState.extras = appState.extras.filter(ex => ex.id !== 'remote');
+            
+            if (e.target.checked) {
+                appState.extras.push({
+                    id: 'remote',
+                    description: 'Remote and Dimmer',
+                    price: 0
+                });
+            }
+        });
+    }
+    
+    // Power adapter
+    document.querySelectorAll('input[name="power"]').forEach(radio => {
+        radio.addEventListener('change', (e) => {
+            // Store for checkout payload
+            appState.powerAdapter = e.target.value;
+        });
+    });
+}
+
+// ===========================
+// DISCOUNT HANDLING
+// ===========================
+function attachDiscountListeners() {
+    const applyBtn = document.querySelector('.apply-btn');
+    const discountInput = document.getElementById('discountCode');
+    
+    if (applyBtn && discountInput) {
+        applyBtn.addEventListener('click', () => {
+            const code = discountInput.value.trim();
+            
+            if (!code) {
+                alert('Please enter a discount code');
+                return;
+            }
+            
+            if (appState.discountApplied) {
+                // Remove discount
+                removeDiscount();
+                applyBtn.textContent = 'Apply';
+            } else {
+                // Apply discount (validate via API)
+                validateAndApplyDiscount(code);
+            }
+        });
+    }
+}
+
+function validateAndApplyDiscount(code) {
+    // BACKEND DEPENDENCY: This would call the API
+    // POST https://apiv2.easyneonsigns.ca/apply-discount
+    // Headers: Content-Type, X-API-Key, X-Idempotency-Key
+    // Body: { discount_code: code }
+    
+    console.log('BACKEND CALL REQUIRED: Validate discount code:', code);
+    
+    // Simulated response for demo
+    alert('Backend integration required for discount validation.\n\nEndpoint: POST https://apiv2.easyneonsigns.ca/apply-discount');
+    
+    // Example if valid:
+    // appState.discountApplied = true;
+    // appState.activeDiscount = { type: 'percentage', value: 0.10 }; // 10% off
+    // appState.discountCode = code;
+    // recalculateTotalPrice();
+    // document.querySelector('.apply-btn').textContent = 'Remove';
+}
+
+function removeDiscount() {
+    appState.discountApplied = false;
+    appState.activeDiscount = null;
+    appState.discountCode = null;
+    
+    recalculateTotalPrice();
+}
+
+// ===========================
+// CHECKOUT / ADD TO CART
+// ===========================
+function attachCheckoutListener() {
+    const checkoutBtn = document.querySelector('.btn-final');
+    
+    if (checkoutBtn) {
+        checkoutBtn.addEventListener('click', () => {
+            handleCheckout();
+        });
+    }
+}
+
+function handleCheckout() {
+    // Lock UI (prevent double submission)
+    const btn = document.querySelector('.btn-final');
+    if (btn) {
+        btn.disabled = true;
+        btn.textContent = 'Processing...';
+    }
+    
+    // Capture SVG markup
+    captureSvgMarkup();
+    
+    // Prepare payload
+    const payload = {
+        text: appState.text,
+        font: appState.fontKey,
+        fontFamily: appState.fontFamily,
+        color: appState.colorName,
+        colorValue: appState.colorValue,
+        plan: appState.plan,
+        extras: appState.extras,
+        type: appState.type,
+        outdoorSurcharge: appState.outdoorSurcharge,
+        rgbSurcharge: appState.rgbSurcharge,
+        backboard: appState.backboard,
+        cutTo: appState.cutTo,
+        cutToPrice: appState.cutToPrice,
+        powerAdapter: appState.powerAdapter,
+        totalPrice: appState.totalPrice,
+        discountPrice: appState.discountPrice,
+        discountCode: appState.discountCode,
+        svgMarkup: appState.svgMarkup,
+        svgWidthPx: appState.svgWidthPx,
+        svgHeightPx: appState.svgHeightPx
+    };
+    
+    // BACKEND DEPENDENCY: Create checkout
+    // POST https://apiv2.easyneonsigns.ca/create-draft-order
+    // Headers: Content-Type, X-API-Key, X-Idempotency-Key
+    // Body: payload
+    
+    console.log('BACKEND CALL REQUIRED: Create checkout', payload);
+    
+    alert('Backend integration required for checkout.\n\nEndpoint: POST https://apiv2.easyneonsigns.ca/create-draft-order\n\nCheck console for payload.');
+    
+    // On success, redirect to checkout_url
+    // window.location.href = response.checkout_url;
+    
+    // On failure, unlock UI
+    if (btn) {
+        btn.disabled = false;
+        btn.textContent = 'Preview & Buy';
+    }
+}
+
+function captureSvgMarkup() {
+    // In a real implementation, export canvas to SVG with embedded fonts
+    const canvas = canvasInstances['neonCanvas4'] || canvasInstances['neonCanvas'];
+    
+    if (canvas) {
+        appState.svgMarkup = canvas.toSVG();
+        appState.svgWidthPx = canvas.width;
+        appState.svgHeightPx = canvas.height;
+    }
+}
+
+// ===========================
+// STEP NAVIGATION
+// ===========================
+function attachStepNavigationListeners() {
+    document.querySelectorAll('.step-tab').forEach(tab => {
+        tab.addEventListener('click', () => {
+            const step = parseInt(tab.getAttribute('data-step'));
+            navigateToStep(step);
+        });
+    });
+    
+    // Attach to global scope for inline onclick handlers
+    window.goToStep = navigateToStep;
+}
+
+function navigateToStep(stepNumber) {
+    // Hide all steps
     document.querySelectorAll('.step-container').forEach(container => {
         container.classList.remove('active');
     });
     
-    document.getElementById(`step${step}`).classList.add('active');
-    state.currentStep = step;
+    // Show target step
+    const targetStep = document.getElementById(`step${stepNumber}`);
+    if (targetStep) {
+        targetStep.classList.add('active');
+    }
     
-    updateStepTabs();
-    updateAllPreviews();
+    appState.currentStep = stepNumber;
+    updateStepTabsUI();
+    renderAllPreviews();
     
     window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
-function updateStepTabs() {
+function updateStepTabsUI() {
     document.querySelectorAll('.step-tab').forEach(tab => {
         const step = parseInt(tab.getAttribute('data-step'));
         tab.classList.remove('active', 'completed');
         
-        if (step < state.currentStep) {
+        if (step < appState.currentStep) {
             tab.classList.add('completed');
-        } else if (step === state.currentStep) {
+        } else if (step === appState.currentStep) {
             tab.classList.add('active');
         }
     });
 }
 
-// Step 1: Text & Color
-function initializeStep1() {
-    // Text input
-    const textInput = document.getElementById('neonText');
-    if (textInput) {
-        textInput.addEventListener('input', function() {
-            const oldText = state.text;
-            const newText = this.value || 'your text';
-            state.text = newText;
-
-            // If multicolor is on and text length changed, adjust character colors
-            if (state.multicolor && oldText.length !== newText.length) {
-                const newCharColors = {};
-                for (let i = 0; i < newText.length; i++) {
-                    if (state.characterColors[i]) {
-                        newCharColors[i] = state.characterColors[i];
-                    }
-                }
-                state.characterColors = newCharColors;
-            }
-
-            updateAllPreviews();
-        });
-    }
-    
-    // Logo upload
-    const uploadLogoBtn = document.getElementById('uploadLogoBtn');
-    const logoInput = document.getElementById('logoInput');
-    
-    if (uploadLogoBtn && logoInput) {
-        uploadLogoBtn.addEventListener('click', () => logoInput.click());
-        
-        logoInput.addEventListener('change', function() {
-            handleLogoUpload(this.files[0]);
-        });
-    }
-    
-    // Remove upload
-    const removeUpload = document.getElementById('removeUpload');
-    if (removeUpload) {
-        removeUpload.addEventListener('click', function() {
-            state.logoFile = null;
-            state.logoDataUrl = null;
-            state.inputType = 'text';
-            document.getElementById('uploadedPreview').classList.add('hidden');
-            if (logoInput) logoInput.value = '';
-            updateAllPreviews();
-        });
-    }
-    
-    // Font library collapsible
-    const fontLibraryTrigger = document.getElementById('fontLibraryTrigger');
-    const fontLibraryContent = document.getElementById('fontLibraryContent');
-    
-    if (fontLibraryTrigger && fontLibraryContent) {
-        fontLibraryTrigger.addEventListener('click', function() {
-            const isOpen = fontLibraryContent.classList.contains('open');
-            if (isOpen) {
-                fontLibraryContent.classList.remove('open');
-                this.classList.remove('open');
-            } else {
-                fontLibraryContent.classList.add('open');
-                this.classList.add('open');
-            }
-        });
-        
-        // Font list items
-        fontLibraryContent.querySelectorAll('.font-list-item').forEach(item => {
-            item.addEventListener('click', function() {
-                state.font = this.getAttribute('data-font');
-                state.fontFamily = this.getAttribute('data-family');
-                
-                // Close collapsible
-                fontLibraryContent.classList.remove('open');
-                fontLibraryTrigger.classList.remove('open');
-                
-                updateAllPreviews();
-            });
-        });
-    }
-    
-    // Font cards
-    document.querySelectorAll('.font-card').forEach(card => {
-        card.addEventListener('click', function() {
-            state.font = this.getAttribute('data-font');
-            state.fontFamily = this.getAttribute('data-family');
-            updateAllPreviews();
-        });
-    });
-    
-    // Color picker
-    document.querySelectorAll('.color-option').forEach(option => {
-        option.addEventListener('click', function() {
-            const selectedColor = this.getAttribute('data-color');
-            const selectedColorName = this.getAttribute('data-name');
-
-            if (state.multicolor && state.selectedCharIndex !== null) {
-                // Set color for selected character
-                state.characterColors[state.selectedCharIndex] = selectedColor;
-            } else {
-                // Set global color
-                document.querySelectorAll('.color-option').forEach(opt => opt.classList.remove('active'));
-                this.classList.add('active');
-                state.color = selectedColor;
-                state.colorName = selectedColorName;
-            }
-
-            updateAllPreviews();
-        });
-    });
-    
-    // Custom color
-    const customColorBtn = document.getElementById('customColorBtn');
-    const customColorPicker = document.getElementById('customColorPicker');
-
-    if (customColorBtn && customColorPicker) {
-        customColorBtn.addEventListener('click', () => customColorPicker.click());
-
-        customColorPicker.addEventListener('input', function() {
-            const selectedColor = this.value;
-
-            if (state.multicolor && state.selectedCharIndex !== null) {
-                state.characterColors[state.selectedCharIndex] = selectedColor;
-            } else {
-                state.color = selectedColor;
-                state.colorName = 'Custom';
-                document.querySelectorAll('.color-option').forEach(opt => opt.classList.remove('active'));
-            }
-
-            updateAllPreviews();
-        });
-    }
-    
-    // Multicolor toggle
-    const multicolorToggle = document.getElementById('multicolorToggle');
-    const multicolorHelp = document.getElementById('multicolorHelp');
-    if (multicolorToggle) {
-        multicolorToggle.addEventListener('change', function() {
-            state.multicolor = this.checked;
-            if (!this.checked) {
-                state.characterColors = {};
-                state.selectedCharIndex = null;
-            }
-
-            if (multicolorHelp) {
-                if (this.checked) {
-                    multicolorHelp.classList.remove('hidden');
-                } else {
-                    multicolorHelp.classList.add('hidden');
-                }
-            }
-
-            updateAllPreviews();
-        });
-    }
-}
-
-function handleLogoUpload(file) {
-    if (!file || !file.type.startsWith('image/')) {
-        alert('Please upload a valid image file');
-        return;
-    }
-    
-    if (file.size > 5 * 1024 * 1024) {
-        alert('File size must be less than 5MB');
-        return;
-    }
-    
-    state.logoFile = file;
-    state.inputType = 'logo';
-    
-    const reader = new FileReader();
-    reader.onload = function(e) {
-        state.logoDataUrl = e.target.result;
-        document.getElementById('uploadedImage').src = e.target.result;
-        document.getElementById('uploadedPreview').classList.remove('hidden');
-        updateAllPreviews();
-    };
-    reader.readAsDataURL(file);
-}
-
-// Step 2: Size Selection
-function initializeStep2() {
-    // Size mode toggle
-    document.querySelectorAll('.size-mode-btn').forEach(btn => {
-        btn.addEventListener('click', function() {
-            document.querySelectorAll('.size-mode-btn').forEach(b => b.classList.remove('active'));
-            this.classList.add('active');
-
-            const mode = this.getAttribute('data-mode');
-            const sizeGrid = document.getElementById('sizeGrid');
-            const customSizeInputs = document.getElementById('customSizeInputs');
-            const sizeModeTitle = document.getElementById('sizeModeTitle');
-
-            if (mode === 'custom') {
-                if (sizeGrid) sizeGrid.classList.add('hidden');
-                if (customSizeInputs) customSizeInputs.classList.remove('hidden');
-                if (sizeModeTitle) sizeModeTitle.textContent = 'Enter custom size';
-
-                const customWidth = document.getElementById('customWidth');
-                const customHeight = document.getElementById('customHeight');
-                if (customWidth) customWidth.value = state.sizeWidth;
-                if (customHeight) customHeight.value = state.sizeHeight || Math.round(state.sizeWidth * 0.45);
-            } else {
-                if (sizeGrid) sizeGrid.classList.remove('hidden');
-                if (customSizeInputs) customSizeInputs.classList.add('hidden');
-                if (sizeModeTitle) sizeModeTitle.textContent = 'Select size';
-            }
-        });
-    });
-
-    // Custom size inputs
-    const customWidth = document.getElementById('customWidth');
-    const customHeight = document.getElementById('customHeight');
-
-    if (customWidth) {
-        customWidth.addEventListener('input', function() {
-            const width = parseInt(this.value) || 38;
-            state.sizeWidth = width;
-            state.sizeHeight = parseInt(customHeight.value) || Math.round(width * 0.45);
-
-            const area = state.sizeWidth * state.sizeHeight;
-            state.sizePrice = Math.round((area / 230) * 438.99 * 100) / 100;
-
-            updateAllPreviews();
-            updatePricing();
-        });
-    }
-
-    if (customHeight) {
-        customHeight.addEventListener('input', function() {
-            const height = parseInt(this.value) || 17;
-            state.sizeHeight = height;
-
-            const area = state.sizeWidth * state.sizeHeight;
-            state.sizePrice = Math.round((area / 230) * 438.99 * 100) / 100;
-
-            updateAllPreviews();
-            updatePricing();
-        });
-    }
-
-    // Size cards
-    document.querySelectorAll('#step2 .size-card').forEach(card => {
-        card.addEventListener('click', function() {
-            document.querySelectorAll('#step2 .size-card').forEach(c => {
-                c.classList.remove('active');
-                const existingCheckmark = c.querySelector('.checkmark');
-                if (existingCheckmark) {
-                    existingCheckmark.remove();
-                }
-            });
-
-            this.classList.add('active');
-            const visual = this.querySelector('.size-visual');
-            if (visual && !visual.querySelector('.checkmark')) {
-                const checkmark = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-                checkmark.setAttribute('class', 'checkmark');
-                checkmark.setAttribute('width', '20');
-                checkmark.setAttribute('height', '20');
-                checkmark.setAttribute('viewBox', '0 0 20 20');
-                checkmark.setAttribute('fill', 'none');
-
-                const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-                path.setAttribute('d', 'M4 10L8 14L16 6');
-                path.setAttribute('stroke', 'currentColor');
-                path.setAttribute('stroke-width', '2');
-                path.setAttribute('stroke-linecap', 'round');
-                path.setAttribute('stroke-linejoin', 'round');
-
-                checkmark.appendChild(path);
-                visual.appendChild(checkmark);
-            }
-
-            state.size = this.getAttribute('data-size');
-            state.sizeWidth = parseInt(this.getAttribute('data-width'));
-            state.sizeHeight = parseInt(this.getAttribute('data-height'));
-            state.sizePrice = parseFloat(this.getAttribute('data-price'));
-
-            updateAllPreviews();
-            updatePricing();
-        });
-    });
-
-    // Location radio
-    document.querySelectorAll('input[name="location"]').forEach(radio => {
-        radio.addEventListener('change', function() {
-            const parent = this.closest('.radio-option');
-            document.querySelectorAll('.radio-group .radio-option').forEach(opt => opt.classList.remove('active'));
-            parent.classList.add('active');
-
-            state.location = this.value;
-            state.locationPrice = this.value === 'outdoor' ? 65 : 0;
-            updatePricing();
-        });
-    });
-}
-
-// Step 3: Sign Shape
-function initializeStep3() {
-    // Shape cards
-    document.querySelectorAll('.shape-card').forEach(card => {
-        card.addEventListener('click', function() {
-            document.querySelectorAll('.shape-card').forEach(c => c.classList.remove('active'));
-            this.classList.add('active');
-
-            state.shape = this.getAttribute('data-shape');
-            state.shapePrice = parseFloat(this.getAttribute('data-price'));
-            updatePricing();
-        });
-    });
-
-    // Backboard color
-    document.querySelectorAll('input[name="backboard"]').forEach(radio => {
-        radio.addEventListener('change', function() {
-            state.backboard = this.value;
-        });
-    });
-}
-
-// Step 4: More Options
-function initializeStep4() {
-    // Power adapter
-    document.querySelectorAll('input[name="power"]').forEach(radio => {
-        radio.addEventListener('change', function() {
-            state.powerAdapter = this.value;
-        });
-    });
-
-    // Hanging options
-    document.querySelectorAll('input[name="hanging"]').forEach(radio => {
-        radio.addEventListener('change', function() {
-            const parent = this.closest('.radio-option');
-            document.querySelectorAll('#step4 .radio-group .radio-option').forEach(opt => opt.classList.remove('active'));
-            parent.classList.add('active');
-
-            state.hanging = this.value;
-            state.hangingPrice = (this.value === 'wall' || this.value === 'sign') ? 15 : 0;
-            updatePricing();
-        });
-    });
-
-    // Remote & Dimmer
-    const remoteDimmer = document.getElementById('remoteDimmer');
-    if (remoteDimmer) {
-        remoteDimmer.addEventListener('change', function() {
-            state.remoteDimmer = this.checked;
-        });
-    }
-
-    // Water Proof
-    const waterProof = document.getElementById('waterProof');
-    if (waterProof) {
-        waterProof.addEventListener('change', function() {
-            state.waterProof = this.checked;
-            state.waterProofPrice = this.checked ? 30 : 0;
-            updatePricing();
-        });
-    }
-
-    // Discount code
-    const discountCode = document.getElementById('discountCode');
-    const applyBtn = document.querySelector('.apply-btn');
-
-    if (applyBtn) {
-        applyBtn.addEventListener('click', function() {
-            const code = discountCode ? discountCode.value : '';
-            if (code) {
-                alert('Discount code: ' + code + '\n(Validation not implemented in demo)');
-            }
-        });
-    }
-
-    // Preview & Buy button
-    const btnFinal = document.querySelector('.btn-final');
-    if (btnFinal) {
-        btnFinal.addEventListener('click', function() {
-            const total = calculateTotal();
-            const config = {
-                text: state.text,
-                color: state.colorName,
-                font: state.font,
-                size: `${state.sizeWidth}"`,
-                shape: state.shape,
-                location: state.location,
-                backboard: state.backboard,
-                powerAdapter: state.powerAdapter,
-                hanging: state.hanging,
-                remoteDimmer: state.remoteDimmer,
-                waterProof: state.waterProof,
-                total: total.toFixed(2)
-            };
-
-            console.log('Order Summary:', config);
-            alert(`Order Summary:\n\nTotal: $${config.total}\n\nThank you for your order!`);
-        });
-    }
-}
-
-// Preview Controls
-function initializePreviewControls() {
-    // Initialize for all steps
-    for (let i = 1; i <= 4; i++) {
-        const container = document.getElementById(`step${i}`);
+// ===========================
+// PREVIEW CONTROLS
+// ===========================
+function attachPreviewControlListeners() {
+    for (let step = 1; step <= 4; step++) {
+        const container = document.getElementById(`step${step}`);
         if (!container) continue;
         
         // Neon ON/OFF toggle
-        const neonToggle = container.querySelector('[id^="neonToggle"]');
+        const neonToggle = container.querySelector(`#neonToggle${step === 1 ? '' : step}`);
         if (neonToggle) {
-            neonToggle.addEventListener('change', function() {
-                state.neonOn = this.checked;
-                updateAllPreviews();
+            neonToggle.addEventListener('change', (e) => {
+                appState.neonGlowEnabled = e.target.checked;
+                renderAllPreviews();
             });
         }
         
-        // Theme mode toggle
+        // Theme mode (light/dark)
         const modeBtns = container.querySelectorAll('.mode-btn');
         modeBtns.forEach(btn => {
-            btn.addEventListener('click', function() {
-                const parent = this.closest('.theme-mode-toggle');
+            btn.addEventListener('click', () => {
+                const parent = btn.closest('.theme-mode-toggle');
                 parent.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
-                this.classList.add('active');
+                btn.classList.add('active');
                 
-                state.themeMode = this.getAttribute('data-mode');
-                updateBackgroundMode();
-                updateAllPreviews();
+                appState.themeMode = btn.getAttribute('data-mode');
+                updateBackgroundTheme();
+                renderAllPreviews();
             });
         });
         
         // Save preview button
-        const saveBtn = document.getElementById(`saveBtn${i}`);
+        const saveBtn = document.getElementById(`saveBtn${step}`);
         if (saveBtn) {
-            saveBtn.addEventListener('click', function() {
-                exportCanvasAsImage(i);
-            });
-        }
-        
-        // Preview eye button
-        const eyeBtn = container.querySelector('.preview-eye-btn');
-        if (eyeBtn) {
-            eyeBtn.addEventListener('click', function() {
-                alert('Full screen preview feature coming soon!');
+            saveBtn.addEventListener('click', () => {
+                exportPreviewImage(step);
             });
         }
     }
 }
 
-// Export canvas as image
-function exportCanvasAsImage(stepNumber) {
+function updateBackgroundTheme() {
+    for (let i = 1; i <= 4; i++) {
+        const wrapper = document.getElementById(`bgImageWrapper${i === 1 ? '' : i}`);
+        if (wrapper) {
+            wrapper.classList.remove('light-mode', 'dark-mode');
+            wrapper.classList.add(`${appState.themeMode}-mode`);
+        }
+    }
+}
+
+function exportPreviewImage(stepNumber) {
     const canvasId = stepNumber === 1 ? 'neonCanvas' : `neonCanvas${stepNumber}`;
-    const canvas = canvases[canvasId];
+    const canvas = canvasInstances[canvasId];
     
     if (!canvas) {
         alert('Canvas not found');
@@ -590,92 +1013,141 @@ function exportCanvasAsImage(stepNumber) {
     link.click();
 }
 
-// Draw measurement scales on canvas
-function drawMeasurementScales(canvas, textWidth, textHeight) {
-    const scaleColor = state.themeMode === 'dark' ? 'rgba(255, 255, 255, 0.4)' : 'rgba(0, 0, 0, 0.5)';
-    const textColor = state.themeMode === 'dark' ? '#FFFFFF' : '#000000';
+// ===========================
+// CANVAS RENDERING
+// ===========================
+function renderAllPreviews() {
+    Object.keys(canvasInstances).forEach(canvasId => {
+        const canvas = canvasInstances[canvasId];
+        if (canvas) {
+            renderCanvasPreview(canvas);
+        }
+    });
+}
+
+function renderCanvasPreview(canvas) {
+    if (!canvas) return;
+    
+    canvas.clear();
+    
+    const displayText = appState.text || CONFIG.defaultPlaceholderText;
+    const centerX = canvas.width / 2;
+    const centerY = canvas.height / 2;
+    
+    // Render text with auto-fit logic
+    const textConfig = {
+        left: centerX,
+        top: centerY,
+        originX: 'center',
+        originY: 'center',
+        fontFamily: appState.fontFamily.replace(/['"]/g, ''),
+        fontSize: appState.fontSizePx,
+        fill: appState.colorValue,
+        selectable: false
+    };
+    
+    // Apply glow if enabled
+    if (appState.neonGlowEnabled) {
+        textConfig.shadow = {
+            color: appState.colorValue,
+            blur: 45,
+            offsetX: 0,
+            offsetY: 0
+        };
+    } else {
+        textConfig.opacity = 0.3;
+    }
+    
+    const textObject = new fabric.Text(displayText, textConfig);
+    canvas.add(textObject);
+    
+    // Draw measurement overlays
+    drawMeasurementOverlays(canvas, textObject);
+    
+    canvas.renderAll();
+}
+
+function drawMeasurementOverlays(canvas, textObject) {
+    const scaleColor = appState.themeMode === 'dark' 
+        ? 'rgba(255, 255, 255, 0.5)' 
+        : 'rgba(0, 0, 0, 0.6)';
+    
+    const textColor = appState.themeMode === 'dark' ? '#FFFFFF' : '#000000';
+    
+    const bounds = textObject.getBoundingRect();
     const centerX = canvas.width / 2;
     const centerY = canvas.height / 2;
     
     const padding = 80;
-    const tickSize = 10;
+    const tickLength = 10;
     
-    // Horizontal scale (width)
-    const hScaleY = centerY + textHeight / 2 + padding;
-    const hStartX = centerX - textWidth / 2 - 20;
-    const hEndX = centerX + textWidth / 2 + 20;
+    // Horizontal dimension line
+    const hLineY = bounds.top + bounds.height + padding;
+    const hStartX = bounds.left - 20;
+    const hEndX = bounds.left + bounds.width + 20;
     
-    // Horizontal main line
-    const hLine = new fabric.Line([hStartX, hScaleY, hEndX, hScaleY], {
+    const horizLine = new fabric.Line([hStartX, hLineY, hEndX, hLineY], {
         stroke: scaleColor,
         strokeWidth: 2,
-        selectable: false,
-        evented: false
+        selectable: false
     });
-    canvas.add(hLine);
+    canvas.add(horizLine);
     
     // Horizontal ticks
-    const hTickLeft = new fabric.Line([hStartX, hScaleY - tickSize, hStartX, hScaleY + tickSize], {
+    canvas.add(new fabric.Line([hStartX, hLineY - tickLength, hStartX, hLineY + tickLength], {
         stroke: scaleColor,
         strokeWidth: 2,
-        selectable: false,
-        evented: false
-    });
-    const hTickRight = new fabric.Line([hEndX, hScaleY - tickSize, hEndX, hScaleY + tickSize], {
+        selectable: false
+    }));
+    
+    canvas.add(new fabric.Line([hEndX, hLineY - tickLength, hEndX, hLineY + tickLength], {
         stroke: scaleColor,
         strokeWidth: 2,
-        selectable: false,
-        evented: false
-    });
-    canvas.add(hTickLeft, hTickRight);
+        selectable: false
+    }));
     
     // Horizontal label
-    const hLabel = new fabric.Text(`${state.sizeWidth}"`, {
+    const widthLabel = new fabric.Text(`${appState.plan.widthIn}"`, {
         left: centerX,
-        top: hScaleY + 20,
+        top: hLineY + 18,
         originX: 'center',
         originY: 'top',
         fontSize: 16,
         fill: textColor,
         fontFamily: 'Inter, sans-serif',
         fontWeight: 600,
-        selectable: false,
-        evented: false
+        selectable: false
     });
-    canvas.add(hLabel);
+    canvas.add(widthLabel);
     
-    // Vertical scale (height)
-    const vScaleX = centerX + textWidth / 2 + padding;
-    const vStartY = centerY - textHeight / 2 - 20;
-    const vEndY = centerY + textHeight / 2 + 20;
+    // Vertical dimension line
+    const vLineX = bounds.left + bounds.width + padding;
+    const vStartY = bounds.top - 20;
+    const vEndY = bounds.top + bounds.height + 20;
     
-    // Vertical main line
-    const vLine = new fabric.Line([vScaleX, vStartY, vScaleX, vEndY], {
+    const vertLine = new fabric.Line([vLineX, vStartY, vLineX, vEndY], {
         stroke: scaleColor,
         strokeWidth: 2,
-        selectable: false,
-        evented: false
+        selectable: false
     });
-    canvas.add(vLine);
+    canvas.add(vertLine);
     
     // Vertical ticks
-    const vTickTop = new fabric.Line([vScaleX - tickSize, vStartY, vScaleX + tickSize, vStartY], {
+    canvas.add(new fabric.Line([vLineX - tickLength, vStartY, vLineX + tickLength, vStartY], {
         stroke: scaleColor,
         strokeWidth: 2,
-        selectable: false,
-        evented: false
-    });
-    const vTickBottom = new fabric.Line([vScaleX - tickSize, vEndY, vScaleX + tickSize, vEndY], {
+        selectable: false
+    }));
+    
+    canvas.add(new fabric.Line([vLineX - tickLength, vEndY, vLineX + tickLength, vEndY], {
         stroke: scaleColor,
         strokeWidth: 2,
-        selectable: false,
-        evented: false
-    });
-    canvas.add(vTickTop, vTickBottom);
+        selectable: false
+    }));
     
     // Vertical label
-    const vLabel = new fabric.Text(`${state.sizeHeight}"`, {
-        left: vScaleX + 20,
+    const heightLabel = new fabric.Text(`${appState.plan.heightIn}"`, {
+        left: vLineX + 18,
         top: centerY,
         originX: 'left',
         originY: 'center',
@@ -683,315 +1155,31 @@ function drawMeasurementScales(canvas, textWidth, textHeight) {
         fill: textColor,
         fontFamily: 'Inter, sans-serif',
         fontWeight: 600,
-        selectable: false,
-        evented: false,
-        angle: 0
+        selectable: false
     });
-    canvas.add(vLabel);
+    canvas.add(heightLabel);
 }
 
-// Render neon text on canvas using Fabric.js
-function renderNeonText(canvas, text, fontFamily, color, multicolor, characterColors, neonOn) {
-    if (!canvas) return;
+// ===========================
+// MEASUREMENT SIMULATION
+// ===========================
+function getMeasuredDimensions() {
+    // In real implementation, this would measure the actual rendered text
+    // For now, we estimate based on text length and font
     
-    // Stop any existing animation
-    const canvasId = Object.keys(canvases).find(key => canvases[key] === canvas);
-    if (canvasId && animationFrames[canvasId]) {
-        cancelAnimationFrame(animationFrames[canvasId]);
-        animationFrames[canvasId] = null;
-    }
+    const textLength = appState.text.length || CONFIG.defaultPlaceholderText.length;
+    const baseWidth = 15 + (textLength * 2.5);
+    const baseHeight = Math.round(baseWidth * 0.43);
     
-    canvas.clear();
-    
-    const centerY = canvas.height / 2;
-    let textWidth = 0;
-    let textHeight = 0;
-    
-    if (multicolor) {
-        // Render each character individually
-        const chars = text.split('');
-        const charWidths = [];
-        let totalWidth = 0;
-        
-        // Calculate widths
-        chars.forEach((char, index) => {
-            const charColor = characterColors[index] || color;
-            const tempText = new fabric.Text(char, {
-                fontFamily: fontFamily.replace(/['"]/g, ''),
-                fontSize: 80,
-                fill: charColor,
-                fontWeight: 400
-            });
-            charWidths.push(tempText.width);
-            totalWidth += tempText.width;
-            textHeight = Math.max(textHeight, tempText.height);
-        });
-        
-        textWidth = totalWidth;
-        let currentX = (canvas.width - totalWidth) / 2;
-        
-        // Render characters
-        chars.forEach((char, index) => {
-            const charColor = characterColors[index] || color;
-            
-            const textObj = new fabric.Text(char, {
-                left: currentX,
-                top: centerY,
-                originX: 'left',
-                originY: 'center',
-                fontFamily: fontFamily.replace(/['"]/g, ''),
-                fontSize: 80,
-                fill: charColor,
-                fontWeight: 400,
-                selectable: true,
-                hasControls: false,
-                hasBorders: false,
-                lockMovementX: true,
-                lockMovementY: true
-            });
-            
-            if (neonOn) {
-                textObj.set({
-                    shadow: {
-                        color: charColor,
-                        blur: 45,
-                        offsetX: 0,
-                        offsetY: 0
-                    }
-                });
-            } else {
-                textObj.set({
-                    opacity: 0.3
-                });
-            }
-            
-            textObj.charIndex = index;
-            
-            textObj.on('mousedown', function() {
-                if (state.multicolor) {
-                    state.selectedCharIndex = this.charIndex;
-                    
-                    canvas.getObjects().forEach(obj => {
-                        if (obj.stroke && obj.type === 'text') {
-                            obj.set({ stroke: null, strokeWidth: 0 });
-                        }
-                    });
-                    
-                    this.set({
-                        stroke: charColor,
-                        strokeWidth: 2
-                    });
-                    
-                    canvas.renderAll();
-                }
-            });
-            
-            canvas.add(textObj);
-            currentX += charWidths[index];
-        });
-        
-    } else {
-        // Render entire text as one object
-        const textObj = new fabric.Text(text, {
-            left: canvas.width / 2,
-            top: centerY,
-            originX: 'center',
-            originY: 'center',
-            fontFamily: fontFamily.replace(/['"]/g, ''),
-            fontSize: 80,
-            fill: color,
-            fontWeight: 400,
-            selectable: false
-        });
-        
-        textWidth = textObj.width;
-        textHeight = textObj.height;
-        
-        if (neonOn) {
-            textObj.set({
-                shadow: {
-                    color: color,
-                    blur: 45,
-                    offsetX: 0,
-                    offsetY: 0
-                }
-            });
-        } else {
-            textObj.set({
-                opacity: 0.3
-            });
-        }
-        
-        canvas.add(textObj);
-    }
-    
-    // Draw measurement scales
-    drawMeasurementScales(canvas, textWidth, textHeight);
-    
-    // Start animation
-    if (neonOn) {
-        animateNeonPulse(canvas, canvasId);
-    }
-    
-    canvas.renderAll();
+    return {
+        widthIn: Math.round(baseWidth),
+        heightIn: Math.round(baseHeight)
+    };
 }
 
-// Render logo on canvas with neon glow
-function renderNeonLogo(canvas, imageUrl, color, neonOn) {
-    if (!canvas || !imageUrl) return;
-    
-    // Stop any existing animation
-    const canvasId = Object.keys(canvases).find(key => canvases[key] === canvas);
-    if (canvasId && animationFrames[canvasId]) {
-        cancelAnimationFrame(animationFrames[canvasId]);
-        animationFrames[canvasId] = null;
-    }
-    
-    canvas.clear();
-    
-    fabric.Image.fromURL(imageUrl, function(img) {
-        const maxWidth = 400;
-        const maxHeight = 400;
-        const scale = Math.min(maxWidth / img.width, maxHeight / img.height);
-        
-        img.scale(scale);
-        img.set({
-            left: canvas.width / 2,
-            top: canvas.height / 2,
-            originX: 'center',
-            originY: 'center',
-            selectable: false
-        });
-        
-        if (neonOn) {
-            img.set({
-                shadow: {
-                    color: color,
-                    blur: 50,
-                    offsetX: 0,
-                    offsetY: 0
-                }
-            });
-        } else {
-            img.set({
-                opacity: 0.3
-            });
-        }
-        
-        canvas.add(img);
-        
-        // Draw measurement scales
-        const imgWidth = img.width * scale;
-        const imgHeight = img.height * scale;
-        drawMeasurementScales(canvas, imgWidth, imgHeight);
-        
-        if (neonOn) {
-            animateNeonPulse(canvas, canvasId);
-        }
-        
-        canvas.renderAll();
-    }, { crossOrigin: 'anonymous' });
-}
-
-// Animate neon pulse effect
-function animateNeonPulse(canvas, canvasId) {
-    let opacity = 0.96;
-    let increasing = true;
-    
-    function pulse() {
-        if (increasing) {
-            opacity += 0.004;
-            if (opacity >= 1) {
-                increasing = false;
-            }
-        } else {
-            opacity -= 0.004;
-            if (opacity <= 0.96) {
-                increasing = true;
-            }
-        }
-        
-        canvas.getObjects().forEach(obj => {
-            if (state.neonOn && obj.shadow && (obj.type === 'text' || obj.type === 'image')) {
-                obj.set({ opacity: opacity });
-            }
-        });
-        
-        canvas.renderAll();
-        
-        if (state.neonOn) {
-            animationFrames[canvasId] = requestAnimationFrame(pulse);
-        }
-    }
-    
-    animationFrames[canvasId] = requestAnimationFrame(pulse);
-}
-
-// Update all canvas previews
-function updateAllPreviews() {
-    for (let i = 1; i <= 4; i++) {
-        const canvasId = i === 1 ? 'neonCanvas' : `neonCanvas${i}`;
-        const canvas = canvases[canvasId];
-        
-        if (canvas) {
-            if (state.inputType === 'text') {
-                renderNeonText(
-                    canvas,
-                    state.text,
-                    state.fontFamily,
-                    state.color,
-                    state.multicolor,
-                    state.characterColors,
-                    state.neonOn
-                );
-            } else if (state.inputType === 'logo' && state.logoDataUrl) {
-                renderNeonLogo(
-                    canvas,
-                    state.logoDataUrl,
-                    state.color,
-                    state.neonOn
-                );
-            }
-        }
-    }
-}
-
-function updateBackgroundMode() {
-    for (let i = 1; i <= 4; i++) {
-        const wrapper = document.getElementById(`bgImageWrapper${i === 1 ? '' : i}`);
-        if (wrapper) {
-            wrapper.classList.remove('light-mode', 'dark-mode');
-            wrapper.classList.add(`${state.themeMode}-mode`);
-        }
-    }
-}
-
-function updatePricing() {
-    const basePrice = state.sizePrice;
-    const extras = state.shapePrice + state.locationPrice + state.hangingPrice + state.waterProofPrice;
-    const subtotal = basePrice + extras;
-    const discount = subtotal * 0.20;
-    const total = subtotal - discount;
-    
-    const originalTotal = document.querySelector('.original-total');
-    const finalPrice = document.querySelector('.final-price');
-    
-    if (originalTotal) {
-        originalTotal.textContent = `$${subtotal.toFixed(2)}`;
-    }
-    
-    if (finalPrice) {
-        finalPrice.textContent = `$${total.toFixed(2)}`;
-    }
-}
-
-function calculateTotal() {
-    const basePrice = state.sizePrice;
-    const extras = state.shapePrice + state.locationPrice + state.hangingPrice + state.waterProofPrice;
-    const subtotal = basePrice + extras;
-    const discount = subtotal * 0.20;
-    return subtotal - discount;
-}
-
-// Initialize pricing
-updatePricing();
+// ===========================
+// WINDOW RESIZE HANDLER
+// ===========================
+window.addEventListener('resize', debounce(() => {
+    renderAllPreviews();
+}, 250));

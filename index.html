@@ -1,19 +1,23 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Create Your Custom Neon Sign</title>
-    
+
     <!-- Google Fonts - Extended library -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Pacifico&family=Permanent+Marker&family=Dancing+Script:wght@400;700&family=Satisfy&family=Roboto:wght@400;700&family=Open+Sans:wght@400;700&family=Lato:wght@400;700&family=Montserrat:wght@400;700&family=Oswald:wght@400;700&family=Raleway:wght@400;700&family=Playfair+Display:wght@400;700&family=Bebas+Neue&family=Abril+Fatface&family=Righteous&family=Caveat:wght@400;700&family=Lobster&family=Shadows+Into+Light&family=Amatic+SC:wght@400;700&family=Indie+Flower&family=Great+Vibes&family=Allura&family=Sacramento&family=Alex+Brush&family=Tangerine:wght@400;700&family=Kaushan+Script&family=Courgette&family=Yellowtail&family=Architects+Daughter&family=Patrick+Hand&family=Gloria+Hallelujah&family=Comfortaa:wght@400;700&family=Fredoka:wght@400;700&family=Quicksand:wght@400;700&family=Nunito:wght@400;700&family=Poppins:wght@400;700&family=Rubik:wght@400;700&family=Work+Sans:wght@400;700&family=Merriweather:wght@400;700&family=PT+Sans:wght@400;700&family=Ubuntu:wght@400;700&family=Noto+Sans:wght@400;700&family=Mukta:wght@400;700&family=Oxygen:wght@400;700&family=Crimson+Text:wght@400;700&family=Lora:wght@400;700&family=Barlow:wght@400;700&family=Josefin+Sans:wght@400;700&family=Anton&family=Archivo+Black&family=Cinzel:wght@400;700&family=Courier+Prime:wght@400;700&family=Press+Start+2P&family=Rock+Salt&family=Special+Elite&family=VT323&display=swap" rel="stylesheet">
-    
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Pacifico&family=Permanent+Marker&family=Dancing+Script:wght@400;700&family=Satisfy&family=Roboto:wght@400;700&family=Open+Sans:wght@400;700&family=Lato:wght@400;700&family=Montserrat:wght@400;700&family=Oswald:wght@400;700&family=Raleway:wght@400;700&family=Playfair+Display:wght@400;700&family=Bebas+Neue&family=Abril+Fatface&family=Righteous&family=Caveat:wght@400;700&family=Lobster&family=Shadows+Into+Light&family=Amatic+SC:wght@400;700&family=Indie+Flower&family=Great+Vibes&family=Allura&family=Sacramento&family=Alex+Brush&family=Tangerine:wght@400;700&family=Kaushan+Script&family=Courgette&family=Yellowtail&family=Architects+Daughter&family=Patrick+Hand&family=Gloria+Hallelujah&family=Comfortaa:wght@400;700&family=Fredoka:wght@400;700&family=Quicksand:wght@400;700&family=Nunito:wght@400;700&family=Poppins:wght@400;700&family=Rubik:wght@400;700&family=Work+Sans:wght@400;700&family=Merriweather:wght@400;700&family=PT+Sans:wght@400;700&family=Ubuntu:wght@400;700&family=Noto+Sans:wght@400;700&family=Mukta:wght@400;700&family=Oxygen:wght@400;700&family=Crimson+Text:wght@400;700&family=Lora:wght@400;700&family=Barlow:wght@400;700&family=Josefin+Sans:wght@400;700&family=Anton&family=Archivo+Black&family=Cinzel:wght@400;700&family=Courier+Prime:wght@400;700&family=Press+Start+2P&family=Rock+Salt&family=Special+Elite&family=VT323&display=swap"
+        rel="stylesheet">
+
     <!-- Custom CSS -->
     <link rel="stylesheet" href="styles.css">
-    
+
     <!-- Fabric.js -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.0/fabric.min.js"></script>
 </head>
+
 <body>
     <div class="neon-generator-container">
         <!-- Step 1: Text & Color -->
@@ -25,7 +29,7 @@
                         <p class="main-subtitle">Get your neon sign in just 4 steps..</p>
                     </div>
                 </div>
-                
+
                 <div class="step-tabs">
                     <button class="step-tab active" data-step="1">
                         <span class="step-number">01</span>
@@ -44,120 +48,220 @@
                         <span class="step-label">More options</span>
                     </button>
                 </div>
-                
+
                 <div class="content-section">
                     <h2 class="section-title">Enter text or upload your logo</h2>
-                    
+
                     <div class="input-row">
-                        <textarea class="text-input" id="neonText" placeholder="Type here.." maxlength="200" rows="3"></textarea>
+                        <textarea class="text-input" id="neonText" placeholder="Type here.." maxlength="200"
+                            rows="3"></textarea>
                         <button class="upload-logo-btn" id="uploadLogoBtn">
                             <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                                <path d="M12 5V19M5 12H19" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                                <path d="M12 5V19M5 12H19" stroke="currentColor" stroke-width="2"
+                                    stroke-linecap="round" />
                             </svg>
                             Upload logo
                         </button>
                         <input type="file" id="logoInput" accept="image/*" hidden>
                     </div>
-                    
+
                     <div class="uploaded-preview-inline hidden" id="uploadedPreview">
                         <img src="" alt="Uploaded logo" id="uploadedImage">
                         <button class="remove-upload" id="removeUpload">×</button>
                     </div>
-                    
+
                     <h2 class="section-title">Pick Neon Font Style</h2>
-                    <p class="section-description">Pick from over 50 typefaces. Prices vary by the amount of LED neon required.</p>
-                    
+                    <p class="section-description">Pick from over 50 typefaces. Prices vary by the amount of LED neon
+                        required.</p>
+
                     <div class="font-library-container">
                         <button class="collapsible-trigger" id="fontLibraryTrigger">
                             <span>Browse All Fonts (50+)</span>
                             <svg class="chevron-icon" width="20" height="20" viewBox="0 0 20 20" fill="none">
-                                <path d="M5 7.5L10 12.5L15 7.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                                <path d="M5 7.5L10 12.5L15 7.5" stroke="currentColor" stroke-width="2"
+                                    stroke-linecap="round" />
                             </svg>
                         </button>
                         <div class="collapsible-content" id="fontLibraryContent">
                             <div class="font-categories">
                                 <h4 class="category-title">Script & Handwriting</h4>
                                 <div class="font-list-grid">
-                                    <button class="font-list-item" data-font="pacifico" data-family="'Pacifico', cursive" style="font-family: 'Pacifico', cursive;">Pacifico</button>
-                                    <button class="font-list-item" data-font="satisfy" data-family="'Satisfy', cursive" style="font-family: 'Satisfy', cursive;">Satisfy</button>
-                                    <button class="font-list-item" data-font="dancing-script" data-family="'Dancing Script', cursive" style="font-family: 'Dancing Script', cursive;">Dancing Script</button>
-                                    <button class="font-list-item" data-font="great-vibes" data-family="'Great Vibes', cursive" style="font-family: 'Great Vibes', cursive;">Great Vibes</button>
-                                    <button class="font-list-item" data-font="allura" data-family="'Allura', cursive" style="font-family: 'Allura', cursive;">Allura</button>
-                                    <button class="font-list-item" data-font="sacramento" data-family="'Sacramento', cursive" style="font-family: 'Sacramento', cursive;">Sacramento</button>
-                                    <button class="font-list-item" data-font="alex-brush" data-family="'Alex Brush', cursive" style="font-family: 'Alex Brush', cursive;">Alex Brush</button>
-                                    <button class="font-list-item" data-font="tangerine" data-family="'Tangerine', cursive" style="font-family: 'Tangerine', cursive;">Tangerine</button>
-                                    <button class="font-list-item" data-font="kaushan-script" data-family="'Kaushan Script', cursive" style="font-family: 'Kaushan Script', cursive;">Kaushan Script</button>
-                                    <button class="font-list-item" data-font="courgette" data-family="'Courgette', cursive" style="font-family: 'Courgette', cursive;">Courgette</button>
-                                    <button class="font-list-item" data-font="yellowtail" data-family="'Yellowtail', cursive" style="font-family: 'Yellowtail', cursive;">Yellowtail</button>
-                                    <button class="font-list-item" data-font="lobster" data-family="'Lobster', cursive" style="font-family: 'Lobster', cursive;">Lobster</button>
-                                    <button class="font-list-item" data-font="caveat" data-family="'Caveat', cursive" style="font-family: 'Caveat', cursive;">Caveat</button>
-                                    <button class="font-list-item" data-font="shadows-into-light" data-family="'Shadows Into Light', cursive" style="font-family: 'Shadows Into Light', cursive;">Shadows Into Light</button>
-                                    <button class="font-list-item" data-font="amatic-sc" data-family="'Amatic SC', cursive" style="font-family: 'Amatic SC', cursive;">Amatic SC</button>
-                                    <button class="font-list-item" data-font="indie-flower" data-family="'Indie Flower', cursive" style="font-family: 'Indie Flower', cursive;">Indie Flower</button>
-                                    <button class="font-list-item" data-font="architects-daughter" data-family="'Architects Daughter', cursive" style="font-family: 'Architects Daughter', cursive;">Architects Daughter</button>
-                                    <button class="font-list-item" data-font="patrick-hand" data-family="'Patrick Hand', cursive" style="font-family: 'Patrick Hand', cursive;">Patrick Hand</button>
-                                    <button class="font-list-item" data-font="gloria-hallelujah" data-family="'Gloria Hallelujah', cursive" style="font-family: 'Gloria Hallelujah', cursive;">Gloria Hallelujah</button>
+                                    <button class="font-list-item" data-font="pacifico"
+                                        data-family="'Pacifico', cursive"
+                                        style="font-family: 'Pacifico', cursive;">Pacifico</button>
+                                    <button class="font-list-item" data-font="satisfy" data-family="'Satisfy', cursive"
+                                        style="font-family: 'Satisfy', cursive;">Satisfy</button>
+                                    <button class="font-list-item" data-font="dancing-script"
+                                        data-family="'Dancing Script', cursive"
+                                        style="font-family: 'Dancing Script', cursive;">Dancing Script</button>
+                                    <button class="font-list-item" data-font="great-vibes"
+                                        data-family="'Great Vibes', cursive"
+                                        style="font-family: 'Great Vibes', cursive;">Great Vibes</button>
+                                    <button class="font-list-item" data-font="allura" data-family="'Allura', cursive"
+                                        style="font-family: 'Allura', cursive;">Allura</button>
+                                    <button class="font-list-item" data-font="sacramento"
+                                        data-family="'Sacramento', cursive"
+                                        style="font-family: 'Sacramento', cursive;">Sacramento</button>
+                                    <button class="font-list-item" data-font="alex-brush"
+                                        data-family="'Alex Brush', cursive"
+                                        style="font-family: 'Alex Brush', cursive;">Alex Brush</button>
+                                    <button class="font-list-item" data-font="tangerine"
+                                        data-family="'Tangerine', cursive"
+                                        style="font-family: 'Tangerine', cursive;">Tangerine</button>
+                                    <button class="font-list-item" data-font="kaushan-script"
+                                        data-family="'Kaushan Script', cursive"
+                                        style="font-family: 'Kaushan Script', cursive;">Kaushan Script</button>
+                                    <button class="font-list-item" data-font="courgette"
+                                        data-family="'Courgette', cursive"
+                                        style="font-family: 'Courgette', cursive;">Courgette</button>
+                                    <button class="font-list-item" data-font="yellowtail"
+                                        data-family="'Yellowtail', cursive"
+                                        style="font-family: 'Yellowtail', cursive;">Yellowtail</button>
+                                    <button class="font-list-item" data-font="lobster" data-family="'Lobster', cursive"
+                                        style="font-family: 'Lobster', cursive;">Lobster</button>
+                                    <button class="font-list-item" data-font="caveat" data-family="'Caveat', cursive"
+                                        style="font-family: 'Caveat', cursive;">Caveat</button>
+                                    <button class="font-list-item" data-font="shadows-into-light"
+                                        data-family="'Shadows Into Light', cursive"
+                                        style="font-family: 'Shadows Into Light', cursive;">Shadows Into Light</button>
+                                    <button class="font-list-item" data-font="amatic-sc"
+                                        data-family="'Amatic SC', cursive"
+                                        style="font-family: 'Amatic SC', cursive;">Amatic SC</button>
+                                    <button class="font-list-item" data-font="indie-flower"
+                                        data-family="'Indie Flower', cursive"
+                                        style="font-family: 'Indie Flower', cursive;">Indie Flower</button>
+                                    <button class="font-list-item" data-font="architects-daughter"
+                                        data-family="'Architects Daughter', cursive"
+                                        style="font-family: 'Architects Daughter', cursive;">Architects
+                                        Daughter</button>
+                                    <button class="font-list-item" data-font="patrick-hand"
+                                        data-family="'Patrick Hand', cursive"
+                                        style="font-family: 'Patrick Hand', cursive;">Patrick Hand</button>
+                                    <button class="font-list-item" data-font="gloria-hallelujah"
+                                        data-family="'Gloria Hallelujah', cursive"
+                                        style="font-family: 'Gloria Hallelujah', cursive;">Gloria Hallelujah</button>
                                 </div>
-                                
+
                                 <h4 class="category-title">Modern & Sans-Serif</h4>
                                 <div class="font-list-grid">
-                                    <button class="font-list-item" data-font="inter" data-family="'Inter', sans-serif" style="font-family: 'Inter', sans-serif;">Inter</button>
-                                    <button class="font-list-item" data-font="roboto" data-family="'Roboto', sans-serif" style="font-family: 'Roboto', sans-serif;">Roboto</button>
-                                    <button class="font-list-item" data-font="open-sans" data-family="'Open Sans', sans-serif" style="font-family: 'Open Sans', sans-serif;">Open Sans</button>
-                                    <button class="font-list-item" data-font="lato" data-family="'Lato', sans-serif" style="font-family: 'Lato', sans-serif;">Lato</button>
-                                    <button class="font-list-item" data-font="montserrat" data-family="'Montserrat', sans-serif" style="font-family: 'Montserrat', sans-serif;">Montserrat</button>
-                                    <button class="font-list-item" data-font="raleway" data-family="'Raleway', sans-serif" style="font-family: 'Raleway', sans-serif;">Raleway</button>
-                                    <button class="font-list-item" data-font="poppins" data-family="'Poppins', sans-serif" style="font-family: 'Poppins', sans-serif;">Poppins</button>
-                                    <button class="font-list-item" data-font="rubik" data-family="'Rubik', sans-serif" style="font-family: 'Rubik', sans-serif;">Rubik</button>
-                                    <button class="font-list-item" data-font="work-sans" data-family="'Work Sans', sans-serif" style="font-family: 'Work Sans', sans-serif;">Work Sans</button>
-                                    <button class="font-list-item" data-font="pt-sans" data-family="'PT Sans', sans-serif" style="font-family: 'PT Sans', sans-serif;">PT Sans</button>
-                                    <button class="font-list-item" data-font="ubuntu" data-family="'Ubuntu', sans-serif" style="font-family: 'Ubuntu', sans-serif;">Ubuntu</button>
-                                    <button class="font-list-item" data-font="noto-sans" data-family="'Noto Sans', sans-serif" style="font-family: 'Noto Sans', sans-serif;">Noto Sans</button>
-                                    <button class="font-list-item" data-font="mukta" data-family="'Mukta', sans-serif" style="font-family: 'Mukta', sans-serif;">Mukta</button>
-                                    <button class="font-list-item" data-font="oxygen" data-family="'Oxygen', sans-serif" style="font-family: 'Oxygen', sans-serif;">Oxygen</button>
-                                    <button class="font-list-item" data-font="barlow" data-family="'Barlow', sans-serif" style="font-family: 'Barlow', sans-serif;">Barlow</button>
-                                    <button class="font-list-item" data-font="josefin-sans" data-family="'Josefin Sans', sans-serif" style="font-family: 'Josefin Sans', sans-serif;">Josefin Sans</button>
-                                    <button class="font-list-item" data-font="comfortaa" data-family="'Comfortaa', cursive" style="font-family: 'Comfortaa', cursive;">Comfortaa</button>
-                                    <button class="font-list-item" data-font="fredoka" data-family="'Fredoka', sans-serif" style="font-family: 'Fredoka', sans-serif;">Fredoka</button>
-                                    <button class="font-list-item" data-font="quicksand" data-family="'Quicksand', sans-serif" style="font-family: 'Quicksand', sans-serif;">Quicksand</button>
-                                    <button class="font-list-item" data-font="nunito" data-family="'Nunito', sans-serif" style="font-family: 'Nunito', sans-serif;">Nunito</button>
+                                    <button class="font-list-item" data-font="inter" data-family="'Inter', sans-serif"
+                                        style="font-family: 'Inter', sans-serif;">Inter</button>
+                                    <button class="font-list-item" data-font="roboto" data-family="'Roboto', sans-serif"
+                                        style="font-family: 'Roboto', sans-serif;">Roboto</button>
+                                    <button class="font-list-item" data-font="open-sans"
+                                        data-family="'Open Sans', sans-serif"
+                                        style="font-family: 'Open Sans', sans-serif;">Open Sans</button>
+                                    <button class="font-list-item" data-font="lato" data-family="'Lato', sans-serif"
+                                        style="font-family: 'Lato', sans-serif;">Lato</button>
+                                    <button class="font-list-item" data-font="montserrat"
+                                        data-family="'Montserrat', sans-serif"
+                                        style="font-family: 'Montserrat', sans-serif;">Montserrat</button>
+                                    <button class="font-list-item" data-font="raleway"
+                                        data-family="'Raleway', sans-serif"
+                                        style="font-family: 'Raleway', sans-serif;">Raleway</button>
+                                    <button class="font-list-item" data-font="poppins"
+                                        data-family="'Poppins', sans-serif"
+                                        style="font-family: 'Poppins', sans-serif;">Poppins</button>
+                                    <button class="font-list-item" data-font="rubik" data-family="'Rubik', sans-serif"
+                                        style="font-family: 'Rubik', sans-serif;">Rubik</button>
+                                    <button class="font-list-item" data-font="work-sans"
+                                        data-family="'Work Sans', sans-serif"
+                                        style="font-family: 'Work Sans', sans-serif;">Work Sans</button>
+                                    <button class="font-list-item" data-font="pt-sans"
+                                        data-family="'PT Sans', sans-serif"
+                                        style="font-family: 'PT Sans', sans-serif;">PT Sans</button>
+                                    <button class="font-list-item" data-font="ubuntu" data-family="'Ubuntu', sans-serif"
+                                        style="font-family: 'Ubuntu', sans-serif;">Ubuntu</button>
+                                    <button class="font-list-item" data-font="noto-sans"
+                                        data-family="'Noto Sans', sans-serif"
+                                        style="font-family: 'Noto Sans', sans-serif;">Noto Sans</button>
+                                    <button class="font-list-item" data-font="mukta" data-family="'Mukta', sans-serif"
+                                        style="font-family: 'Mukta', sans-serif;">Mukta</button>
+                                    <button class="font-list-item" data-font="oxygen" data-family="'Oxygen', sans-serif"
+                                        style="font-family: 'Oxygen', sans-serif;">Oxygen</button>
+                                    <button class="font-list-item" data-font="barlow" data-family="'Barlow', sans-serif"
+                                        style="font-family: 'Barlow', sans-serif;">Barlow</button>
+                                    <button class="font-list-item" data-font="josefin-sans"
+                                        data-family="'Josefin Sans', sans-serif"
+                                        style="font-family: 'Josefin Sans', sans-serif;">Josefin Sans</button>
+                                    <button class="font-list-item" data-font="comfortaa"
+                                        data-family="'Comfortaa', cursive"
+                                        style="font-family: 'Comfortaa', cursive;">Comfortaa</button>
+                                    <button class="font-list-item" data-font="fredoka"
+                                        data-family="'Fredoka', sans-serif"
+                                        style="font-family: 'Fredoka', sans-serif;">Fredoka</button>
+                                    <button class="font-list-item" data-font="quicksand"
+                                        data-family="'Quicksand', sans-serif"
+                                        style="font-family: 'Quicksand', sans-serif;">Quicksand</button>
+                                    <button class="font-list-item" data-font="nunito" data-family="'Nunito', sans-serif"
+                                        style="font-family: 'Nunito', sans-serif;">Nunito</button>
                                 </div>
-                                
+
                                 <h4 class="category-title">Bold & Display</h4>
                                 <div class="font-list-grid">
-                                    <button class="font-list-item" data-font="permanent-marker" data-family="'Permanent Marker', cursive" style="font-family: 'Permanent Marker', cursive;">Permanent Marker</button>
-                                    <button class="font-list-item" data-font="bebas-neue" data-family="'Bebas Neue', cursive" style="font-family: 'Bebas Neue', cursive;">Bebas Neue</button>
-                                    <button class="font-list-item" data-font="oswald" data-family="'Oswald', sans-serif" style="font-family: 'Oswald', sans-serif;">Oswald</button>
-                                    <button class="font-list-item" data-font="abril-fatface" data-family="'Abril Fatface', cursive" style="font-family: 'Abril Fatface', cursive;">Abril Fatface</button>
-                                    <button class="font-list-item" data-font="righteous" data-family="'Righteous', cursive" style="font-family: 'Righteous', cursive;">Righteous</button>
-                                    <button class="font-list-item" data-font="anton" data-family="'Anton', sans-serif" style="font-family: 'Anton', sans-serif;">Anton</button>
-                                    <button class="font-list-item" data-font="archivo-black" data-family="'Archivo Black', sans-serif" style="font-family: 'Archivo Black', sans-serif;">Archivo Black</button>
+                                    <button class="font-list-item" data-font="permanent-marker"
+                                        data-family="'Permanent Marker', cursive"
+                                        style="font-family: 'Permanent Marker', cursive;">Permanent Marker</button>
+                                    <button class="font-list-item" data-font="bebas-neue"
+                                        data-family="'Bebas Neue', cursive"
+                                        style="font-family: 'Bebas Neue', cursive;">Bebas Neue</button>
+                                    <button class="font-list-item" data-font="oswald" data-family="'Oswald', sans-serif"
+                                        style="font-family: 'Oswald', sans-serif;">Oswald</button>
+                                    <button class="font-list-item" data-font="abril-fatface"
+                                        data-family="'Abril Fatface', cursive"
+                                        style="font-family: 'Abril Fatface', cursive;">Abril Fatface</button>
+                                    <button class="font-list-item" data-font="righteous"
+                                        data-family="'Righteous', cursive"
+                                        style="font-family: 'Righteous', cursive;">Righteous</button>
+                                    <button class="font-list-item" data-font="anton" data-family="'Anton', sans-serif"
+                                        style="font-family: 'Anton', sans-serif;">Anton</button>
+                                    <button class="font-list-item" data-font="archivo-black"
+                                        data-family="'Archivo Black', sans-serif"
+                                        style="font-family: 'Archivo Black', sans-serif;">Archivo Black</button>
                                 </div>
-                                
+
                                 <h4 class="category-title">Serif & Classic</h4>
                                 <div class="font-list-grid">
-                                    <button class="font-list-item" data-font="playfair-display" data-family="'Playfair Display', serif" style="font-family: 'Playfair Display', serif;">Playfair Display</button>
-                                    <button class="font-list-item" data-font="merriweather" data-family="'Merriweather', serif" style="font-family: 'Merriweather', serif;">Merriweather</button>
-                                    <button class="font-list-item" data-font="crimson-text" data-family="'Crimson Text', serif" style="font-family: 'Crimson Text', serif;">Crimson Text</button>
-                                    <button class="font-list-item" data-font="lora" data-family="'Lora', serif" style="font-family: 'Lora', serif;">Lora</button>
-                                    <button class="font-list-item" data-font="cinzel" data-family="'Cinzel', serif" style="font-family: 'Cinzel', serif;">Cinzel</button>
-                                    <button class="font-list-item" data-font="georgia" data-family="Georgia, serif" style="font-family: Georgia, serif;">Georgia</button>
+                                    <button class="font-list-item" data-font="playfair-display"
+                                        data-family="'Playfair Display', serif"
+                                        style="font-family: 'Playfair Display', serif;">Playfair Display</button>
+                                    <button class="font-list-item" data-font="merriweather"
+                                        data-family="'Merriweather', serif"
+                                        style="font-family: 'Merriweather', serif;">Merriweather</button>
+                                    <button class="font-list-item" data-font="crimson-text"
+                                        data-family="'Crimson Text', serif"
+                                        style="font-family: 'Crimson Text', serif;">Crimson Text</button>
+                                    <button class="font-list-item" data-font="lora" data-family="'Lora', serif"
+                                        style="font-family: 'Lora', serif;">Lora</button>
+                                    <button class="font-list-item" data-font="cinzel" data-family="'Cinzel', serif"
+                                        style="font-family: 'Cinzel', serif;">Cinzel</button>
+                                    <button class="font-list-item" data-font="georgia" data-family="Georgia, serif"
+                                        style="font-family: Georgia, serif;">Georgia</button>
                                 </div>
-                                
+
                                 <h4 class="category-title">Specialty & Fun</h4>
                                 <div class="font-list-grid">
-                                    <button class="font-list-item" data-font="courier-prime" data-family="'Courier Prime', monospace" style="font-family: 'Courier Prime', monospace;">Courier Prime</button>
-                                    <button class="font-list-item" data-font="press-start-2p" data-family="'Press Start 2P', cursive" style="font-family: 'Press Start 2P', cursive;">Press Start 2P</button>
-                                    <button class="font-list-item" data-font="rock-salt" data-family="'Rock Salt', cursive" style="font-family: 'Rock Salt', cursive;">Rock Salt</button>
-                                    <button class="font-list-item" data-font="special-elite" data-family="'Special Elite', cursive" style="font-family: 'Special Elite', cursive;">Special Elite</button>
-                                    <button class="font-list-item" data-font="vt323" data-family="'VT323', monospace" style="font-family: 'VT323', monospace;">VT323</button>
+                                    <button class="font-list-item" data-font="courier-prime"
+                                        data-family="'Courier Prime', monospace"
+                                        style="font-family: 'Courier Prime', monospace;">Courier Prime</button>
+                                    <button class="font-list-item" data-font="press-start-2p"
+                                        data-family="'Press Start 2P', cursive"
+                                        style="font-family: 'Press Start 2P', cursive;">Press Start 2P</button>
+                                    <button class="font-list-item" data-font="rock-salt"
+                                        data-family="'Rock Salt', cursive"
+                                        style="font-family: 'Rock Salt', cursive;">Rock Salt</button>
+                                    <button class="font-list-item" data-font="special-elite"
+                                        data-family="'Special Elite', cursive"
+                                        style="font-family: 'Special Elite', cursive;">Special Elite</button>
+                                    <button class="font-list-item" data-font="vt323" data-family="'VT323', monospace"
+                                        style="font-family: 'VT323', monospace;">VT323</button>
                                 </div>
                             </div>
                         </div>
                     </div>
-                    
+
                     <h3 class="subsection-title">Suggested fonts</h3>
-                    
+
                     <div class="suggested-fonts-grid">
                         <div class="font-card" data-font="pacifico" data-family="'Pacifico', cursive">
                             <div class="font-preview" style="font-family: 'Pacifico', cursive;">your text</div>
@@ -176,7 +280,7 @@
                             <div class="font-name">Permanent Marker</div>
                         </div>
                     </div>
-                    
+
                     <h2 class="section-title">Select Neon LED color</h2>
 
                     <div class="color-picker-grid">
@@ -226,12 +330,14 @@
                             <div class="color-swatch" style="background: #1E90FF;"></div>
                         </button>
                         <button class="color-option rgb-option" data-color="rgb" data-name="RGB Color Changing">
-                            <div class="color-swatch rgb-swatch" style="background: linear-gradient(90deg, #FF0000, #FFFF00, #00FF00, #00FFFF, #0000FF, #FF00FF);"></div>
+                            <div class="color-swatch rgb-swatch"
+                                style="background: linear-gradient(90deg, #FF0000, #FFFF00, #00FF00, #00FFFF, #0000FF, #FF00FF);">
+                            </div>
                             <span class="rgb-price">+$50</span>
                         </button>
                     </div>
                     <input type="color" id="customColorPicker" hidden>
-                    
+
                     <div class="multicolor-toggle">
                         <label class="toggle-switch">
                             <input type="checkbox" id="multicolorToggle">
@@ -239,77 +345,84 @@
                         </label>
                         <div>
                             <span class="toggle-text">Set multicolour</span>
-                            <p class="multicolor-help hidden" id="multicolorHelp">Click on any character in the preview to change its color individually.</p>
+                            <p class="multicolor-help hidden" id="multicolorHelp">Click on any character in the preview
+                                to change its color individually.</p>
                         </div>
                     </div>
                 </div>
-                
+
                 <div class="navigation-buttons">
                     <button class="btn-next" onclick="goToStep(2)">
                         Next
                         <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                            <path d="M7.5 15L12.5 10L7.5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                            <path d="M7.5 15L12.5 10L7.5 5" stroke="currentColor" stroke-width="2"
+                                stroke-linecap="round" />
                         </svg>
                     </button>
                 </div>
             </div>
-            
+
             <div class="right-panel">
                 <button class="preview-eye-btn" aria-label="Preview">
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                        <path d="M2 12C2 12 5 5 12 5C19 5 22 12 22 12C22 12 19 19 12 19C5 19 2 12 2 12Z" stroke="currentColor" stroke-width="2"/>
-                        <circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="2"/>
+                        <path d="M2 12C2 12 5 5 12 5C19 5 22 12 22 12C22 12 19 19 12 19C5 19 2 12 2 12Z"
+                            stroke="currentColor" stroke-width="2" />
+                        <circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="2" />
                     </svg>
                 </button>
-                
+
                 <div class="preview-container">
                     <div class="background-image-wrapper" id="bgImageWrapper">
                         <img src="/image.png" alt="Background" class="background-image" id="backgroundImage">
                     </div>
-                    
+
                     <label class="neon-toggle">
                         <input type="checkbox" id="neonToggle" checked>
                         <span class="toggle-label">ON</span>
                     </label>
-                    
+
                     <div class="neon-preview-wrapper">
                         <div class="canvas-wrapper">
                             <canvas id="neonCanvas" width="800" height="600"></canvas>
                         </div>
                     </div>
                 </div>
-                
+
                 <div class="preview-controls">
                     <div class="theme-mode-toggle">
                         <button class="mode-btn" data-mode="light">
                             <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                                <circle cx="10" cy="10" r="4" fill="currentColor"/>
-                                <path d="M10 2V4M10 16V18M18 10H16M4 10H2M15.657 4.343L14.243 5.757M5.757 14.243L4.343 15.657M15.657 15.657L14.243 14.243M5.757 5.757L4.343 4.343" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                                <circle cx="10" cy="10" r="4" fill="currentColor" />
+                                <path
+                                    d="M10 2V4M10 16V18M18 10H16M4 10H2M15.657 4.343L14.243 5.757M5.757 14.243L4.343 15.657M15.657 15.657L14.243 14.243M5.757 5.757L4.343 4.343"
+                                    stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
                             </svg>
                             Light
                         </button>
                         <button class="mode-btn active" data-mode="dark">
                             <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                                <path d="M17 10.5C16.3 13.5 13.5 16 10 16C6 16 3 13 3 9C3 5.5 5.5 2.7 8.5 2C7.5 3 7 4.5 7 6C7 9.3 9.7 12 13 12C14.5 12 15.9 11.4 17 10.5Z" fill="currentColor"/>
+                                <path
+                                    d="M17 10.5C16.3 13.5 13.5 16 10 16C6 16 3 13 3 9C3 5.5 5.5 2.7 8.5 2C7.5 3 7 4.5 7 6C7 9.3 9.7 12 13 12C14.5 12 15.9 11.4 17 10.5Z"
+                                    fill="currentColor" />
                             </svg>
                             Dark
                         </button>
                     </div>
-                    
+
                     <button class="save-preview-btn" aria-label="Save preview" id="saveBtn1">
                         <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                            <rect x="3" y="4" width="14" height="12" rx="2" stroke="currentColor" stroke-width="1.5"/>
-                            <circle cx="10" cy="10" r="2.5" stroke="currentColor" stroke-width="1.5"/>
-                            <path d="M14 7H14.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                            <rect x="3" y="4" width="14" height="12" rx="2" stroke="currentColor" stroke-width="1.5" />
+                            <circle cx="10" cy="10" r="2.5" stroke="currentColor" stroke-width="1.5" />
+                            <path d="M14 7H14.01" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
                         </svg>
                     </button>
                 </div>
             </div>
         </div>
-        
+
         <!-- Step 2-4 remain the same structure, just updated canvas wrappers -->
         <!-- For brevity, I'm showing step 2 with the new structure -->
-        
+
         <!-- Step 2: Sign Size -->
         <div class="step-container" id="step2">
             <div class="left-panel">
@@ -319,7 +432,7 @@
                         <p class="main-subtitle">Get your neon sign in just 4 steps..</p>
                     </div>
                 </div>
-                
+
                 <div class="step-tabs">
                     <button class="step-tab completed" data-step="1">
                         <span class="step-number">01</span>
@@ -338,35 +451,40 @@
                         <span class="step-label">More options</span>
                     </button>
                 </div>
-                
+
                 <div class="content-section">
                     <div class="size-mode-toggle">
                         <button class="size-mode-btn active" data-mode="preset">
                             <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                                <rect x="2" y="4" width="12" height="8" rx="1" stroke="currentColor" stroke-width="1.5"/>
+                                <rect x="2" y="4" width="12" height="8" rx="1" stroke="currentColor"
+                                    stroke-width="1.5" />
                             </svg>
                             Select size
                         </button>
                         <button class="size-mode-btn" data-mode="custom">
                             <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                                <path d="M2 2L14 14M14 2L2 14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-                                <rect x="2" y="2" width="12" height="12" rx="1" stroke="currentColor" stroke-width="1.5" fill="none"/>
+                                <path d="M2 2L14 14M14 2L2 14" stroke="currentColor" stroke-width="1.5"
+                                    stroke-linecap="round" />
+                                <rect x="2" y="2" width="12" height="12" rx="1" stroke="currentColor" stroke-width="1.5"
+                                    fill="none" />
                             </svg>
                             Custom size
                         </button>
                     </div>
-                    
+
                     <h2 class="section-title" id="sizeModeTitle">Select size</h2>
 
                     <div class="custom-size-inputs hidden" id="customSizeInputs">
                         <div class="custom-dimension-row">
                             <div class="dimension-input-group">
                                 <label class="dimension-label">Width (inches)</label>
-                                <input type="number" class="dimension-input" id="customWidth" placeholder="Enter width" min="10" max="200" value="38">
+                                <input type="number" class="dimension-input" id="customWidth" placeholder="Enter width"
+                                    min="10" max="200" value="38">
                             </div>
                             <div class="dimension-input-group">
                                 <label class="dimension-label">Height (inches)</label>
-                                <input type="number" class="dimension-input" id="customHeight" placeholder="Enter height" min="5" max="100" value="17">
+                                <input type="number" class="dimension-input" id="customHeight"
+                                    placeholder="Enter height" min="5" max="100" value="17">
                             </div>
                         </div>
                         <div class="custom-size-note">
@@ -375,11 +493,13 @@
                     </div>
 
                     <div class="size-grid" id="sizeGrid">
-                        <div class="size-card active" data-size="mini" data-width="23" data-height="10" data-original="438.99" data-price="438.99">
+                        <div class="size-card active" data-size="mini" data-width="23" data-height="10"
+                            data-original="438.99" data-price="438.99">
                             <div class="size-visual">
                                 <div class="size-rect"></div>
                                 <svg class="checkmark" width="20" height="20" viewBox="0 0 20 20" fill="none">
-                                    <path d="M4 10L8 14L16 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                    <path d="M4 10L8 14L16 6" stroke="currentColor" stroke-width="2"
+                                        stroke-linecap="round" stroke-linejoin="round" />
                                 </svg>
                             </div>
                             <div class="size-info">
@@ -391,8 +511,9 @@
                                 </div>
                             </div>
                         </div>
-                        
-                        <div class="size-card" data-size="small" data-width="29" data-height="13" data-original="438.99" data-price="438.99">
+
+                        <div class="size-card" data-size="small" data-width="29" data-height="13" data-original="438.99"
+                            data-price="438.99">
                             <div class="size-visual">
                                 <div class="size-rect"></div>
                             </div>
@@ -405,8 +526,9 @@
                                 </div>
                             </div>
                         </div>
-                        
-                        <div class="size-card" data-size="medium" data-width="38" data-height="17" data-original="438.99" data-price="438.99">
+
+                        <div class="size-card" data-size="medium" data-width="38" data-height="17"
+                            data-original="438.99" data-price="438.99">
                             <div class="size-visual">
                                 <div class="size-rect"></div>
                             </div>
@@ -419,8 +541,9 @@
                                 </div>
                             </div>
                         </div>
-                        
-                        <div class="size-card" data-size="large" data-width="49" data-height="21" data-original="438.99" data-price="438.99">
+
+                        <div class="size-card" data-size="large" data-width="49" data-height="21" data-original="438.99"
+                            data-price="438.99">
                             <div class="size-visual">
                                 <div class="size-rect"></div>
                             </div>
@@ -433,8 +556,9 @@
                                 </div>
                             </div>
                         </div>
-                        
-                        <div class="size-card" data-size="xl" data-width="64" data-height="28" data-original="438.99" data-price="438.99">
+
+                        <div class="size-card" data-size="xl" data-width="64" data-height="28" data-original="438.99"
+                            data-price="438.99">
                             <div class="size-visual">
                                 <div class="size-rect"></div>
                             </div>
@@ -447,8 +571,9 @@
                                 </div>
                             </div>
                         </div>
-                        
-                        <div class="size-card" data-size="xxl" data-width="84" data-height="35" data-original="438.99" data-price="438.99">
+
+                        <div class="size-card" data-size="xxl" data-width="84" data-height="35" data-original="438.99"
+                            data-price="438.99">
                             <div class="size-visual">
                                 <div class="size-rect"></div>
                             </div>
@@ -461,8 +586,9 @@
                                 </div>
                             </div>
                         </div>
-                        
-                        <div class="size-card" data-size="xxxl" data-width="109" data-height="47" data-original="438.99" data-price="438.99">
+
+                        <div class="size-card" data-size="xxxl" data-width="109" data-height="47" data-original="438.99"
+                            data-price="438.99">
                             <div class="size-visual">
                                 <div class="size-rect"></div>
                             </div>
@@ -475,8 +601,9 @@
                                 </div>
                             </div>
                         </div>
-                        
-                        <div class="size-card" data-size="4xl" data-width="141" data-height="61" data-original="438.99" data-price="438.99">
+
+                        <div class="size-card" data-size="4xl" data-width="141" data-height="61" data-original="438.99"
+                            data-price="438.99">
                             <div class="size-visual">
                                 <div class="size-rect"></div>
                             </div>
@@ -490,16 +617,16 @@
                             </div>
                         </div>
                     </div>
-                    
+
                     <h2 class="section-title">Location</h2>
-                    
+
                     <div class="radio-group">
                         <label class="radio-option active">
                             <input type="radio" name="location" value="indoor" checked>
                             <span class="radio-circle"></span>
                             <span class="radio-text">Indoor</span>
                         </label>
-                        
+
                         <label class="radio-option">
                             <input type="radio" name="location" value="outdoor">
                             <span class="radio-circle"></span>
@@ -507,79 +634,87 @@
                             <span class="extra-price">+$65</span>
                         </label>
                     </div>
-                    
-                    <p class="warning-text">Indoor signs are not intended for outdoor use or any place they could get wet. Misuse will void the warranty.</p>
+
+                    <p class="warning-text">Indoor signs are not intended for outdoor use or any place they could get
+                        wet. Misuse will void the warranty.</p>
                 </div>
-                
+
                 <div class="navigation-buttons">
                     <button class="btn-back" onclick="goToStep(1)">
                         <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                            <path d="M12.5 15L7.5 10L12.5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                            <path d="M12.5 15L7.5 10L12.5 5" stroke="currentColor" stroke-width="2"
+                                stroke-linecap="round" />
                         </svg>
                         Back
                     </button>
                     <button class="btn-next" onclick="goToStep(3)">
                         Next
                         <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                            <path d="M7.5 15L12.5 10L7.5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                            <path d="M7.5 15L12.5 10L7.5 5" stroke="currentColor" stroke-width="2"
+                                stroke-linecap="round" />
                         </svg>
                     </button>
                 </div>
             </div>
-            
+
             <div class="right-panel">
                 <button class="preview-eye-btn" aria-label="Preview">
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                        <path d="M2 12C2 12 5 5 12 5C19 5 22 12 22 12C22 12 19 19 12 19C5 19 2 12 2 12Z" stroke="currentColor" stroke-width="2"/>
-                        <circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="2"/>
+                        <path d="M2 12C2 12 5 5 12 5C19 5 22 12 22 12C22 12 19 19 12 19C5 19 2 12 2 12Z"
+                            stroke="currentColor" stroke-width="2" />
+                        <circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="2" />
                     </svg>
                 </button>
-                
+
                 <div class="preview-container">
                     <div class="background-image-wrapper" id="bgImageWrapper2">
                         <img src="/image.png" alt="Background" class="background-image" id="backgroundImage2">
                     </div>
-                    
+
                     <label class="neon-toggle">
                         <input type="checkbox" id="neonToggle2" checked>
                         <span class="toggle-label">ON</span>
                     </label>
-                    
+
                     <div class="neon-preview-wrapper">
                         <div class="canvas-wrapper">
                             <canvas id="neonCanvas2" width="800" height="600"></canvas>
                         </div>
                     </div>
                 </div>
-                
+
                 <div class="preview-controls">
                     <div class="theme-mode-toggle">
                         <button class="mode-btn" data-mode="light">
                             <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                                <circle cx="10" cy="10" r="4" fill="currentColor"/>
-                                <path d="M10 2V4M10 16V18M18 10H16M4 10H2M15.657 4.343L14.243 5.757M5.757 14.243L4.343 15.657M15.657 15.657L14.243 14.243M5.757 5.757L4.343 4.343" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                                <circle cx="10" cy="10" r="4" fill="currentColor" />
+                                <path
+                                    d="M10 2V4M10 16V18M18 10H16M4 10H2M15.657 4.343L14.243 5.757M5.757 14.243L4.343 15.657M15.657 15.657L14.243 14.243M5.757 5.757L4.343 4.343"
+                                    stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
                             </svg>
                             Light
                         </button>
                         <button class="mode-btn active" data-mode="dark">
                             <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                                <path d="M17 10.5C16.3 13.5 13.5 16 10 16C6 16 3 13 3 9C3 5.5 5.5 2.7 8.5 2C7.5 3 7 4.5 7 6C7 9.3 9.7 12 13 12C14.5 12 15.9 11.4 17 10.5Z" fill="currentColor"/>
+                                <path
+                                    d="M17 10.5C16.3 13.5 13.5 16 10 16C6 16 3 13 3 9C3 5.5 5.5 2.7 8.5 2C7.5 3 7 4.5 7 6C7 9.3 9.7 12 13 12C14.5 12 15.9 11.4 17 10.5Z"
+                                    fill="currentColor" />
                             </svg>
                             Dark
                         </button>
                     </div>
-                    
+
                     <button class="save-preview-btn" aria-label="Save preview" id="saveBtn2">
                         <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                            <rect x="3" y="4" width="14" height="12" rx="2" stroke="currentColor" stroke-width="1.5"/>
-                            <circle cx="10" cy="10" r="2.5" stroke="currentColor" stroke-width="1.5"/>
-                            <path d="M14 7H14.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                            <rect x="3" y="4" width="14" height="12" rx="2" stroke="currentColor" stroke-width="1.5" />
+                            <circle cx="10" cy="10" r="2.5" stroke="currentColor" stroke-width="1.5" />
+                            <path d="M14 7H14.01" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
                         </svg>
                     </button>
                 </div>
             </div>
         </div>
-        
+
         <!-- Step 3: Sign Shape -->
         <div class="step-container" id="step3">
             <div class="left-panel">
@@ -627,7 +762,8 @@
                             <div class="shape-preview">
                                 <div class="shape-text underlined">your text</div>
                                 <svg class="checkmark-shape" width="24" height="24" viewBox="0 0 24 24" fill="none">
-                                    <path d="M5 12L10 17L20 7" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                    <path d="M5 12L10 17L20 7" stroke="currentColor" stroke-width="2.5"
+                                        stroke-linecap="round" stroke-linejoin="round" />
                                 </svg>
                             </div>
                             <div class="shape-info">
@@ -723,14 +859,16 @@
                 <div class="navigation-buttons">
                     <button class="btn-back" onclick="goToStep(2)">
                         <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                            <path d="M12.5 15L7.5 10L12.5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                            <path d="M12.5 15L7.5 10L12.5 5" stroke="currentColor" stroke-width="2"
+                                stroke-linecap="round" />
                         </svg>
                         Back
                     </button>
                     <button class="btn-next" onclick="goToStep(4)">
                         Next
                         <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                            <path d="M7.5 15L12.5 10L7.5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                            <path d="M7.5 15L12.5 10L7.5 5" stroke="currentColor" stroke-width="2"
+                                stroke-linecap="round" />
                         </svg>
                     </button>
                 </div>
@@ -739,8 +877,9 @@
             <div class="right-panel">
                 <button class="preview-eye-btn" aria-label="Preview">
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                        <path d="M2 12C2 12 5 5 12 5C19 5 22 12 22 12C22 12 19 19 12 19C5 19 2 12 2 12Z" stroke="currentColor" stroke-width="2"/>
-                        <circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="2"/>
+                        <path d="M2 12C2 12 5 5 12 5C19 5 22 12 22 12C22 12 19 19 12 19C5 19 2 12 2 12Z"
+                            stroke="currentColor" stroke-width="2" />
+                        <circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="2" />
                     </svg>
                 </button>
 
@@ -765,14 +904,18 @@
                     <div class="theme-mode-toggle">
                         <button class="mode-btn" data-mode="light">
                             <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                                <circle cx="10" cy="10" r="4" fill="currentColor"/>
-                                <path d="M10 2V4M10 16V18M18 10H16M4 10H2M15.657 4.343L14.243 5.757M5.757 14.243L4.343 15.657M15.657 15.657L14.243 14.243M5.757 5.757L4.343 4.343" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                                <circle cx="10" cy="10" r="4" fill="currentColor" />
+                                <path
+                                    d="M10 2V4M10 16V18M18 10H16M4 10H2M15.657 4.343L14.243 5.757M5.757 14.243L4.343 15.657M15.657 15.657L14.243 14.243M5.757 5.757L4.343 4.343"
+                                    stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
                             </svg>
                             Light
                         </button>
                         <button class="mode-btn active" data-mode="dark">
                             <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                                <path d="M17 10.5C16.3 13.5 13.5 16 10 16C6 16 3 13 3 9C3 5.5 5.5 2.7 8.5 2C7.5 3 7 4.5 7 6C7 9.3 9.7 12 13 12C14.5 12 15.9 11.4 17 10.5Z" fill="currentColor"/>
+                                <path
+                                    d="M17 10.5C16.3 13.5 13.5 16 10 16C6 16 3 13 3 9C3 5.5 5.5 2.7 8.5 2C7.5 3 7 4.5 7 6C7 9.3 9.7 12 13 12C14.5 12 15.9 11.4 17 10.5Z"
+                                    fill="currentColor" />
                             </svg>
                             Dark
                         </button>
@@ -780,9 +923,9 @@
 
                     <button class="save-preview-btn" aria-label="Save preview" id="saveBtn3">
                         <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                            <rect x="3" y="4" width="14" height="12" rx="2" stroke="currentColor" stroke-width="1.5"/>
-                            <circle cx="10" cy="10" r="2.5" stroke="currentColor" stroke-width="1.5"/>
-                            <path d="M14 7H14.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                            <rect x="3" y="4" width="14" height="12" rx="2" stroke="currentColor" stroke-width="1.5" />
+                            <circle cx="10" cy="10" r="2.5" stroke="currentColor" stroke-width="1.5" />
+                            <path d="M14 7H14.01" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
                         </svg>
                     </button>
                 </div>
@@ -908,7 +1051,8 @@
                 <div class="navigation-buttons">
                     <button class="btn-back" onclick="goToStep(3)">
                         <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                            <path d="M12.5 15L7.5 10L12.5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                            <path d="M12.5 15L7.5 10L12.5 5" stroke="currentColor" stroke-width="2"
+                                stroke-linecap="round" />
                         </svg>
                         Back
                     </button>
@@ -919,8 +1063,9 @@
             <div class="right-panel">
                 <button class="preview-eye-btn" aria-label="Preview">
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                        <path d="M2 12C2 12 5 5 12 5C19 5 22 12 22 12C22 12 19 19 12 19C5 19 2 12 2 12Z" stroke="currentColor" stroke-width="2"/>
-                        <circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="2"/>
+                        <path d="M2 12C2 12 5 5 12 5C19 5 22 12 22 12C22 12 19 19 12 19C5 19 2 12 2 12Z"
+                            stroke="currentColor" stroke-width="2" />
+                        <circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="2" />
                     </svg>
                 </button>
 
@@ -945,14 +1090,18 @@
                     <div class="theme-mode-toggle">
                         <button class="mode-btn" data-mode="light">
                             <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                                <circle cx="10" cy="10" r="4" fill="currentColor"/>
-                                <path d="M10 2V4M10 16V18M18 10H16M4 10H2M15.657 4.343L14.243 5.757M5.757 14.243L4.343 15.657M15.657 15.657L14.243 14.243M5.757 5.757L4.343 4.343" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                                <circle cx="10" cy="10" r="4" fill="currentColor" />
+                                <path
+                                    d="M10 2V4M10 16V18M18 10H16M4 10H2M15.657 4.343L14.243 5.757M5.757 14.243L4.343 15.657M15.657 15.657L14.243 14.243M5.757 5.757L4.343 4.343"
+                                    stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
                             </svg>
                             Light
                         </button>
                         <button class="mode-btn active" data-mode="dark">
                             <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                                <path d="M17 10.5C16.3 13.5 13.5 16 10 16C6 16 3 13 3 9C3 5.5 5.5 2.7 8.5 2C7.5 3 7 4.5 7 6C7 9.3 9.7 12 13 12C14.5 12 15.9 11.4 17 10.5Z" fill="currentColor"/>
+                                <path
+                                    d="M17 10.5C16.3 13.5 13.5 16 10 16C6 16 3 13 3 9C3 5.5 5.5 2.7 8.5 2C7.5 3 7 4.5 7 6C7 9.3 9.7 12 13 12C14.5 12 15.9 11.4 17 10.5Z"
+                                    fill="currentColor" />
                             </svg>
                             Dark
                         </button>
@@ -960,9 +1109,9 @@
 
                     <button class="save-preview-btn" aria-label="Save preview" id="saveBtn4">
                         <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                            <rect x="3" y="4" width="14" height="12" rx="2" stroke="currentColor" stroke-width="1.5"/>
-                            <circle cx="10" cy="10" r="2.5" stroke="currentColor" stroke-width="1.5"/>
-                            <path d="M14 7H14.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                            <rect x="3" y="4" width="14" height="12" rx="2" stroke="currentColor" stroke-width="1.5" />
+                            <circle cx="10" cy="10" r="2.5" stroke="currentColor" stroke-width="1.5" />
+                            <path d="M14 7H14.01" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
                         </svg>
                     </button>
                 </div>
@@ -972,4 +1121,5 @@
 
     <script src="script.js"></script>
 </body>
+
 </html>

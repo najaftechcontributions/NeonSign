@@ -6,18 +6,18 @@ const CONFIG = {
     mobileBreakpoint: 768,
     maxMobileLinesCount: 3,
     maxDesktopLinesCount: 4,
-    
+
     // Text rendering
     defaultPlaceholderText: 'Your Text',
-    baseFontSize: 80,
+    baseFontSize: 70,
     minFontSize: 20,
     textBoundingRatioMobile: { width: 0.8, height: 0.7 },
     textBoundingRatioDesktop: { width: 0.85, height: 0.75 },
-    
+
     // RGB animation
     rgbCycleSpeed: 500,
     rgbColorSequence: ['#FF0000', '#FF7F00', '#FFFF00', '#00FF00', '#0000FF', '#4B0082', '#9400D3'],
-    
+
     // Pricing
     rgbSurcharge: 50,
     outdoorSurcharge: 65,
@@ -29,13 +29,13 @@ const CONFIG = {
     fixedMinProfit: 100,
     currencyConversion: 1.0,
     minimumPriceFloor: 438.99,
-    
+
     // Premium fonts (multiplier applied to price)
     premiumFonts: {
         'abril-fatface': 1.15,
         'playfair-display': 1.1
     },
-    
+
     // Plan generation
     planScalingFactor: 1.3,
     planNames: ['Mini', 'Small', 'Medium', 'Large', 'XL', 'XXL', 'XXXL', '4XL']
@@ -48,32 +48,32 @@ const appState = {
     // Text content
     text: '',
     userHasEnteredText: false,
-    
+
     // Font
     fontFamily: "'Pacifico', cursive",
     fontKey: 'pacifico',
     fontSizePx: CONFIG.baseFontSize,
     lineHeightPx: CONFIG.baseFontSize * 1.2,
-    
+
     // Color
     colorValue: '#FFFFFF',
     colorName: 'White',
     rgbSurcharge: 0,
     rgbMode: false,
     rgbAnimationTimer: null,
-    
+
     // Type (indoor/outdoor)
     type: 'indoor',
     outdoorSurcharge: 0,
-    
+
     // Backboard & cut options
     backboard: 'clear',
     cutTo: 'cut-to-letter',
     cutToPrice: 15,
-    
+
     // Extras
     extras: [],
-    
+
     // Selected plan
     plan: {
         id: 'mini',
@@ -82,7 +82,7 @@ const appState = {
         heightIn: 10,
         price: 438.99
     },
-    
+
     // Pricing
     totalPrice: 438.99,
     discountPrice: 351.19,
@@ -90,16 +90,16 @@ const appState = {
     discountApplied: false,
     activeDiscount: null,
     discountCode: null,
-    
+
     // Preview/export
     svgMarkup: '',
     svgWidthPx: 800,
     svgHeightPx: 600,
-    
+
     // Measured dimensions from canvas
     measuredWidthIn: 23,
     measuredHeightIn: 10,
-    
+
     // UI state
     currentStep: 1,
     inputType: 'text',
@@ -126,6 +126,7 @@ document.addEventListener('DOMContentLoaded', () => {
     setupCanvases();
     attachEventListeners();
     generateInitialPlans();
+    updateFontSizeForPlan(); // Set initial font size based on default medium size
     renderAllPreviews();
     recalculateTotalPrice();
 });
@@ -134,7 +135,7 @@ function setupCanvases() {
     for (let step = 1; step <= 4; step++) {
         const canvasId = step === 1 ? 'neonCanvas' : `neonCanvas${step}`;
         const elem = document.getElementById(canvasId);
-        
+
         if (elem) {
             canvasInstances[canvasId] = new fabric.Canvas(canvasId, {
                 width: 800,
@@ -142,8 +143,43 @@ function setupCanvases() {
                 backgroundColor: 'transparent',
                 selection: false
             });
+
+            // Add click handler for multicolor character selection
+            canvasInstances[canvasId].on('mouse:down', function (options) {
+                handleCanvasClick(canvasId, options);
+            });
         }
     }
+}
+
+// Handle canvas click for character selection in multicolor mode
+function handleCanvasClick(canvasId, options) {
+    if (!appState.multicolor) return;
+
+    const canvas = canvasInstances[canvasId];
+    if (!canvas) return;
+
+    const pointer = canvas.getPointer(options.e);
+
+    // Find which character was clicked
+    const characterObjects = canvas.getObjects().filter(obj => obj.charIndex !== undefined);
+
+    for (let obj of characterObjects) {
+        const bounds = obj.getBoundingRect();
+
+        if (pointer.x >= bounds.left && pointer.x <= bounds.left + bounds.width &&
+            pointer.y >= bounds.top && pointer.y <= bounds.top + bounds.height) {
+
+            // Character clicked
+            appState.selectedCharIndex = obj.charIndex;
+            renderAllPreviews();
+            return;
+        }
+    }
+
+    // Clicked outside any character
+    appState.selectedCharIndex = null;
+    renderAllPreviews();
 }
 
 // ===========================
@@ -155,34 +191,34 @@ function attachEventListeners() {
     if (textInput) {
         textInput.addEventListener('input', debounce(handleTextInput, 300));
     }
-    
+
     // Font selection
     attachFontListeners();
-    
+
     // Color selection
     attachColorListeners();
-    
+
     // Size/plan selection
     attachPlanListeners();
-    
+
     // Indoor/outdoor toggle
     attachLocationListeners();
-    
+
     // Shape/backboard selection
     attachShapeListeners();
-    
+
     // Extras (hanging, waterproof, etc.)
     attachExtrasListeners();
-    
+
     // Step navigation
     attachStepNavigationListeners();
-    
+
     // Preview controls
     attachPreviewControlListeners();
-    
+
     // Discount handling
     attachDiscountListeners();
-    
+
     // Checkout
     attachCheckoutListener();
 }
@@ -192,32 +228,32 @@ function attachEventListeners() {
 // ===========================
 function handleTextInput(event) {
     let inputText = event.target.value.trim();
-    
+
     // Apply line limit based on viewport
     const isMobile = window.innerWidth < CONFIG.mobileBreakpoint;
     const maxLines = isMobile ? CONFIG.maxMobileLinesCount : CONFIG.maxDesktopLinesCount;
     const lines = inputText.split('\n');
-    
+
     if (lines.length > maxLines) {
         inputText = lines.slice(0, maxLines).join('\n');
         event.target.value = inputText;
     }
-    
+
     // Update state
     appState.text = inputText || CONFIG.defaultPlaceholderText;
     appState.userHasEnteredText = inputText.length > 0;
-    
+
     // Render preview
     renderAllPreviews();
-    
+
     // Read measured dimensions (simulated - real implementation would measure from canvas)
     const measurements = getMeasuredDimensions();
     appState.measuredWidthIn = measurements.widthIn;
     appState.measuredHeightIn = measurements.heightIn;
-    
+
     // Regenerate plans
     generatePlansFromMeasurements();
-    
+
     // Recalculate pricing
     recalculateTotalPrice();
 }
@@ -247,14 +283,14 @@ function attachFontListeners() {
             selectFont(fontKey, fontFamily);
         });
     });
-    
+
     // Font library items
     document.querySelectorAll('.font-list-item').forEach(item => {
         item.addEventListener('click', () => {
             const fontKey = item.getAttribute('data-font');
             const fontFamily = item.getAttribute('data-family');
             selectFont(fontKey, fontFamily);
-            
+
             // Close collapsible
             const content = document.getElementById('fontLibraryContent');
             const trigger = document.getElementById('fontLibraryTrigger');
@@ -262,7 +298,7 @@ function attachFontListeners() {
             if (trigger) trigger.classList.remove('open');
         });
     });
-    
+
     // Font library toggle
     const trigger = document.getElementById('fontLibraryTrigger');
     const content = document.getElementById('fontLibraryContent');
@@ -277,13 +313,16 @@ function attachFontListeners() {
 function selectFont(fontKey, fontFamily) {
     appState.fontKey = fontKey;
     appState.fontFamily = fontFamily;
-    
+
+    // Update font size to match current plan
+    updateFontSizeForPlan();
+
     renderAllPreviews();
-    
+
     const measurements = getMeasuredDimensions();
     appState.measuredWidthIn = measurements.widthIn;
     appState.measuredHeightIn = measurements.heightIn;
-    
+
     generatePlansFromMeasurements();
     recalculateTotalPrice();
 }
@@ -310,44 +349,44 @@ function attachColorListeners() {
             }
         });
     });
-    
+
     // Custom color picker
     const customBtn = document.getElementById('customColorBtn');
     const customPicker = document.getElementById('customColorPicker');
-    
+
     if (customBtn && customPicker) {
         customBtn.addEventListener('click', () => customPicker.click());
-        
+
         customPicker.addEventListener('input', (e) => {
             const colorValue = e.target.value;
-            
+
             if (appState.multicolor && appState.selectedCharIndex !== null) {
                 appState.characterColors[appState.selectedCharIndex] = colorValue;
             } else {
                 selectColor(colorValue, 'Custom');
             }
-            
+
             renderAllPreviews();
         });
     }
-    
+
     // Multicolor toggle
     const multiToggle = document.getElementById('multicolorToggle');
     const multiHelp = document.getElementById('multicolorHelp');
-    
+
     if (multiToggle) {
         multiToggle.addEventListener('change', () => {
             appState.multicolor = multiToggle.checked;
-            
+
             if (!multiToggle.checked) {
                 appState.characterColors = {};
                 appState.selectedCharIndex = null;
             }
-            
+
             if (multiHelp) {
                 multiHelp.classList.toggle('hidden', !multiToggle.checked);
             }
-            
+
             renderAllPreviews();
         });
     }
@@ -376,22 +415,22 @@ function startRgbMode() {
     appState.rgbMode = true;
     appState.colorName = 'RGB Color Changing';
     appState.rgbSurcharge = CONFIG.rgbSurcharge;
-    
+
     let colorIndex = 0;
-    
+
     appState.rgbAnimationTimer = setInterval(() => {
         appState.colorValue = CONFIG.rgbColorSequence[colorIndex];
         colorIndex = (colorIndex + 1) % CONFIG.rgbColorSequence.length;
         renderAllPreviews();
     }, CONFIG.rgbCycleSpeed);
-    
+
     recalculateTotalPrice();
 }
 
 function stopRgbMode() {
     appState.rgbMode = false;
     appState.rgbSurcharge = 0;
-    
+
     if (appState.rgbAnimationTimer) {
         clearInterval(appState.rgbAnimationTimer);
         appState.rgbAnimationTimer = null;
@@ -407,41 +446,45 @@ function attachPlanListeners() {
         btn.addEventListener('click', () => {
             document.querySelectorAll('.size-mode-btn').forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
-            
+
             const mode = btn.getAttribute('data-mode');
             toggleSizeMode(mode);
         });
     });
-    
+
     // Custom size inputs
     const customWidth = document.getElementById('customWidth');
     const customHeight = document.getElementById('customHeight');
-    
+
     if (customWidth) {
         customWidth.addEventListener('input', debounce(() => {
             const width = parseInt(customWidth.value) || 38;
             const height = parseInt(customHeight.value) || Math.round(width * 0.45);
-            
+
             appState.plan.widthIn = width;
             appState.plan.heightIn = height;
             appState.plan.name = 'Custom';
             appState.plan.id = 'custom';
-            
+
+            updateFontSizeForPlan();
             recalculatePlanPrice();
+            renderAllPreviews();
             recalculateTotalPrice();
         }, 300));
     }
-    
+
     if (customHeight) {
         customHeight.addEventListener('input', debounce(() => {
             const height = parseInt(customHeight.value) || 17;
             appState.plan.heightIn = height;
-            
+
+            updateFontSizeForPlan();
             recalculatePlanPrice();
+            renderAllPreviews();
             recalculateTotalPrice();
         }, 300));
     }
-    
+
     // Pre-defined size cards (delegated event handling)
     document.addEventListener('click', (e) => {
         const sizeCard = e.target.closest('.size-card');
@@ -455,7 +498,7 @@ function toggleSizeMode(mode) {
     const sizeGrid = document.getElementById('sizeGrid');
     const customInputs = document.getElementById('customSizeInputs');
     const title = document.getElementById('sizeModeTitle');
-    
+
     if (mode === 'custom') {
         sizeGrid?.classList.add('hidden');
         customInputs?.classList.remove('hidden');
@@ -471,30 +514,35 @@ function selectPlan(cardElement) {
     // Remove active state from all cards
     document.querySelectorAll('.size-card').forEach(c => c.classList.remove('active'));
     cardElement.classList.add('active');
-    
+    const currentWidth = appState.plan.widthIn;
     // Update state
     appState.plan.id = cardElement.getAttribute('data-size');
-    appState.plan.name = cardElement.querySelector('.size-name')?.textContent || 'Mini';
-    appState.plan.widthIn = parseInt(cardElement.getAttribute('data-width')) || 23;
-    appState.plan.heightIn = parseInt(cardElement.getAttribute('data-height')) || 10;
+    appState.plan.name = cardElement.querySelector('.size-name')?.textContent || 'Medium';
+    appState.plan.widthIn = parseInt(cardElement.getAttribute('data-width')) || 38;
+    appState.plan.heightIn = parseInt(cardElement.getAttribute('data-height')) || 17;
     appState.plan.price = parseFloat(cardElement.getAttribute('data-price')) || 438.99;
-    
+
+    // Update font size based on plan size (scale proportionally)
+    updateFontSizeForPlan(currentWidth);
+
+    // Re-render with new size
+    renderAllPreviews();
     recalculateTotalPrice();
 }
 
 function generatePlansFromMeasurements() {
     const baseWidth = appState.measuredWidthIn;
     const baseHeight = appState.measuredHeightIn;
-    
+
     appState.generatedPlans = [];
-    
+
     for (let i = 0; i < CONFIG.planNames.length; i++) {
         const scaleFactor = Math.pow(CONFIG.planScalingFactor, i);
         const scaledWidth = Math.round(baseWidth * scaleFactor);
         const scaledHeight = Math.round(baseHeight * scaleFactor);
-        
+
         const planPrice = calculatePlanPrice(scaledWidth, scaledHeight);
-        
+
         appState.generatedPlans.push({
             id: CONFIG.planNames[i].toLowerCase().replace(/\s/g, '-'),
             name: CONFIG.planNames[i],
@@ -503,10 +551,10 @@ function generatePlansFromMeasurements() {
             price: planPrice
         });
     }
-    
+
     // Update UI with generated plans
     updatePlanCardsInUI();
-    
+
     // Select first plan by default if none selected
     if (!appState.plan.id || appState.plan.id === 'custom') {
         appState.plan = { ...appState.generatedPlans[0] };
@@ -523,20 +571,20 @@ function generateInitialPlans() {
 function updatePlanCardsInUI() {
     const sizeGrid = document.getElementById('sizeGrid');
     if (!sizeGrid) return;
-    
+
     // Note: In a full implementation, you would dynamically generate HTML here
     // For now, we'll update existing cards with calculated prices
     const cards = sizeGrid.querySelectorAll('.size-card');
-    
+
     appState.generatedPlans.forEach((plan, index) => {
         if (cards[index]) {
             cards[index].setAttribute('data-width', plan.widthIn);
             cards[index].setAttribute('data-height', plan.heightIn);
             cards[index].setAttribute('data-price', plan.price);
-            
+
             const dimensions = cards[index].querySelector('.size-dimensions');
             if (dimensions) dimensions.textContent = `${plan.widthIn}"x${plan.heightIn}"`;
-            
+
             const priceElem = cards[index].querySelector('.sale-price');
             if (priceElem) priceElem.textContent = `$${plan.price.toFixed(2)}`;
         }
@@ -548,31 +596,31 @@ function updatePlanCardsInUI() {
 // ===========================
 function calculatePlanPrice(widthIn, heightIn) {
     const area = widthIn * heightIn;
-    
+
     // Base product cost
-    const costPerInchAdjusted = appState.rgbMode 
-        ? CONFIG.costPerInch * 1.2 
+    const costPerInchAdjusted = appState.rgbMode
+        ? CONFIG.costPerInch * 1.2
         : CONFIG.costPerInch;
-    
+
     const productCost = area * costPerInchAdjusted;
     const shippingCost = (area * CONFIG.shippingPerInch) + CONFIG.localShippingConstant;
     const totalCosts = productCost + shippingCost;
-    
+
     // Profit calculation
     const percentageProfit = totalCosts * CONFIG.minProfitPercentage;
     const profit = Math.max(percentageProfit, CONFIG.fixedMinProfit);
-    
+
     // Base price
     let basePrice = (totalCosts + profit) * CONFIG.currencyConversion;
-    
+
     // Premium font multiplier
     if (CONFIG.premiumFonts[appState.fontKey]) {
         basePrice *= CONFIG.premiumFonts[appState.fontKey];
     }
-    
+
     // Apply minimum floor
     basePrice = Math.max(basePrice, CONFIG.minimumPriceFloor);
-    
+
     // Round to .99
     return Math.floor(basePrice) + 0.99;
 }
@@ -584,25 +632,25 @@ function recalculatePlanPrice() {
 function recalculateTotalPrice() {
     // Start with plan price
     let total = appState.plan.price;
-    
+
     // Add extras
     appState.extras.forEach(extra => {
         total += extra.price;
     });
-    
+
     // Add surcharges
     total += appState.outdoorSurcharge;
     total += appState.rgbSurcharge;
     total += appState.cutToPrice;
-    
+
     // Round to .99
     total = Math.floor(total) + 0.99;
-    
+
     appState.totalPrice = total;
-    
+
     // Apply base promotion
     let discounted = total * (1 - CONFIG.basePromotionPercentage);
-    
+
     // Apply additional discount if exists
     if (appState.discountApplied && appState.activeDiscount) {
         if (appState.activeDiscount.type === 'percentage') {
@@ -611,16 +659,16 @@ function recalculateTotalPrice() {
             discounted -= appState.activeDiscount.value;
         }
     }
-    
+
     discounted = Math.max(discounted, 0);
     discounted = Math.floor(discounted) + 0.99;
-    
+
     appState.discountPrice = discounted;
-    
+
     if (!appState.activeDiscount) {
         appState.originalDiscountPrice = discounted;
     }
-    
+
     // Update UI
     updatePricingUI();
 }
@@ -628,11 +676,11 @@ function recalculateTotalPrice() {
 function updatePricingUI() {
     const originalElem = document.querySelector('.original-total');
     const finalElem = document.querySelector('.final-price');
-    
+
     if (originalElem) {
         originalElem.textContent = `$${appState.totalPrice.toFixed(2)}`;
     }
-    
+
     if (finalElem) {
         finalElem.textContent = `$${appState.discountPrice.toFixed(2)}`;
     }
@@ -645,16 +693,16 @@ function attachLocationListeners() {
     document.querySelectorAll('input[name="location"]').forEach(radio => {
         radio.addEventListener('change', (e) => {
             const parent = e.target.closest('.radio-option');
-            document.querySelectorAll('.radio-group .radio-option').forEach(opt => 
+            document.querySelectorAll('.radio-group .radio-option').forEach(opt =>
                 opt.classList.remove('active')
             );
             parent?.classList.add('active');
-            
+
             appState.type = e.target.value;
-            appState.outdoorSurcharge = e.target.value === 'outdoor' 
-                ? CONFIG.outdoorSurcharge 
+            appState.outdoorSurcharge = e.target.value === 'outdoor'
+                ? CONFIG.outdoorSurcharge
                 : 0;
-            
+
             recalculateTotalPrice();
         });
     });
@@ -669,14 +717,14 @@ function attachShapeListeners() {
         card.addEventListener('click', () => {
             document.querySelectorAll('.shape-card').forEach(c => c.classList.remove('active'));
             card.classList.add('active');
-            
+
             appState.cutTo = card.getAttribute('data-shape');
             appState.cutToPrice = parseFloat(card.getAttribute('data-price')) || 0;
-            
+
             recalculateTotalPrice();
         });
     });
-    
+
     // Backboard selection
     document.querySelectorAll('input[name="backboard"]').forEach(radio => {
         radio.addEventListener('change', (e) => {
@@ -693,17 +741,17 @@ function attachExtrasListeners() {
     document.querySelectorAll('input[name="hanging"]').forEach(radio => {
         radio.addEventListener('change', (e) => {
             const parent = e.target.closest('.radio-option');
-            document.querySelectorAll('#step4 .radio-group .radio-option').forEach(opt => 
+            document.querySelectorAll('#step4 .radio-group .radio-option').forEach(opt =>
                 opt.classList.remove('active')
             );
             parent?.classList.add('active');
-            
+
             const hangingType = e.target.value;
             const hangingPrice = (hangingType === 'wall' || hangingType === 'sign') ? 15 : 0;
-            
+
             // Remove old hanging extra
             appState.extras = appState.extras.filter(ex => ex.id !== 'hanging');
-            
+
             // Add new hanging extra if applicable
             if (hangingPrice > 0) {
                 appState.extras.push({
@@ -712,17 +760,17 @@ function attachExtrasListeners() {
                     price: hangingPrice
                 });
             }
-            
+
             recalculateTotalPrice();
         });
     });
-    
+
     // Waterproof checkbox
     const waterproofCheck = document.getElementById('waterProof');
     if (waterproofCheck) {
         waterproofCheck.addEventListener('change', (e) => {
             appState.extras = appState.extras.filter(ex => ex.id !== 'waterproof');
-            
+
             if (e.target.checked) {
                 appState.extras.push({
                     id: 'waterproof',
@@ -730,18 +778,18 @@ function attachExtrasListeners() {
                     price: 30
                 });
             }
-            
+
             recalculateTotalPrice();
         });
     }
-    
+
     // Remote & dimmer checkbox
     const remoteDimmerCheck = document.getElementById('remoteDimmer');
     if (remoteDimmerCheck) {
         remoteDimmerCheck.addEventListener('change', (e) => {
             // Free feature, just for tracking
             appState.extras = appState.extras.filter(ex => ex.id !== 'remote');
-            
+
             if (e.target.checked) {
                 appState.extras.push({
                     id: 'remote',
@@ -751,7 +799,7 @@ function attachExtrasListeners() {
             }
         });
     }
-    
+
     // Power adapter
     document.querySelectorAll('input[name="power"]').forEach(radio => {
         radio.addEventListener('change', (e) => {
@@ -767,16 +815,16 @@ function attachExtrasListeners() {
 function attachDiscountListeners() {
     const applyBtn = document.querySelector('.apply-btn');
     const discountInput = document.getElementById('discountCode');
-    
+
     if (applyBtn && discountInput) {
         applyBtn.addEventListener('click', () => {
             const code = discountInput.value.trim();
-            
+
             if (!code) {
                 alert('Please enter a discount code');
                 return;
             }
-            
+
             if (appState.discountApplied) {
                 // Remove discount
                 removeDiscount();
@@ -794,12 +842,12 @@ function validateAndApplyDiscount(code) {
     // POST https://apiv2.easyneonsigns.ca/apply-discount
     // Headers: Content-Type, X-API-Key, X-Idempotency-Key
     // Body: { discount_code: code }
-    
+
     console.log('BACKEND CALL REQUIRED: Validate discount code:', code);
-    
+
     // Simulated response for demo
     alert('Backend integration required for discount validation.\n\nEndpoint: POST https://apiv2.easyneonsigns.ca/apply-discount');
-    
+
     // Example if valid:
     // appState.discountApplied = true;
     // appState.activeDiscount = { type: 'percentage', value: 0.10 }; // 10% off
@@ -812,7 +860,7 @@ function removeDiscount() {
     appState.discountApplied = false;
     appState.activeDiscount = null;
     appState.discountCode = null;
-    
+
     recalculateTotalPrice();
 }
 
@@ -821,7 +869,7 @@ function removeDiscount() {
 // ===========================
 function attachCheckoutListener() {
     const checkoutBtn = document.querySelector('.btn-final');
-    
+
     if (checkoutBtn) {
         checkoutBtn.addEventListener('click', () => {
             handleCheckout();
@@ -836,10 +884,10 @@ function handleCheckout() {
         btn.disabled = true;
         btn.textContent = 'Processing...';
     }
-    
+
     // Capture SVG markup
     captureSvgMarkup();
-    
+
     // Prepare payload
     const payload = {
         text: appState.text,
@@ -863,19 +911,19 @@ function handleCheckout() {
         svgWidthPx: appState.svgWidthPx,
         svgHeightPx: appState.svgHeightPx
     };
-    
+
     // BACKEND DEPENDENCY: Create checkout
     // POST https://apiv2.easyneonsigns.ca/create-draft-order
     // Headers: Content-Type, X-API-Key, X-Idempotency-Key
     // Body: payload
-    
+
     console.log('BACKEND CALL REQUIRED: Create checkout', payload);
-    
+
     alert('Backend integration required for checkout.\n\nEndpoint: POST https://apiv2.easyneonsigns.ca/create-draft-order\n\nCheck console for payload.');
-    
+
     // On success, redirect to checkout_url
     // window.location.href = response.checkout_url;
-    
+
     // On failure, unlock UI
     if (btn) {
         btn.disabled = false;
@@ -886,7 +934,7 @@ function handleCheckout() {
 function captureSvgMarkup() {
     // In a real implementation, export canvas to SVG with embedded fonts
     const canvas = canvasInstances['neonCanvas4'] || canvasInstances['neonCanvas'];
-    
+
     if (canvas) {
         appState.svgMarkup = canvas.toSVG();
         appState.svgWidthPx = canvas.width;
@@ -904,7 +952,7 @@ function attachStepNavigationListeners() {
             navigateToStep(step);
         });
     });
-    
+
     // Attach to global scope for inline onclick handlers
     window.goToStep = navigateToStep;
 }
@@ -914,17 +962,17 @@ function navigateToStep(stepNumber) {
     document.querySelectorAll('.step-container').forEach(container => {
         container.classList.remove('active');
     });
-    
+
     // Show target step
     const targetStep = document.getElementById(`step${stepNumber}`);
     if (targetStep) {
         targetStep.classList.add('active');
     }
-    
+
     appState.currentStep = stepNumber;
     updateStepTabsUI();
     renderAllPreviews();
-    
+
     window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
@@ -932,7 +980,7 @@ function updateStepTabsUI() {
     document.querySelectorAll('.step-tab').forEach(tab => {
         const step = parseInt(tab.getAttribute('data-step'));
         tab.classList.remove('active', 'completed');
-        
+
         if (step < appState.currentStep) {
             tab.classList.add('completed');
         } else if (step === appState.currentStep) {
@@ -948,7 +996,7 @@ function attachPreviewControlListeners() {
     for (let step = 1; step <= 4; step++) {
         const container = document.getElementById(`step${step}`);
         if (!container) continue;
-        
+
         // Neon ON/OFF toggle
         const neonToggle = container.querySelector(`#neonToggle${step === 1 ? '' : step}`);
         if (neonToggle) {
@@ -957,7 +1005,7 @@ function attachPreviewControlListeners() {
                 renderAllPreviews();
             });
         }
-        
+
         // Theme mode (light/dark)
         const modeBtns = container.querySelectorAll('.mode-btn');
         modeBtns.forEach(btn => {
@@ -965,13 +1013,13 @@ function attachPreviewControlListeners() {
                 const parent = btn.closest('.theme-mode-toggle');
                 parent.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
                 btn.classList.add('active');
-                
+
                 appState.themeMode = btn.getAttribute('data-mode');
                 updateBackgroundTheme();
                 renderAllPreviews();
             });
         });
-        
+
         // Save preview button
         const saveBtn = document.getElementById(`saveBtn${step}`);
         if (saveBtn) {
@@ -995,18 +1043,18 @@ function updateBackgroundTheme() {
 function exportPreviewImage(stepNumber) {
     const canvasId = stepNumber === 1 ? 'neonCanvas' : `neonCanvas${stepNumber}`;
     const canvas = canvasInstances[canvasId];
-    
+
     if (!canvas) {
         alert('Canvas not found');
         return;
     }
-    
+
     const dataURL = canvas.toDataURL({
         format: 'png',
         quality: 1,
         multiplier: 2
     });
-    
+
     const link = document.createElement('a');
     link.download = `neon-sign-preview-${Date.now()}.png`;
     link.href = dataURL;
@@ -1027,137 +1075,290 @@ function renderAllPreviews() {
 
 function renderCanvasPreview(canvas) {
     if (!canvas) return;
-    
+
     canvas.clear();
-    
+
     const displayText = appState.text || CONFIG.defaultPlaceholderText;
     const centerX = canvas.width / 2;
     const centerY = canvas.height / 2;
-    
-    // Render text with auto-fit logic
-    const textConfig = {
+
+    // Calculate rendering font size adjustment based on plan size
+    const defaultSizeWidth = 38;
+    let renderingFontSize = appState.fontSizePx;
+
+    if (appState.plan.widthIn > defaultSizeWidth) {
+        renderingFontSize = appState.fontSizePx + 5;
+    } else if (appState.plan.widthIn < defaultSizeWidth) {
+        renderingFontSize = appState.fontSizePx - 5;
+    }
+
+    if (appState.multicolor) {
+        // Render in multicolor mode - each character individually positioned
+        renderMulticolorText(canvas, displayText, centerX, centerY, renderingFontSize);
+    } else {
+        // Render as single text object
+        const textConfig = {
+            left: centerX,
+            top: centerY,
+            originX: 'center',
+            originY: 'center',
+            fontFamily: appState.fontFamily.replace(/['"]/g, ''),
+            fontSize: renderingFontSize,
+            fill: appState.colorValue,
+            selectable: false
+        };
+
+        // Apply glow if enabled
+        if (appState.neonGlowEnabled) {
+            textConfig.shadow = {
+                color: appState.colorValue,
+                blur: 45,
+                offsetX: 0,
+                offsetY: 0
+            };
+        } else {
+            textConfig.opacity = 0.3;
+        }
+
+        const textObject = new fabric.Text(displayText, textConfig);
+        canvas.add(textObject);
+
+        // Draw measurement overlays
+        drawMeasurementOverlays(canvas, textObject);
+    }
+
+    canvas.renderAll();
+}
+
+function renderMulticolorText(canvas, text, centerX, centerY, renderingFontSize) {
+    // Use the adjusted font size for rendering
+    const useFontSize = renderingFontSize || appState.fontSizePx;
+
+    // Create a temporary text object to measure total width
+    const tempText = new fabric.Text(text, {
+        fontFamily: appState.fontFamily.replace(/['"]/g, ''),
+        fontSize: useFontSize,
+        charSpacing: 0
+    });
+
+    const totalWidth = tempText.width;
+    const totalHeight = tempText.height;
+
+    // Starting X position (left side of the text)
+    let startX = centerX - (totalWidth / 2);
+    const baseY = centerY;
+
+    // Group to hold all characters for measurement
+    const textGroup = new fabric.Group([], {
         left: centerX,
         top: centerY,
         originX: 'center',
         originY: 'center',
-        fontFamily: appState.fontFamily.replace(/['"]/g, ''),
-        fontSize: appState.fontSizePx,
-        fill: appState.colorValue,
         selectable: false
-    };
-    
-    // Apply glow if enabled
-    if (appState.neonGlowEnabled) {
-        textConfig.shadow = {
-            color: appState.colorValue,
-            blur: 45,
-            offsetX: 0,
-            offsetY: 0
+    });
+
+    // Render each character
+    for (let i = 0; i < text.length; i++) {
+        const char = text[i];
+
+        // Get color for this character
+        const charColor = appState.characterColors[i] || appState.colorValue;
+
+        // Check if this character is selected
+        const isSelected = appState.selectedCharIndex === i;
+
+        // Create character text object
+        const charConfig = {
+            fontFamily: appState.fontFamily.replace(/['"]/g, ''),
+            fontSize: useFontSize,
+            fill: charColor,
+            selectable: false,
+            charSpacing: 0
         };
-    } else {
-        textConfig.opacity = 0.3;
+
+        // Apply glow if enabled
+        if (appState.neonGlowEnabled) {
+            charConfig.shadow = {
+                color: charColor,
+                blur: 45,
+                offsetX: 0,
+                offsetY: 0
+            };
+        } else {
+            charConfig.opacity = 0.3;
+        }
+
+        // Add selection indicator (text shadow in black)
+        if (isSelected) {
+            charConfig.stroke = '#000000';
+            charConfig.strokeWidth = 3;
+            charConfig.paintFirst = 'stroke';
+        }
+
+        const charObj = new fabric.Text(char, charConfig);
+        charObj.charIndex = i; // Store character index for click detection
+
+        // Measure character to get its width
+        const charWidth = charObj.width;
+
+        // Position character
+        charObj.set({
+            left: startX - (totalWidth / 2) + (charWidth / 2),
+            top: 0,
+            originX: 'center',
+            originY: 'center'
+        });
+
+        textGroup.addWithUpdate(charObj);
+
+        // Move X position for next character
+        startX += charWidth;
     }
-    
-    const textObject = new fabric.Text(displayText, textConfig);
-    canvas.add(textObject);
-    
-    // Draw measurement overlays
-    drawMeasurementOverlays(canvas, textObject);
-    
-    canvas.renderAll();
+
+    // Add the group to canvas
+    canvas.add(textGroup);
+
+    // Ungroup to make individual characters clickable
+    const items = textGroup.getObjects();
+    textGroup._restoreObjectsState();
+    canvas.remove(textGroup);
+
+    // Add each character individually with correct absolute positioning
+    startX = centerX - (totalWidth / 2);
+    items.forEach((item, index) => {
+        const charWidth = item.width;
+        item.set({
+            left: startX + (charWidth / 2),
+            top: centerY,
+            originX: 'center',
+            originY: 'center'
+        });
+        canvas.add(item);
+        startX += charWidth;
+    });
+
+    // Create a bounding box object for measurement overlays
+    const boundingBox = {
+        getBoundingRect: function () {
+            return {
+                left: centerX - (totalWidth / 2),
+                top: centerY - (totalHeight / 2),
+                width: totalWidth,
+                height: totalHeight
+            };
+        }
+    };
+
+    drawMeasurementOverlays(canvas, boundingBox);
 }
 
 function drawMeasurementOverlays(canvas, textObject) {
-    const scaleColor = appState.themeMode === 'dark' 
-        ? 'rgba(255, 255, 255, 0.5)' 
-        : 'rgba(0, 0, 0, 0.6)';
-    
+    const scaleColor = appState.themeMode === 'dark'
+        ? 'rgba(255, 255, 255, 0.6)'
+        : 'rgba(0, 0, 0, 0.7)';
+
     const textColor = appState.themeMode === 'dark' ? '#FFFFFF' : '#000000';
-    
+
     const bounds = textObject.getBoundingRect();
     const centerX = canvas.width / 2;
     const centerY = canvas.height / 2;
-    
-    const padding = 80;
-    const tickLength = 10;
-    
+
+    // Scale padding and tick based on text size for better visibility
+    const sizeFactor = bounds.width / 400; // Adjust relative to typical text width
+    const padding = Math.max(60, Math.min(100, 70 * sizeFactor));
+    const tickLength = Math.max(8, Math.min(15, 10 * sizeFactor));
+    const labelFontSize = Math.max(14, Math.min(20, 16 * sizeFactor));
+
     // Horizontal dimension line
     const hLineY = bounds.top + bounds.height + padding;
-    const hStartX = bounds.left - 20;
-    const hEndX = bounds.left + bounds.width + 20;
-    
+    const hStartX = bounds.left - 30;
+    const hEndX = bounds.left + bounds.width + 30;
+
     const horizLine = new fabric.Line([hStartX, hLineY, hEndX, hLineY], {
         stroke: scaleColor,
         strokeWidth: 2,
         selectable: false
     });
     canvas.add(horizLine);
-    
+
     // Horizontal ticks
     canvas.add(new fabric.Line([hStartX, hLineY - tickLength, hStartX, hLineY + tickLength], {
         stroke: scaleColor,
         strokeWidth: 2,
         selectable: false
     }));
-    
+
     canvas.add(new fabric.Line([hEndX, hLineY - tickLength, hEndX, hLineY + tickLength], {
         stroke: scaleColor,
         strokeWidth: 2,
         selectable: false
     }));
-    
-    // Horizontal label
+
+    // Horizontal label with background for better readability
     const widthLabel = new fabric.Text(`${appState.plan.widthIn}"`, {
         left: centerX,
         top: hLineY + 18,
         originX: 'center',
         originY: 'top',
-        fontSize: 16,
+        fontSize: labelFontSize,
         fill: textColor,
         fontFamily: 'Inter, sans-serif',
-        fontWeight: 600,
-        selectable: false
+        fontWeight: 700,
+        selectable: false,
+        backgroundColor: appState.themeMode === 'dark' ? 'rgba(0, 0, 0, 0.6)' : 'rgba(255, 255, 255, 0.8)',
+        padding: 4
     });
     canvas.add(widthLabel);
-    
+
     // Vertical dimension line
     const vLineX = bounds.left + bounds.width + padding;
-    const vStartY = bounds.top - 20;
-    const vEndY = bounds.top + bounds.height + 20;
-    
+    const vStartY = bounds.top - 30;
+    const vEndY = bounds.top + bounds.height + 30;
+
     const vertLine = new fabric.Line([vLineX, vStartY, vLineX, vEndY], {
         stroke: scaleColor,
         strokeWidth: 2,
         selectable: false
     });
     canvas.add(vertLine);
-    
+
     // Vertical ticks
     canvas.add(new fabric.Line([vLineX - tickLength, vStartY, vLineX + tickLength, vStartY], {
         stroke: scaleColor,
         strokeWidth: 2,
         selectable: false
     }));
-    
+
     canvas.add(new fabric.Line([vLineX - tickLength, vEndY, vLineX + tickLength, vEndY], {
         stroke: scaleColor,
         strokeWidth: 2,
         selectable: false
     }));
-    
-    // Vertical label
+
+    // Vertical label with background for better readability
     const heightLabel = new fabric.Text(`${appState.plan.heightIn}"`, {
         left: vLineX + 18,
         top: centerY,
         originX: 'left',
         originY: 'center',
-        fontSize: 16,
+        fontSize: labelFontSize,
         fill: textColor,
         fontFamily: 'Inter, sans-serif',
-        fontWeight: 600,
-        selectable: false
+        fontWeight: 700,
+        selectable: false,
+        backgroundColor: appState.themeMode === 'dark' ? 'rgba(0, 0, 0, 0.6)' : 'rgba(255, 255, 255, 0.8)',
+        padding: 4
     });
     canvas.add(heightLabel);
+}
+
+// ===========================
+// FONT SIZE SCALING BASED ON PLAN
+// ===========================
+function updateFontSizeForPlan(currentWidth = 23) {
+    const adjustment = currentWidth > appState.plan.widthIn ? -5 : 5;
+    appState.fontSizePx = appState.fontSizePx + adjustment;
+    appState.lineHeightPx = appState.fontSizePx * 1.2;
 }
 
 // ===========================
@@ -1166,11 +1367,11 @@ function drawMeasurementOverlays(canvas, textObject) {
 function getMeasuredDimensions() {
     // In real implementation, this would measure the actual rendered text
     // For now, we estimate based on text length and font
-    
+
     const textLength = appState.text.length || CONFIG.defaultPlaceholderText.length;
     const baseWidth = 15 + (textLength * 2.5);
     const baseHeight = Math.round(baseWidth * 0.43);
-    
+
     return {
         widthIn: Math.round(baseWidth),
         heightIn: Math.round(baseHeight)

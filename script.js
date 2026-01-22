@@ -173,6 +173,7 @@ function handleCanvasClick(canvasId, options) {
             // Character clicked
             appState.selectedCharIndex = obj.charIndex;
             renderAllPreviews();
+            showColorPopup(canvasId, obj);
             return;
         }
     }
@@ -180,6 +181,165 @@ function handleCanvasClick(canvasId, options) {
     // Clicked outside any character
     appState.selectedCharIndex = null;
     renderAllPreviews();
+    hideColorPopup();
+}
+
+// Show color popup near selected character
+function showColorPopup(canvasId, charObj) {
+    const canvasElement = document.getElementById(canvasId);
+    if (!canvasElement) return;
+
+    // Remove existing popup if any
+    hideColorPopup();
+
+    // Get canvas wrapper
+    const wrapper = canvasElement.closest('.canvas-wrapper');
+    if (!wrapper) return;
+
+    // Create popup
+    const popup = document.createElement('div');
+    popup.className = 'character-color-popup';
+    popup.id = 'characterColorPopup';
+
+    // Create title
+    const title = document.createElement('div');
+    title.className = 'popup-title';
+    title.textContent = 'SELECT COLOR';
+    popup.appendChild(title);
+
+    // Create color grid
+    const colorsGrid = document.createElement('div');
+    colorsGrid.className = 'popup-colors';
+
+    // Add all color options
+    const colors = [
+        { color: '#FFF8DC', name: 'Warm White' },
+        { color: '#FFFFFF', name: 'White' },
+        { color: '#FF0000', name: 'Red' },
+        { color: '#FFF44F', name: 'Lemon Yellow' },
+        { color: '#FFD700', name: 'Golden Yellow' },
+        { color: '#FF8C00', name: 'Orange' },
+        { color: '#FFC0CB', name: 'Pink' },
+        { color: '#FF1493', name: 'Deep Pink' },
+        { color: '#9B30FF', name: 'Purple' },
+        { color: '#4169E1', name: 'Royal Blue' },
+        { color: '#87CEEB', name: 'Ice Blue' },
+        { color: '#98FF98', name: 'Mint' },
+        { color: '#00CED1', name: 'Teal' },
+        { color: '#00FF00', name: 'Green' },
+        { color: '#1E90FF', name: 'Tropical Blue' }
+    ];
+
+    const currentColor = appState.characterColors[appState.selectedCharIndex] || appState.colorValue;
+
+    colors.forEach(({ color, name }) => {
+        const btn = document.createElement('button');
+        btn.className = 'popup-color-btn';
+        btn.style.background = color;
+        btn.setAttribute('data-color', color);
+        btn.setAttribute('title', name);
+
+        if (color === currentColor) {
+            btn.classList.add('active');
+        }
+
+        btn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            if (appState.selectedCharIndex !== null) {
+                appState.characterColors[appState.selectedCharIndex] = color;
+                renderAllPreviews();
+
+                // Update active state
+                popup.querySelectorAll('.popup-color-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+            }
+        });
+
+        colorsGrid.appendChild(btn);
+    });
+
+    popup.appendChild(colorsGrid);
+
+    // Add custom color picker button
+    const customColorBtn = document.createElement('button');
+    customColorBtn.className = 'popup-color-btn custom-color-btn';
+    customColorBtn.innerHTML = `
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" style="margin-left: 8px;">
+            <path d="M8 3V13M3 8H13" stroke="#00FF00" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+    `;
+
+    // Create hidden color input
+    const customColorInput = document.createElement('input');
+    customColorInput.type = 'color';
+    customColorInput.className = 'popup-custom-color-input';
+    customColorInput.value = currentColor;
+
+    customColorBtn.appendChild(customColorInput);
+
+    // Handle custom color button click
+    customColorBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        customColorInput.click();
+    });
+
+    // Handle color input change
+    customColorInput.addEventListener('input', (e) => {
+        e.stopPropagation();
+        const selectedColor = e.target.value;
+
+        if (appState.selectedCharIndex !== null) {
+            appState.characterColors[appState.selectedCharIndex] = selectedColor;
+            renderAllPreviews();
+
+            // Update active state
+            popup.querySelectorAll('.popup-color-btn').forEach(b => b.classList.remove('active'));
+        }
+    });
+
+    colorsGrid.appendChild(customColorBtn);
+
+    // Position popup
+    wrapper.appendChild(popup);
+
+    // Calculate position based on character bounds
+    const bounds = charObj.getBoundingRect();
+    const canvasRect = canvasElement.getBoundingClientRect();
+    const wrapperRect = wrapper.getBoundingClientRect();
+
+    // Position above the character
+    const popupLeft = bounds.left + (bounds.width / 2) - (popup.offsetWidth / 2);
+    const popupTop = bounds.top - popup.offsetHeight - 20;
+
+    // Ensure popup stays within canvas bounds
+    const finalLeft = Math.max(10, Math.min(popupLeft, canvasRect.width - popup.offsetWidth - 10));
+    const finalTop = Math.max(10, popupTop);
+
+    popup.style.left = `${finalLeft}px`;
+    popup.style.top = `${finalTop}px`;
+
+    // Close popup when clicking outside
+    setTimeout(() => {
+        document.addEventListener('click', handlePopupOutsideClick);
+    }, 100);
+}
+
+function hideColorPopup() {
+    const popup = document.getElementById('characterColorPopup');
+    if (popup) {
+        popup.remove();
+    }
+    document.removeEventListener('click', handlePopupOutsideClick);
+}
+
+function handlePopupOutsideClick(e) {
+    const popup = document.getElementById('characterColorPopup');
+    if (popup && !popup.contains(e.target)) {
+        const canvas = e.target.closest('canvas');
+        if (!canvas) {
+            hideColorPopup();
+        }
+    }
 }
 
 // ===========================
@@ -381,6 +541,7 @@ function attachColorListeners() {
             if (!multiToggle.checked) {
                 appState.characterColors = {};
                 appState.selectedCharIndex = null;
+                hideColorPopup();
             }
 
             if (multiHelp) {
@@ -971,6 +1132,7 @@ function navigateToStep(stepNumber) {
 
     appState.currentStep = stepNumber;
     updateStepTabsUI();
+    hideColorPopup();
     renderAllPreviews();
 
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -1188,11 +1350,20 @@ function renderMulticolorText(canvas, text, centerX, centerY, renderingFontSize)
             charConfig.opacity = 0.3;
         }
 
-        // Add selection indicator (text shadow in black)
+        // Add selection indicator (accent color outline)
         if (isSelected) {
-            charConfig.stroke = '#000000';
-            charConfig.strokeWidth = 3;
+            charConfig.stroke = '#C8FF00';
+            charConfig.strokeWidth = 4;
             charConfig.paintFirst = 'stroke';
+            // Add extra glow for selected character
+            if (appState.neonGlowEnabled) {
+                charConfig.shadow = {
+                    color: '#C8FF00',
+                    blur: 60,
+                    offsetX: 0,
+                    offsetY: 0
+                };
+            }
         }
 
         const charObj = new fabric.Text(char, charConfig);

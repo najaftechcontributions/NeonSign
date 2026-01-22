@@ -335,8 +335,14 @@
                             </div>
                             <span class="rgb-price">+$50</span>
                         </button>
+                        <button class="custom-color-btn" id="customColorBtn">
+                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" style="min-width: 16px;">
+                                <path d="M8 3V13M3 8H13" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                            </svg>
+                            Custom Color
+                            <input type="color" id="customColorPicker" style="width: 0; height: 0; opacity: 0;">
+                        </button>
                     </div>
-                    <input type="color" id="customColorPicker" hidden>
 
                     <div class="multicolor-toggle">
                         <label class="toggle-switch">
@@ -345,8 +351,13 @@
                         </label>
                         <div>
                             <span class="toggle-text">Set multicolour</span>
-                            <p class="multicolor-help hidden" id="multicolorHelp">Click on any character in the preview
-                                to change its color individually.</p>
+                            <p class="multicolor-help hidden" id="multicolorHelp">
+                                <svg width="14" height="14" viewBox="0 0 14 14" fill="none" style="display: inline-block; vertical-align: middle; margin-right: 4px;">
+                                    <circle cx="7" cy="7" r="6" stroke="currentColor" stroke-width="1.5"/>
+                                    <path d="M7 3.5V7.5M7 10H7.01" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                                </svg>
+                                Click on select color for each letter in the preview
+                            </p>
                         </div>
                     </div>
                 </div>

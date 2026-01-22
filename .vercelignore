@@ -8,12 +8,12 @@ database/local.db
 database/local.db-shm
 database/local.db-wal
 
-# Uploads
-uploads/*
-!uploads/.gitkeep
-
-# Node modules
+# Node modules (if any)
 node_modules/
+
+# Git files
+.git/
+.gitignore
 
 # IDE files
 .vscode/
@@ -32,6 +32,3 @@ logs/
 # Temporary files
 tmp/
 temp/
-
-# Vercel
-.vercel

@@ -1,6 +1,3 @@
-
-
-
 const CONFIG = {
 
     mobileBreakpoint: 768,
@@ -50,8 +47,8 @@ const appState = {
     userHasEnteredText: false,
 
 
-    fontFamily: "'Pacifico', cursive",
-    fontKey: 'pacifico',
+    fontFamily: "'Barcelona', cursive",
+    fontKey: 'barcelona',
     fontSizePx: CONFIG.baseFontSize,
     lineHeightPx: CONFIG.baseFontSize * 1.2,
 
@@ -124,8 +121,8 @@ const animationHandles = {};
 
 function initializeActiveStates() {
 
-    const defaultFontCard = document.querySelector('.font-card[data-font="pacifico"]');
-    const defaultFontItem = document.querySelector('.font-list-item[data-font="pacifico"]');
+    const defaultFontCard = document.querySelector('.font-card[data-font="barcelona"]');
+    const defaultFontItem = document.querySelector('.font-list-item[data-font="barcelona"]');
     if (defaultFontCard) defaultFontCard.classList.add('active');
     if (defaultFontItem) defaultFontItem.classList.add('active');
 
@@ -165,7 +162,6 @@ document.addEventListener('DOMContentLoaded', () => {
     setupCanvases();
     attachEventListeners();
     generateInitialPlans();
-    updateFontSizeForPlan();
     initializeActiveStates();
     renderAllPreviews();
     recalculateTotalPrice();
@@ -185,7 +181,7 @@ function setupCanvases() {
             });
 
 
-            canvasInstances[canvasId].on('mouse:down', function (options) {
+            canvasInstances[canvasId].on('mouse:down', function(options) {
                 handleCanvasClick(canvasId, options);
             });
         }
@@ -518,7 +514,6 @@ function selectFont(fontKey, fontFamily) {
     if (selectedListItem) selectedListItem.classList.add('active');
 
 
-    updateFontSizeForPlan();
 
     renderAllPreviews();
     recalculateTotalPrice();
@@ -664,7 +659,6 @@ function attachPlanListeners() {
             appState.plan.name = 'Custom';
             appState.plan.id = 'custom';
 
-            updateFontSizeForPlan();
             recalculatePlanPrice();
             renderAllPreviews();
             recalculateTotalPrice();
@@ -676,7 +670,6 @@ function attachPlanListeners() {
             const height = parseInt(customHeight.value) || 17;
             appState.plan.heightIn = height;
 
-            updateFontSizeForPlan();
             recalculatePlanPrice();
             renderAllPreviews();
             recalculateTotalPrice();
@@ -712,17 +705,13 @@ function selectPlan(cardElement) {
 
     document.querySelectorAll('.size-card').forEach(c => c.classList.remove('active'));
     cardElement.classList.add('active');
-    const currentWidth = appState.plan.widthIn;
 
     appState.plan.id = cardElement.getAttribute('data-size');
     appState.plan.name = cardElement.querySelector('.size-name')?.textContent || 'Medium';
     appState.plan.widthIn = parseInt(cardElement.getAttribute('data-width')) || 38;
     appState.plan.heightIn = parseInt(cardElement.getAttribute('data-height')) || 17;
     appState.plan.price = parseFloat(cardElement.getAttribute('data-price')) || 438.99;
-
-
-    updateFontSizeForPlan(currentWidth);
-
+    appState.fontSizePx = parseFloat(cardElement.getAttribute('data-font')) || 38;
 
     renderAllPreviews();
     recalculateTotalPrice();
@@ -753,9 +742,9 @@ function calculatePlanPrice(widthIn, heightIn) {
     const area = widthIn * heightIn;
 
 
-    const costPerInchAdjusted = appState.rgbMode
-        ? CONFIG.costPerInch * 1.2
-        : CONFIG.costPerInch;
+    const costPerInchAdjusted = appState.rgbMode ?
+        CONFIG.costPerInch * 1.2 :
+        CONFIG.costPerInch;
 
     const productCost = area * costPerInchAdjusted;
     const shippingCost = (area * CONFIG.shippingPerInch) + CONFIG.localShippingConstant;
@@ -855,7 +844,7 @@ function attachLocationListeners() {
 
             appState.type = e.target.value;
             appState.outdoorSurcharge = e.target.value === 'outdoor'
-                ? CONFIG.outdoorSurcharge
+                ? CONFIG.outdoorSurcharge 
                 : 0;
 
             recalculateTotalPrice();
@@ -1876,16 +1865,6 @@ function drawMeasurementOverlays(canvas, textObject) {
     });
     canvas.add(heightLabel);
 }
-
-
-
-
-function updateFontSizeForPlan(currentWidth = 23) {
-    const adjustment = currentWidth > appState.plan.widthIn ? -5 : 5;
-    appState.fontSizePx = appState.fontSizePx + adjustment;
-    appState.lineHeightPx = appState.fontSizePx * 1.2;
-}
-
 
 
 

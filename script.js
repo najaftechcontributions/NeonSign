@@ -120,6 +120,45 @@ const canvasInstances = {};
 const animationHandles = {};
 
 // ===========================
+// ACTIVE STATE INITIALIZATION
+// ===========================
+function initializeActiveStates() {
+    // Set default font (pacifico) as active
+    const defaultFontCard = document.querySelector('.font-card[data-font="pacifico"]');
+    const defaultFontItem = document.querySelector('.font-list-item[data-font="pacifico"]');
+    if (defaultFontCard) defaultFontCard.classList.add('active');
+    if (defaultFontItem) defaultFontItem.classList.add('active');
+
+    // Default color (white) is already marked as active in HTML
+    // But ensure it stays active
+    const defaultColor = document.querySelector('.color-option[data-color="#FFFFFF"]');
+    if (defaultColor && !defaultColor.classList.contains('active')) {
+        document.querySelectorAll('.color-option').forEach(opt => opt.classList.remove('active'));
+        defaultColor.classList.add('active');
+    }
+
+    // Default size card (mini) is already marked as active in HTML
+    // Default shape card (cut-to-letter) is already marked as active in HTML
+
+    // Set default backboard option as active
+    const defaultBackboard = document.querySelector('.backboard-color-option input[value="clear"]');
+    if (defaultBackboard) {
+        const parent = defaultBackboard.closest('.backboard-color-option');
+        if (parent) parent.classList.add('active');
+    }
+
+    // Set default power adapter as active
+    const defaultPower = document.querySelector('.radio-pill input[value="usa"]');
+    if (defaultPower) {
+        const parent = defaultPower.closest('.radio-pill');
+        if (parent) parent.classList.add('active');
+    }
+
+    // Location (indoor) is already marked as active in HTML
+    // Hanging (none) is already marked as active in HTML
+}
+
+// ===========================
 // INITIALIZATION
 // ===========================
 document.addEventListener('DOMContentLoaded', () => {
@@ -127,6 +166,7 @@ document.addEventListener('DOMContentLoaded', () => {
     attachEventListeners();
     generateInitialPlans();
     updateFontSizeForPlan(); // Set initial font size based on default medium size
+    initializeActiveStates(); // Set initial active states for all UI elements
     renderAllPreviews();
     recalculateTotalPrice();
 });
@@ -473,6 +513,17 @@ function attachFontListeners() {
 function selectFont(fontKey, fontFamily) {
     appState.fontKey = fontKey;
     appState.fontFamily = fontFamily;
+
+    // Remove active class from all font cards and list items
+    document.querySelectorAll('.font-card').forEach(card => card.classList.remove('active'));
+    document.querySelectorAll('.font-list-item').forEach(item => item.classList.remove('active'));
+
+    // Add active class to the selected font
+    const selectedCard = document.querySelector(`.font-card[data-font="${fontKey}"]`);
+    const selectedListItem = document.querySelector(`.font-list-item[data-font="${fontKey}"]`);
+
+    if (selectedCard) selectedCard.classList.add('active');
+    if (selectedListItem) selectedListItem.classList.add('active');
 
     // Update font size to match current plan
     updateFontSizeForPlan();
@@ -889,6 +940,13 @@ function attachShapeListeners() {
     // Backboard selection
     document.querySelectorAll('input[name="backboard"]').forEach(radio => {
         radio.addEventListener('change', (e) => {
+            // Remove active class from all backboard options
+            document.querySelectorAll('.backboard-color-option').forEach(opt => opt.classList.remove('active'));
+
+            // Add active class to the selected option
+            const parent = e.target.closest('.backboard-color-option');
+            if (parent) parent.classList.add('active');
+
             appState.backboard = e.target.value;
         });
     });
@@ -930,6 +988,8 @@ function attachExtrasListeners() {
     const waterproofCheck = document.getElementById('waterProof');
     if (waterproofCheck) {
         waterproofCheck.addEventListener('change', (e) => {
+            const parent = e.target.closest('.checkbox-option');
+
             appState.extras = appState.extras.filter(ex => ex.id !== 'waterproof');
 
             if (e.target.checked) {
@@ -938,6 +998,9 @@ function attachExtrasListeners() {
                     description: 'Waterproof protection',
                     price: 30
                 });
+                if (parent) parent.classList.add('active');
+            } else {
+                if (parent) parent.classList.remove('active');
             }
 
             recalculateTotalPrice();
@@ -948,6 +1011,8 @@ function attachExtrasListeners() {
     const remoteDimmerCheck = document.getElementById('remoteDimmer');
     if (remoteDimmerCheck) {
         remoteDimmerCheck.addEventListener('change', (e) => {
+            const parent = e.target.closest('.checkbox-option');
+
             // Free feature, just for tracking
             appState.extras = appState.extras.filter(ex => ex.id !== 'remote');
 
@@ -957,6 +1022,9 @@ function attachExtrasListeners() {
                     description: 'Remote and Dimmer',
                     price: 0
                 });
+                if (parent) parent.classList.add('active');
+            } else {
+                if (parent) parent.classList.remove('active');
             }
         });
     }
@@ -964,6 +1032,13 @@ function attachExtrasListeners() {
     // Power adapter
     document.querySelectorAll('input[name="power"]').forEach(radio => {
         radio.addEventListener('change', (e) => {
+            // Remove active class from all radio pills
+            document.querySelectorAll('.radio-pill').forEach(pill => pill.classList.remove('active'));
+
+            // Add active class to the selected pill
+            const parent = e.target.closest('.radio-pill');
+            if (parent) parent.classList.add('active');
+
             // Store for checkout payload
             appState.powerAdapter = e.target.value;
         });

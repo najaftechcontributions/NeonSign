@@ -473,6 +473,7 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
+    position: relative;
 }
 
 .font-list-item:hover {
@@ -480,6 +481,28 @@ body {
     border-color: var(--accent-color);
     color: var(--text-primary);
     transform: translateY(-2px);
+}
+
+.font-list-item.active {
+    background: rgba(88, 107, 40, 0.35);
+    border-color: var(--accent-color);
+}
+
+.font-list-item.active::after {
+    content: '✓';
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    width: 16px;
+    height: 16px;
+    background: var(--accent-color);
+    color: #000000;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    font-weight: 700;
 }
 
 .suggested-fonts-grid {
@@ -497,10 +520,33 @@ body {
     cursor: pointer;
     transition: all 0.2s;
     text-align: center;
+    position: relative;
 }
 
 .font-card:hover {
     border-color: var(--accent-color);
+}
+
+.font-card.active {
+    background: rgba(88, 107, 40, 0.35);
+    border-color: var(--accent-color);
+}
+
+.font-card.active::after {
+    content: '✓';
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    width: 20px;
+    height: 20px;
+    background: var(--accent-color);
+    color: #000000;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 700;
 }
 
 .font-preview {
@@ -863,6 +909,11 @@ body {
     border-radius: 50%;
     padding: 2px;
     color: #000000;
+    display: none;
+}
+
+.size-card.active .checkmark {
+    display: block;
 }
 
 .size-info {
@@ -1054,6 +1105,11 @@ body {
     border-radius: 50%;
     padding: 2px;
     color: #000000;
+    display: none;
+}
+
+.shape-card.active .checkmark-shape {
+    display: block;
 }
 
 .shape-info {
@@ -1116,6 +1172,11 @@ body {
 
 .backboard-color-option:hover {
     border-color: var(--accent-color);
+}
+
+.backboard-color-option.active {
+    border-color: var(--accent-color);
+    background: rgba(200, 255, 0, 0.05);
 }
 
 .backboard-color-option input {
@@ -1214,12 +1275,19 @@ body {
     border-color: var(--accent-color);
 }
 
+.radio-pill.active {
+    border-color: var(--accent-color);
+    background: rgba(200, 255, 0, 0.1);
+}
+
 .radio-pill input {
     display: none;
 }
 
-.radio-pill input:checked ~ .pill-text {
+.radio-pill input:checked ~ .pill-text,
+.radio-pill.active .pill-text {
     color: var(--accent-color);
+    font-weight: 600;
 }
 
 .pill-text {
@@ -1251,6 +1319,11 @@ body {
 
 .checkbox-option:hover {
     border-color: var(--accent-color);
+}
+
+.checkbox-option.active {
+    border-color: var(--accent-color);
+    background: rgba(200, 255, 0, 0.05);
 }
 
 .checkbox-option input {

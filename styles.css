@@ -60,7 +60,6 @@ body {
     scrollbar-color: #c8ff00 transparent;
 }
 
-/* Modern scrollbar with glow effect */
 .left-panel::-webkit-scrollbar {
     width: 12px;
 }
@@ -1749,10 +1748,6 @@ canvas {
     pointer-events: none;
 }
 
-/* ===========================
-   PREVIEW MODAL STYLES
-   =========================== */
-
 .preview-modal-overlay {
     position: fixed;
     top: 0;
@@ -1987,11 +1982,8 @@ canvas {
     box-shadow: 0 6px 20px rgba(200, 255, 0, 0.4);
 }
 
-/* ===========================
-   MOBILE RESPONSIVE STYLES
-   =========================== */
+/* MOBILE RESPONSIVE STYLES */
 
-/* Mobile Bottom Sheet Elements */
 .mobile-panel-overlay {
     display: none;
     position: fixed;
@@ -2009,8 +2001,6 @@ canvas {
     opacity: 1;
 }
 
-
-/* Mobile Footer */
 .mobile-footer {
     display: none;
     position: fixed;
@@ -2111,26 +2101,22 @@ canvas {
     margin-left: -32px;
     padding-left: 35px;
   }
-  
-  /* z-index stacking */
+
   .step-tab:nth-child(1) { z-index: 4; }
   .step-tab:nth-child(2) { z-index: 3; }
   .step-tab:nth-child(3) { z-index: 2; }
   .step-tab:nth-child(4) { z-index: 1; }
-  
-  /* States */
+
   .step-tab.active {
     background: linear-gradient(180deg, #546718 0%, #313B0E 100%);
     border: 1px solid rgba(203, 250, 52, 1);
     z-index: 10;
   }
-  
-  
+
   .step-tab:not(.active):hover {
     background: linear-gradient(180deg, #3a3a3a 0%, #2a2a2a 100%);
   }
-  
-  /* Typography */
+
   .step-number {
     font-size: 22px;
     font-weight: 500;
@@ -2142,10 +2128,7 @@ canvas {
     font-weight: 400;
     white-space: nowrap;
   }
-  
-  /* ===============================
-     COMPACT MODE (below 768px)
-     =============================== */
+
   @media (max-width: 768px) {
     .step-tabs {
       height: 35px;
@@ -2161,27 +2144,23 @@ canvas {
     .step-tab:not(:first-child) {
       margin-left: -20px;
     }
-  
-  
+
     .step-label {
       display: none;
     }
   }
-  
-  /* Extra small refinement */
+
   @media (max-width: 480px) {
     .step-tab {
       height: 30px;
       border-radius: 6px 15px 15px 6px;
     }
-  
-  
+
     .step-tab:not(:first-child) {
       margin-left: -16px;
     }
   }
-  
-/* Tablet & Medium Screens */
+
 @media (max-width: 1200px) {
     .left-panel {
         width: 500px;
@@ -2255,7 +2234,6 @@ canvas {
         flex-direction: column;
     }
 
-    /* Left Panel - Bottom Sheet on Mobile */
     .left-panel {
         position: fixed;
         bottom: 0;
@@ -2288,7 +2266,6 @@ canvas {
         display: block;
     }
 
-    /* Right Panel - Full Screen on Mobile */
     .right-panel {
         position: fixed;
         top: 0;
@@ -2327,10 +2304,9 @@ canvas {
         height: auto !important;
         left: 50% !important;
         top: 50% !important;
-        transform: translate(-50% , -50%) !important; 
+        transform: translate(-50% , -50%) !important;
     }
 
-    /* Header Section */
     .header-section {
         margin-bottom: 16px;
         position: relative;
@@ -2359,7 +2335,6 @@ canvas {
         margin-top: 4px;
     }
 
-    /* Preview Controls */
     .preview-controls {
         bottom: 0;
         left: 50%;
@@ -2387,7 +2362,6 @@ canvas {
         pointer-events: auto;
     }
 
-    /* Content Section Adjustments */
     .content-section {
         padding-bottom: 30px;
     }
@@ -2410,7 +2384,6 @@ canvas {
         margin-bottom: 12px;
     }
 
-    /* Input Row */
     .input-row {
         grid-template-columns: 1fr;
         gap: 14px;
@@ -2441,7 +2414,6 @@ canvas {
         height: 20px;
     }
 
-    /* Font Selection */
     .suggested-fonts-grid {
         grid-template-columns: repeat(2, 1fr);
         gap: 12px;
@@ -2496,7 +2468,6 @@ canvas {
         font-weight: 600;
     }
 
-    /* Color Picker */
     .color-picker-grid {
         grid-template-columns: repeat(7, 1fr);
         gap: 12px;
@@ -2526,7 +2497,6 @@ canvas {
         height: 16px;
     }
 
-    /* Multicolor Toggle */
     .multicolor-toggle {
         gap: 10px;
         align-items: center;
@@ -2555,7 +2525,6 @@ canvas {
         padding: 7px 10px;
     }
 
-    /* Size Mode Toggle */
     .size-mode-toggle {
         gap: 10px;
     }
@@ -2570,7 +2539,6 @@ canvas {
         height: 14px;
     }
 
-    /* Size Grid */
     .size-grid {
         grid-template-columns: repeat(2, 1fr);
         gap: 10px;
@@ -2606,7 +2574,6 @@ canvas {
         font-size: 10px;
     }
 
-    /* Custom Size Inputs */
     .custom-dimension-row {
         grid-template-columns: 1fr;
     }
@@ -2625,7 +2592,6 @@ canvas {
         padding: 10px;
     }
 
-    /* Radio Options */
     .radio-option {
         padding: 10px 12px;
     }
@@ -2642,7 +2608,6 @@ canvas {
         font-size: 11px;
     }
 
-    /* Shape Grid */
     .shape-grid {
         grid-template-columns: repeat(2, 1fr);
         gap: 12px;
@@ -2673,7 +2638,6 @@ canvas {
         font-weight: 700;
     }
 
-    /* Backboard Colors */
     .backboard-colors-grid {
         grid-template-columns: 1fr;
         gap: 10px;
@@ -2696,7 +2660,6 @@ canvas {
         font-size: 11px;
     }
 
-    /* Section Header with Link */
     .section-header-with-link {
         flex-direction: column;
         align-items: flex-start;
@@ -2709,7 +2672,6 @@ canvas {
         padding: 5px 12px;
     }
 
-    /* Power Adapter Grid */
     .power-adapter-grid {
         grid-template-columns: repeat(2, 1fr);
         gap: 8px;
@@ -2723,7 +2685,6 @@ canvas {
         font-size: 10px;
     }
 
-    /* Checkbox Options */
     .checkbox-option {
         padding: 12px;
     }
@@ -2742,7 +2703,6 @@ canvas {
         padding: 2px 6px;
     }
 
-    /* Discount Section */
     .discount-code-section {
         flex-direction: column;
         gap: 10px;
@@ -2760,7 +2720,6 @@ canvas {
         padding: 12px 24px;
     }
 
-    /* Price Summary in Step 4 */
     .price-summary {
         text-align: center;
         margin-bottom: 20px;
@@ -2778,17 +2737,14 @@ canvas {
         font-size: 13px;
     }
 
-    /* Navigation Buttons - Hide on mobile */
     .navigation-buttons {
         display: none;
     }
 
-    /* Mobile Footer */
     .mobile-footer {
         display: block;
     }
 
-    /* Theme Mode Toggle */
     .theme-mode-toggle {
         flex-direction: row;
     }
@@ -2808,13 +2764,11 @@ canvas {
         height: 40px;
     }
 
-    /* Collapsible Content */
     .collapsible-content.open {
         max-height: 400px;
         overflow-y: auto;
     }
 
-    /* Scrollbar for Left Panel */
     .left-panel::-webkit-scrollbar {
         width: 6px;
     }
@@ -2834,7 +2788,6 @@ canvas {
         background: rgba(200, 255, 0, 0.7);
     }
 
-    /* Character Color Popup Adjustments */
     .character-color-popup {
         min-width: 180px;
         padding: 12px;
@@ -2860,7 +2813,6 @@ canvas {
         padding: 8px 12px;
     }
 
-    /* Preview Modal Mobile Adjustments */
     .preview-modal {
         width: 95%;
         border-radius: 16px 16px 0 0;
@@ -2900,7 +2852,6 @@ canvas {
     }
 }
 
-/* Smaller Mobile Devices */
 @media (max-width: 480px) {
     .left-panel {
         max-height: 80vh;

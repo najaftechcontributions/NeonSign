@@ -1,24 +1,24 @@
-// ===========================
-// CONFIGURATION (Customizable)
-// ===========================
+
+
+
 const CONFIG = {
-    // Mobile settings
+
     mobileBreakpoint: 768,
     maxMobileLinesCount: 3,
     maxDesktopLinesCount: 4,
 
-    // Text rendering
+
     defaultPlaceholderText: 'Your Text',
     baseFontSize: 70,
     minFontSize: 20,
     textBoundingRatioMobile: { width: 0.8, height: 0.7 },
     textBoundingRatioDesktop: { width: 0.85, height: 0.75 },
 
-    // RGB animation
+
     rgbCycleSpeed: 500,
     rgbColorSequence: ['#FF0000', '#FF7F00', '#FFFF00', '#00FF00', '#0000FF', '#4B0082', '#9400D3'],
 
-    // Pricing
+
     rgbSurcharge: 50,
     outdoorSurcharge: 65,
     basePromotionPercentage: 0.20,
@@ -30,51 +30,51 @@ const CONFIG = {
     currencyConversion: 1.0,
     minimumPriceFloor: 438.99,
 
-    // Premium fonts (multiplier applied to price)
+
     premiumFonts: {
         'abril-fatface': 1.15,
         'playfair-display': 1.1
     },
 
-    // Plan generation
+
     planScalingFactor: 1.3,
     planNames: ['Mini', 'Small', 'Medium', 'Large', 'XL', 'XXL', 'XXXL', '4XL']
 };
 
-// ===========================
-// GLOBAL STATE OBJECT
-// ===========================
+
+
+
 const appState = {
-    // Text content
+
     text: '',
     userHasEnteredText: false,
 
-    // Font
+
     fontFamily: "'Pacifico', cursive",
     fontKey: 'pacifico',
     fontSizePx: CONFIG.baseFontSize,
     lineHeightPx: CONFIG.baseFontSize * 1.2,
 
-    // Color
+
     colorValue: '#FFFFFF',
     colorName: 'White',
     rgbSurcharge: 0,
     rgbMode: false,
     rgbAnimationTimer: null,
 
-    // Type (indoor/outdoor)
+
     type: 'indoor',
     outdoorSurcharge: 0,
 
-    // Backboard & cut options
+
     backboard: 'clear',
     cutTo: 'cut-to-letter',
     cutToPrice: 15,
 
-    // Extras
+
     extras: [],
 
-    // Selected plan
+
     plan: {
         id: 'mini',
         name: 'Mini',
@@ -83,7 +83,7 @@ const appState = {
         price: 438.99
     },
 
-    // Pricing
+
     totalPrice: 438.99,
     discountPrice: 351.19,
     originalDiscountPrice: 351.19,
@@ -91,16 +91,16 @@ const appState = {
     activeDiscount: null,
     discountCode: null,
 
-    // Preview/export
+
     svgMarkup: '',
     svgWidthPx: 800,
     svgHeightPx: 600,
 
-    // Measured dimensions from canvas
+
     measuredWidthIn: 23,
     measuredHeightIn: 10,
 
-    // UI state
+
     currentStep: 1,
     inputType: 'text',
     logoFile: null,
@@ -113,60 +113,60 @@ const appState = {
     generatedPlans: []
 };
 
-// ===========================
-// CANVAS MANAGEMENT
-// ===========================
+
+
+
 const canvasInstances = {};
 const animationHandles = {};
 
-// ===========================
-// ACTIVE STATE INITIALIZATION
-// ===========================
+
+
+
 function initializeActiveStates() {
-    // Set default font (pacifico) as active
+
     const defaultFontCard = document.querySelector('.font-card[data-font="pacifico"]');
     const defaultFontItem = document.querySelector('.font-list-item[data-font="pacifico"]');
     if (defaultFontCard) defaultFontCard.classList.add('active');
     if (defaultFontItem) defaultFontItem.classList.add('active');
 
-    // Default color (white) is already marked as active in HTML
-    // But ensure it stays active
+
+
     const defaultColor = document.querySelector('.color-option[data-color="#FFFFFF"]');
     if (defaultColor && !defaultColor.classList.contains('active')) {
         document.querySelectorAll('.color-option').forEach(opt => opt.classList.remove('active'));
         defaultColor.classList.add('active');
     }
 
-    // Default size card (mini) is already marked as active in HTML
-    // Default shape card (cut-to-letter) is already marked as active in HTML
 
-    // Set default backboard option as active
+
+
+
     const defaultBackboard = document.querySelector('.backboard-color-option input[value="clear"]');
     if (defaultBackboard) {
         const parent = defaultBackboard.closest('.backboard-color-option');
         if (parent) parent.classList.add('active');
     }
 
-    // Set default power adapter as active
+
     const defaultPower = document.querySelector('.radio-pill input[value="usa"]');
     if (defaultPower) {
         const parent = defaultPower.closest('.radio-pill');
         if (parent) parent.classList.add('active');
     }
 
-    // Location (indoor) is already marked as active in HTML
-    // Hanging (none) is already marked as active in HTML
+
+
 }
 
-// ===========================
-// INITIALIZATION
-// ===========================
+
+
+
 document.addEventListener('DOMContentLoaded', () => {
     setupCanvases();
     attachEventListeners();
     generateInitialPlans();
-    updateFontSizeForPlan(); // Set initial font size based on default medium size
-    initializeActiveStates(); // Set initial active states for all UI elements
+    updateFontSizeForPlan();
+    initializeActiveStates();
     renderAllPreviews();
     recalculateTotalPrice();
 });
@@ -184,7 +184,7 @@ function setupCanvases() {
                 selection: false
             });
 
-            // Add click handler for multicolor character selection
+
             canvasInstances[canvasId].on('mouse:down', function (options) {
                 handleCanvasClick(canvasId, options);
             });
@@ -192,7 +192,7 @@ function setupCanvases() {
     }
 }
 
-// Handle canvas click for character selection in multicolor mode
+
 function handleCanvasClick(canvasId, options) {
     if (!appState.multicolor) return;
 
@@ -201,7 +201,7 @@ function handleCanvasClick(canvasId, options) {
 
     const pointer = canvas.getPointer(options.e);
 
-    // Find which character was clicked
+
     const characterObjects = canvas.getObjects().filter(obj => obj.charIndex !== undefined);
 
     for (let obj of characterObjects) {
@@ -210,7 +210,7 @@ function handleCanvasClick(canvasId, options) {
         if (pointer.x >= bounds.left && pointer.x <= bounds.left + bounds.width &&
             pointer.y >= bounds.top && pointer.y <= bounds.top + bounds.height) {
 
-            // Character clicked
+
             appState.selectedCharIndex = obj.charIndex;
             renderAllPreviews();
             showColorPopup(canvasId, obj);
@@ -218,40 +218,40 @@ function handleCanvasClick(canvasId, options) {
         }
     }
 
-    // Clicked outside any character
+
     appState.selectedCharIndex = null;
     renderAllPreviews();
     hideColorPopup();
 }
 
-// Show color popup near selected character
+
 function showColorPopup(canvasId, charObj) {
     const canvasElement = document.getElementById(canvasId);
     if (!canvasElement) return;
 
-    // Remove existing popup if any
+
     hideColorPopup();
 
-    // Get canvas wrapper
+
     const wrapper = canvasElement.closest('.canvas-wrapper');
     if (!wrapper) return;
 
-    // Create popup
+
     const popup = document.createElement('div');
     popup.className = 'character-color-popup';
     popup.id = 'characterColorPopup';
 
-    // Create title
+
     const title = document.createElement('div');
     title.className = 'popup-title';
     title.textContent = 'SELECT COLOR';
     popup.appendChild(title);
 
-    // Create color grid
+
     const colorsGrid = document.createElement('div');
     colorsGrid.className = 'popup-colors';
 
-    // Add all color options
+
     const colors = [
         { color: '#FFF8DC', name: 'Warm White' },
         { color: '#FFFFFF', name: 'White' },
@@ -289,7 +289,7 @@ function showColorPopup(canvasId, charObj) {
                 appState.characterColors[appState.selectedCharIndex] = color;
                 renderAllPreviews();
 
-                // Update active state
+
                 popup.querySelectorAll('.popup-color-btn').forEach(b => b.classList.remove('active'));
                 btn.classList.add('active');
             }
@@ -300,7 +300,7 @@ function showColorPopup(canvasId, charObj) {
 
     popup.appendChild(colorsGrid);
 
-    // Add custom color picker button
+
     const customColorBtn = document.createElement('button');
     customColorBtn.className = 'popup-color-btn custom-color-btn';
     customColorBtn.innerHTML = `
@@ -309,7 +309,7 @@ function showColorPopup(canvasId, charObj) {
         </svg>
     `;
 
-    // Create hidden color input
+
     const customColorInput = document.createElement('input');
     customColorInput.type = 'color';
     customColorInput.className = 'popup-custom-color-input';
@@ -317,13 +317,13 @@ function showColorPopup(canvasId, charObj) {
 
     customColorBtn.appendChild(customColorInput);
 
-    // Handle custom color button click
+
     customColorBtn.addEventListener('click', (e) => {
         e.stopPropagation();
         customColorInput.click();
     });
 
-    // Handle color input change
+
     customColorInput.addEventListener('input', (e) => {
         e.stopPropagation();
         const selectedColor = e.target.value;
@@ -332,33 +332,33 @@ function showColorPopup(canvasId, charObj) {
             appState.characterColors[appState.selectedCharIndex] = selectedColor;
             renderAllPreviews();
 
-            // Update active state
+
             popup.querySelectorAll('.popup-color-btn').forEach(b => b.classList.remove('active'));
         }
     });
 
     colorsGrid.appendChild(customColorBtn);
 
-    // Position popup
+
     wrapper.appendChild(popup);
 
-    // Calculate position based on character bounds
+
     const bounds = charObj.getBoundingRect();
     const canvasRect = canvasElement.getBoundingClientRect();
     const wrapperRect = wrapper.getBoundingClientRect();
 
-    // Position above the character
+
     const popupLeft = bounds.left + (bounds.width / 2) - (popup.offsetWidth / 2);
     const popupTop = bounds.top - popup.offsetHeight - 20;
 
-    // Ensure popup stays within canvas bounds
+
     const finalLeft = Math.max(10, Math.min(popupLeft, canvasRect.width - popup.offsetWidth - 10));
     const finalTop = Math.max(10, popupTop);
 
     popup.style.left = `${finalLeft}px`;
     popup.style.top = `${finalTop}px`;
 
-    // Close popup when clicking outside
+
     setTimeout(() => {
         document.addEventListener('click', handlePopupOutsideClick);
     }, 100);
@@ -382,54 +382,54 @@ function handlePopupOutsideClick(e) {
     }
 }
 
-// ===========================
-// EVENT LISTENERS
-// ===========================
+
+
+
 function attachEventListeners() {
-    // Text input (debounced)
+
     const textInput = document.getElementById('neonText');
     if (textInput) {
         textInput.addEventListener('input', debounce(handleTextInput, 300));
     }
 
-    // Font selection
+
     attachFontListeners();
 
-    // Color selection
+
     attachColorListeners();
 
-    // Size/plan selection
+
     attachPlanListeners();
 
-    // Indoor/outdoor toggle
+
     attachLocationListeners();
 
-    // Shape/backboard selection
+
     attachShapeListeners();
 
-    // Extras (hanging, waterproof, etc.)
+
     attachExtrasListeners();
 
-    // Step navigation
+
     attachStepNavigationListeners();
 
-    // Preview controls
+
     attachPreviewControlListeners();
 
-    // Discount handling
+
     attachDiscountListeners();
 
-    // Checkout
+
     attachCheckoutListener();
 }
 
-// ===========================
-// TEXT INPUT HANDLER (Debounced)
-// ===========================
+
+
+
 function handleTextInput(event) {
     let inputText = event.target.value.trim();
 
-    // Apply line limit based on viewport
+
     const isMobile = window.innerWidth < CONFIG.mobileBreakpoint;
     const maxLines = isMobile ? CONFIG.maxMobileLinesCount : CONFIG.maxDesktopLinesCount;
     const lines = inputText.split('\n');
@@ -439,18 +439,18 @@ function handleTextInput(event) {
         event.target.value = inputText;
     }
 
-    // Update state
+
     appState.text = inputText || CONFIG.defaultPlaceholderText;
     appState.userHasEnteredText = inputText.length > 0;
 
-    // Render preview
+
     renderAllPreviews();
 
-    // Recalculate pricing
+
     recalculateTotalPrice();
 }
 
-// Debounce utility
+
 function debounce(func, wait) {
     let timeout;
     return function executedFunction(...args) {
@@ -463,11 +463,11 @@ function debounce(func, wait) {
     };
 }
 
-// ===========================
-// FONT SELECTION
-// ===========================
+
+
+
 function attachFontListeners() {
-    // Font cards
+
     document.querySelectorAll('.font-card').forEach(card => {
         card.addEventListener('click', () => {
             const fontKey = card.getAttribute('data-font');
@@ -476,14 +476,14 @@ function attachFontListeners() {
         });
     });
 
-    // Font library items
+
     document.querySelectorAll('.font-list-item').forEach(item => {
         item.addEventListener('click', () => {
             const fontKey = item.getAttribute('data-font');
             const fontFamily = item.getAttribute('data-family');
             selectFont(fontKey, fontFamily);
 
-            // Close collapsible
+
             const content = document.getElementById('fontLibraryContent');
             const trigger = document.getElementById('fontLibraryTrigger');
             if (content) content.classList.remove('open');
@@ -491,7 +491,7 @@ function attachFontListeners() {
         });
     });
 
-    // Font library toggle
+
     const trigger = document.getElementById('fontLibraryTrigger');
     const content = document.getElementById('fontLibraryContent');
     if (trigger && content) {
@@ -506,29 +506,29 @@ function selectFont(fontKey, fontFamily) {
     appState.fontKey = fontKey;
     appState.fontFamily = fontFamily;
 
-    // Remove active class from all font cards and list items
+
     document.querySelectorAll('.font-card').forEach(card => card.classList.remove('active'));
     document.querySelectorAll('.font-list-item').forEach(item => item.classList.remove('active'));
 
-    // Add active class to the selected font
+
     const selectedCard = document.querySelector(`.font-card[data-font="${fontKey}"]`);
     const selectedListItem = document.querySelector(`.font-list-item[data-font="${fontKey}"]`);
 
     if (selectedCard) selectedCard.classList.add('active');
     if (selectedListItem) selectedListItem.classList.add('active');
 
-    // Update font size to match current plan
+
     updateFontSizeForPlan();
 
     renderAllPreviews();
     recalculateTotalPrice();
 }
 
-// ===========================
-// COLOR SELECTION
-// ===========================
+
+
+
 function attachColorListeners() {
-    // Standard colors
+
     document.querySelectorAll('.color-option').forEach(option => {
         option.addEventListener('click', (e) => {
             const colorValue = option.getAttribute('data-color');
@@ -538,7 +538,7 @@ function attachColorListeners() {
                 appState.characterColors[appState.selectedCharIndex] = colorValue;
                 renderAllPreviews();
             } else {
-                // Update active state
+
                 document.querySelectorAll('.color-option').forEach(opt => opt.classList.remove('active'));
                 option.classList.add('active');
 
@@ -547,7 +547,7 @@ function attachColorListeners() {
         });
     });
 
-    // Custom color picker
+
     const customBtn = document.getElementById('customColorBtn');
     const customPicker = document.getElementById('customColorPicker');
 
@@ -567,7 +567,7 @@ function attachColorListeners() {
         });
     }
 
-    // Multicolor toggle
+
     const multiToggle = document.getElementById('multicolorToggle');
     const multiHelp = document.getElementById('multicolorHelp');
 
@@ -591,11 +591,11 @@ function attachColorListeners() {
 }
 
 function selectColor(colorValue, colorName) {
-    // Check if this is RGB mode
+
     if (colorName === 'RGB Color Changing' || colorValue === 'rgb') {
         startRgbMode();
     } else {
-        // Stop RGB mode if active
+
         if (appState.rgbMode) {
             stopRgbMode();
         }
@@ -635,11 +635,11 @@ function stopRgbMode() {
     }
 }
 
-// ===========================
-// PLAN/SIZE SELECTION
-// ===========================
+
+
+
 function attachPlanListeners() {
-    // Size mode toggle
+
     document.querySelectorAll('.size-mode-btn').forEach(btn => {
         btn.addEventListener('click', () => {
             document.querySelectorAll('.size-mode-btn').forEach(b => b.classList.remove('active'));
@@ -650,7 +650,7 @@ function attachPlanListeners() {
         });
     });
 
-    // Custom size inputs
+
     const customWidth = document.getElementById('customWidth');
     const customHeight = document.getElementById('customHeight');
 
@@ -683,7 +683,7 @@ function attachPlanListeners() {
         }, 300));
     }
 
-    // Pre-defined size cards (delegated event handling)
+
     document.addEventListener('click', (e) => {
         const sizeCard = e.target.closest('.size-card');
         if (sizeCard) {
@@ -709,50 +709,50 @@ function toggleSizeMode(mode) {
 }
 
 function selectPlan(cardElement) {
-    // Remove active state from all cards
+
     document.querySelectorAll('.size-card').forEach(c => c.classList.remove('active'));
     cardElement.classList.add('active');
     const currentWidth = appState.plan.widthIn;
-    // Update state
+
     appState.plan.id = cardElement.getAttribute('data-size');
     appState.plan.name = cardElement.querySelector('.size-name')?.textContent || 'Medium';
     appState.plan.widthIn = parseInt(cardElement.getAttribute('data-width')) || 38;
     appState.plan.heightIn = parseInt(cardElement.getAttribute('data-height')) || 17;
     appState.plan.price = parseFloat(cardElement.getAttribute('data-price')) || 438.99;
 
-    // Update font size based on plan size (scale proportionally)
+
     updateFontSizeForPlan(currentWidth);
 
-    // Re-render with new size
+
     renderAllPreviews();
     recalculateTotalPrice();
 }
 
-// Plans generation removed - using static HTML data only
+
 function generatePlansFromMeasurements() {
-    // Disabled: Plans are now defined directly in HTML
+
     return;
 }
 
-// Initial plans generation removed - using static HTML data only
+
 function generateInitialPlans() {
-    // Disabled: Plans are now defined directly in HTML
+
     return;
 }
 
-// Plan cards update removed - using static HTML data only
+
 function updatePlanCardsInUI() {
-    // Disabled: Plan cards are now defined directly in HTML with static data
+
     return;
 }
 
-// ===========================
-// PRICING CALCULATIONS
-// ===========================
+
+
+
 function calculatePlanPrice(widthIn, heightIn) {
     const area = widthIn * heightIn;
 
-    // Base product cost
+
     const costPerInchAdjusted = appState.rgbMode
         ? CONFIG.costPerInch * 1.2
         : CONFIG.costPerInch;
@@ -761,22 +761,22 @@ function calculatePlanPrice(widthIn, heightIn) {
     const shippingCost = (area * CONFIG.shippingPerInch) + CONFIG.localShippingConstant;
     const totalCosts = productCost + shippingCost;
 
-    // Profit calculation
+
     const percentageProfit = totalCosts * CONFIG.minProfitPercentage;
     const profit = Math.max(percentageProfit, CONFIG.fixedMinProfit);
 
-    // Base price
+
     let basePrice = (totalCosts + profit) * CONFIG.currencyConversion;
 
-    // Premium font multiplier
+
     if (CONFIG.premiumFonts[appState.fontKey]) {
         basePrice *= CONFIG.premiumFonts[appState.fontKey];
     }
 
-    // Apply minimum floor
+
     basePrice = Math.max(basePrice, CONFIG.minimumPriceFloor);
 
-    // Round to .99
+
     return Math.floor(basePrice) + 0.99;
 }
 
@@ -785,28 +785,28 @@ function recalculatePlanPrice() {
 }
 
 function recalculateTotalPrice() {
-    // Start with plan price
+
     let total = appState.plan.price;
 
-    // Add extras
+
     appState.extras.forEach(extra => {
         total += extra.price;
     });
 
-    // Add surcharges
+
     total += appState.outdoorSurcharge;
     total += appState.rgbSurcharge;
     total += appState.cutToPrice;
 
-    // Round to .99
+
     total = Math.floor(total) + 0.99;
 
     appState.totalPrice = total;
 
-    // Apply base promotion
+
     let discounted = total * (1 - CONFIG.basePromotionPercentage);
 
-    // Apply additional discount if exists
+
     if (appState.discountApplied && appState.activeDiscount) {
         if (appState.activeDiscount.type === 'percentage') {
             discounted *= (1 - appState.activeDiscount.value);
@@ -824,7 +824,7 @@ function recalculateTotalPrice() {
         appState.originalDiscountPrice = discounted;
     }
 
-    // Update UI
+
     updatePricingUI();
 }
 
@@ -841,9 +841,9 @@ function updatePricingUI() {
     }
 }
 
-// ===========================
-// LOCATION (Indoor/Outdoor)
-// ===========================
+
+
+
 function attachLocationListeners() {
     document.querySelectorAll('input[name="location"]').forEach(radio => {
         radio.addEventListener('change', (e) => {
@@ -863,11 +863,11 @@ function attachLocationListeners() {
     });
 }
 
-// ===========================
-// SHAPE & BACKBOARD
-// ===========================
+
+
+
 function attachShapeListeners() {
-    // Shape cards
+
     document.querySelectorAll('.shape-card').forEach(card => {
         card.addEventListener('click', () => {
             document.querySelectorAll('.shape-card').forEach(c => c.classList.remove('active'));
@@ -880,13 +880,13 @@ function attachShapeListeners() {
         });
     });
 
-    // Backboard selection
+
     document.querySelectorAll('input[name="backboard"]').forEach(radio => {
         radio.addEventListener('change', (e) => {
-            // Remove active class from all backboard options
+
             document.querySelectorAll('.backboard-color-option').forEach(opt => opt.classList.remove('active'));
 
-            // Add active class to the selected option
+
             const parent = e.target.closest('.backboard-color-option');
             if (parent) parent.classList.add('active');
 
@@ -895,11 +895,11 @@ function attachShapeListeners() {
     });
 }
 
-// ===========================
-// EXTRAS (Hanging, Waterproof, etc.)
-// ===========================
+
+
+
 function attachExtrasListeners() {
-    // Hanging options
+
     document.querySelectorAll('input[name="hanging"]').forEach(radio => {
         radio.addEventListener('change', (e) => {
             const parent = e.target.closest('.radio-option');
@@ -911,10 +911,10 @@ function attachExtrasListeners() {
             const hangingType = e.target.value;
             const hangingPrice = (hangingType === 'wall' || hangingType === 'sign') ? 15 : 0;
 
-            // Remove old hanging extra
+
             appState.extras = appState.extras.filter(ex => ex.id !== 'hanging');
 
-            // Add new hanging extra if applicable
+
             if (hangingPrice > 0) {
                 appState.extras.push({
                     id: 'hanging',
@@ -927,7 +927,7 @@ function attachExtrasListeners() {
         });
     });
 
-    // Waterproof checkbox
+
     const waterproofCheck = document.getElementById('waterProof');
     if (waterproofCheck) {
         waterproofCheck.addEventListener('change', (e) => {
@@ -950,13 +950,13 @@ function attachExtrasListeners() {
         });
     }
 
-    // Remote & dimmer checkbox
+
     const remoteDimmerCheck = document.getElementById('remoteDimmer');
     if (remoteDimmerCheck) {
         remoteDimmerCheck.addEventListener('change', (e) => {
             const parent = e.target.closest('.checkbox-option');
 
-            // Free feature, just for tracking
+
             appState.extras = appState.extras.filter(ex => ex.id !== 'remote');
 
             if (e.target.checked) {
@@ -972,25 +972,25 @@ function attachExtrasListeners() {
         });
     }
 
-    // Power adapter
+
     document.querySelectorAll('input[name="power"]').forEach(radio => {
         radio.addEventListener('change', (e) => {
-            // Remove active class from all radio pills
+
             document.querySelectorAll('.radio-pill').forEach(pill => pill.classList.remove('active'));
 
-            // Add active class to the selected pill
+
             const parent = e.target.closest('.radio-pill');
             if (parent) parent.classList.add('active');
 
-            // Store for checkout payload
+
             appState.powerAdapter = e.target.value;
         });
     });
 }
 
-// ===========================
-// DISCOUNT HANDLING
-// ===========================
+
+
+
 function attachDiscountListeners() {
     const applyBtn = document.querySelector('.apply-btn');
     const discountInput = document.getElementById('discountCode');
@@ -1005,11 +1005,11 @@ function attachDiscountListeners() {
             }
 
             if (appState.discountApplied) {
-                // Remove discount
+
                 removeDiscount();
                 applyBtn.textContent = 'Apply';
             } else {
-                // Apply discount (validate via API)
+
                 validateAndApplyDiscount(code);
             }
         });
@@ -1017,22 +1017,22 @@ function attachDiscountListeners() {
 }
 
 function validateAndApplyDiscount(code) {
-    // BACKEND DEPENDENCY: This would call the API
-    // POST https://apiv2.easyneonsigns.ca/apply-discount
-    // Headers: Content-Type, X-API-Key, X-Idempotency-Key
-    // Body: { discount_code: code }
+
+
+
+
 
     console.log('BACKEND CALL REQUIRED: Validate discount code:', code);
 
-    // Simulated response for demo
+
     alert('Backend integration required for discount validation.\n\nEndpoint: POST https://apiv2.easyneonsigns.ca/apply-discount');
 
-    // Example if valid:
-    // appState.discountApplied = true;
-    // appState.activeDiscount = { type: 'percentage', value: 0.10 }; // 10% off
-    // appState.discountCode = code;
-    // recalculateTotalPrice();
-    // document.querySelector('.apply-btn').textContent = 'Remove';
+
+
+
+
+
+
 }
 
 function removeDiscount() {
@@ -1043,9 +1043,9 @@ function removeDiscount() {
     recalculateTotalPrice();
 }
 
-// ===========================
-// CHECKOUT / ADD TO CART
-// ===========================
+
+
+
 function attachCheckoutListener() {
     const checkoutBtn = document.querySelector('.btn-final');
 
@@ -1057,19 +1057,19 @@ function attachCheckoutListener() {
 }
 
 function showPreviewModal() {
-    // Capture the current preview as an image
+
     const previewImage = capturePreviewSnapshot();
 
-    // Create modal overlay
+
     const overlay = document.createElement('div');
     overlay.className = 'preview-modal-overlay';
     overlay.id = 'previewModalOverlay';
 
-    // Create modal content
+
     const modal = document.createElement('div');
     modal.className = 'preview-modal';
 
-    // Get selected features summary
+
     const featuresSummary = generateFeaturesSummary();
 
     modal.innerHTML = `
@@ -1147,17 +1147,17 @@ function showPreviewModal() {
     overlay.appendChild(modal);
     document.body.appendChild(overlay);
 
-    // Add close on overlay click
+
     overlay.addEventListener('click', (e) => {
         if (e.target === overlay) {
             closePreviewModal();
         }
     });
 
-    // Prevent body scroll
+
     document.body.style.overflow = 'hidden';
 
-    // Expose close function globally
+
     window.closePreviewModal = closePreviewModal;
     window.proceedToCheckout = proceedToCheckout;
 }
@@ -1220,7 +1220,7 @@ function generateFeaturesSummary() {
         }
     ];
 
-    // Add extras if any
+
     if (appState.extras.length > 0) {
         appState.extras.forEach(extra => {
             features.push({
@@ -1281,7 +1281,7 @@ function formatPowerAdapter(adapter) {
 function proceedToCheckout() {
     closePreviewModal();
 
-    // Lock UI (prevent double submission)
+
     const btn = document.querySelector('.btn-final');
     const mobileBtn = document.getElementById('mobileNextBtn');
 
@@ -1295,10 +1295,10 @@ function proceedToCheckout() {
         mobileBtn.textContent = 'Processing...';
     }
 
-    // Capture SVG markup
+
     captureSvgMarkup();
 
-    // Prepare payload
+
     const payload = {
         text: appState.text,
         font: appState.fontKey,
@@ -1322,19 +1322,19 @@ function proceedToCheckout() {
         svgHeightPx: appState.svgHeightPx
     };
 
-    // BACKEND DEPENDENCY: Create checkout
-    // POST https://apiv2.easyneonsigns.ca/create-draft-order
-    // Headers: Content-Type, X-API-Key, X-Idempotency-Key
-    // Body: payload
+
+
+
+
 
     console.log('BACKEND CALL REQUIRED: Create checkout', payload);
 
     alert('Backend integration required for checkout.\n\nEndpoint: POST https://apiv2.easyneonsigns.ca/create-draft-order\n\nCheck console for payload.');
 
-    // On success, redirect to checkout_url
-    // window.location.href = response.checkout_url;
 
-    // On failure, unlock UI
+
+
+
     if (btn) {
         btn.disabled = false;
         btn.textContent = 'Preview & Buy';
@@ -1347,7 +1347,7 @@ function proceedToCheckout() {
 }
 
 function captureSvgMarkup() {
-    // In a real implementation, export canvas to SVG with embedded fonts
+
     const canvas = canvasInstances['neonCanvas4'] || canvasInstances['neonCanvas'];
 
     if (canvas) {
@@ -1357,24 +1357,25 @@ function captureSvgMarkup() {
     }
 }
 
-// ===========================
-// STEP NAVIGATION
-// ===========================
+
+
+
 function attachStepNavigationListeners() {
     document.querySelectorAll('.step-tab').forEach(tab => {
-        tab.addEventListener('click', (e) => {            e.stopPropagation(); // Prevent panel toggle on mobile
+        tab.addEventListener('click', (e) => {
+            e.stopPropagation();
             const step = parseInt(tab.getAttribute('data-step'));
             navigateToStep(step);
         });
     });
 
-    // Attach to global scope for inline onclick handlers
+
     window.goToStep = navigateToStep;
 
-    // Mobile panel toggle functionality
+
     setupMobilePanelToggle();
 
-    // Preview eye buttons
+
     document.querySelectorAll('.preview-eye-btn').forEach(btn => {
         btn.addEventListener('click', () => {
             showPreviewModal();
@@ -1385,7 +1386,7 @@ function attachStepNavigationListeners() {
 function setupMobilePanelToggle() {
     const isMobile = () => window.innerWidth < 768;
 
-    // Toggle buttons
+
     for (let i = 1; i <= 4; i++) {
         const toggleBtn = document.getElementById(`mobileToggle${i === 1 ? '' : i}`);
         const handle = document.getElementById(`mobilePanelHandle${i === 1 ? '' : i}`);
@@ -1401,7 +1402,7 @@ function setupMobilePanelToggle() {
             });
         }
 
-        // Handle drag/click to toggle
+
         if (handle && leftPanel && isMobile()) {
             let startY = 0;
             let currentY = 0;
@@ -1422,17 +1423,17 @@ function setupMobilePanelToggle() {
 
             handle.addEventListener('touchend', (e) => {
                 if (!isDragging) {
-                    // It was a tap, toggle panel
+
                     leftPanel.classList.toggle('expanded');
                 } else {
-                    // It was a drag
+
                     const diff = currentY - startY;
                     if (Math.abs(diff) > 50) {
                         if (diff > 0) {
-                            // Swiped down - collapse
+
                             leftPanel.classList.remove('expanded');
                         } else {
-                            // Swiped up - expand
+
                             leftPanel.classList.add('expanded');
                         }
                     }
@@ -1440,7 +1441,7 @@ function setupMobilePanelToggle() {
                 isDragging = false;
             }, { passive: true });
 
-            // Click handler for desktop/mouse
+
             handle.addEventListener('click', () => {
                 if (isMobile()) {
                     leftPanel.classList.toggle('expanded');
@@ -1449,7 +1450,7 @@ function setupMobilePanelToggle() {
         }
     }
 
-    // Resize handler to clean up on desktop
+
     window.addEventListener('resize', () => {
         if (!isMobile()) {
             document.querySelectorAll('.left-panel').forEach(panel => {
@@ -1460,12 +1461,12 @@ function setupMobilePanelToggle() {
 }
 
 function navigateToStep(stepNumber) {
-    // Hide all steps
+
     document.querySelectorAll('.step-container').forEach(container => {
         container.classList.remove('active');
     });
 
-    // Show target step
+
     const targetStep = document.getElementById(`step${stepNumber}`);
     if (targetStep) {
         targetStep.classList.add('active');
@@ -1476,15 +1477,15 @@ function navigateToStep(stepNumber) {
     hideColorPopup();
     renderAllPreviews();
 
-    // Keep panel expanded on mobile when switching tabs
+
     const isMobile = window.innerWidth < 768;
     if (isMobile) {
         const leftPanel = targetStep.querySelector('.left-panel');
         if (leftPanel && leftPanel.classList.contains('expanded')) {
-            // Keep it expanded
+
         } else if (leftPanel) {
-            // Keep collapsed state when navigating
-            // Don't auto-expand
+
+
         }
     } else {
         window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -1504,15 +1505,15 @@ function updateStepTabsUI() {
     });
 }
 
-// ===========================
-// PREVIEW CONTROLS
-// ===========================
+
+
+
 function attachPreviewControlListeners() {
     for (let step = 1; step <= 4; step++) {
         const container = document.getElementById(`step${step}`);
         if (!container) continue;
 
-        // Neon ON/OFF toggle
+
         const neonToggle = container.querySelector(`#neonToggle${step === 1 ? '' : step}`);
         if (neonToggle) {
             neonToggle.addEventListener('change', (e) => {
@@ -1521,7 +1522,7 @@ function attachPreviewControlListeners() {
             });
         }
 
-        // Theme mode (light/dark)
+
         const modeBtns = container.querySelectorAll('.mode-btn');
         modeBtns.forEach(btn => {
             btn.addEventListener('click', () => {
@@ -1535,7 +1536,7 @@ function attachPreviewControlListeners() {
             });
         });
 
-        // Save preview button
+
         const saveBtn = document.getElementById(`saveBtn${step}`);
         if (saveBtn) {
             saveBtn.addEventListener('click', () => {
@@ -1576,9 +1577,9 @@ function exportPreviewImage(stepNumber) {
     link.click();
 }
 
-// ===========================
-// CANVAS RENDERING
-// ===========================
+
+
+
 function renderAllPreviews() {
     Object.keys(canvasInstances).forEach(canvasId => {
         const canvas = canvasInstances[canvasId];
@@ -1597,7 +1598,7 @@ function renderCanvasPreview(canvas) {
     const centerX = canvas.width / 2;
     const centerY = canvas.height / 2;
 
-    // Calculate rendering font size adjustment based on plan size
+
     const defaultSizeWidth = 38;
     let renderingFontSize = appState.fontSizePx;
 
@@ -1608,10 +1609,10 @@ function renderCanvasPreview(canvas) {
     }
 
     if (appState.multicolor) {
-        // Render in multicolor mode - each character individually positioned
+
         renderMulticolorText(canvas, displayText, centerX, centerY, renderingFontSize);
     } else {
-        // Render as single text object
+
         const textConfig = {
             left: centerX,
             top: centerY,
@@ -1623,7 +1624,7 @@ function renderCanvasPreview(canvas) {
             selectable: false
         };
 
-        // Apply glow if enabled
+
         if (appState.neonGlowEnabled) {
             textConfig.shadow = {
                 color: appState.colorValue,
@@ -1638,7 +1639,7 @@ function renderCanvasPreview(canvas) {
         const textObject = new fabric.Text(displayText, textConfig);
         canvas.add(textObject);
 
-        // Draw measurement overlays
+
         drawMeasurementOverlays(canvas, textObject);
     }
 
@@ -1646,10 +1647,10 @@ function renderCanvasPreview(canvas) {
 }
 
 function renderMulticolorText(canvas, text, centerX, centerY, renderingFontSize) {
-    // Use the adjusted font size for rendering
+
     const useFontSize = renderingFontSize || appState.fontSizePx;
 
-    // Create a temporary text object to measure total width
+
     const tempText = new fabric.Text(text, {
         fontFamily: appState.fontFamily.replace(/['"]/g, ''),
         fontSize: useFontSize,
@@ -1659,11 +1660,11 @@ function renderMulticolorText(canvas, text, centerX, centerY, renderingFontSize)
     const totalWidth = tempText.width;
     const totalHeight = tempText.height;
 
-    // Starting X position (left side of the text)
+
     let startX = centerX - (totalWidth / 2);
     const baseY = centerY;
 
-    // Group to hold all characters for measurement
+
     const textGroup = new fabric.Group([], {
         left: centerX,
         top: centerY,
@@ -1672,17 +1673,17 @@ function renderMulticolorText(canvas, text, centerX, centerY, renderingFontSize)
         selectable: false
     });
 
-    // Render each character
+
     for (let i = 0; i < text.length; i++) {
         const char = text[i];
 
-        // Get color for this character
+
         const charColor = appState.characterColors[i] || appState.colorValue;
 
-        // Check if this character is selected
+
         const isSelected = appState.selectedCharIndex === i;
 
-        // Create character text object
+
         const charConfig = {
             fontFamily: appState.fontFamily.replace(/['"]/g, ''),
             fontSize: useFontSize,
@@ -1691,7 +1692,7 @@ function renderMulticolorText(canvas, text, centerX, centerY, renderingFontSize)
             charSpacing: 0
         };
 
-        // Apply glow if enabled
+
         if (appState.neonGlowEnabled) {
             charConfig.shadow = {
                 color: charColor,
@@ -1703,12 +1704,12 @@ function renderMulticolorText(canvas, text, centerX, centerY, renderingFontSize)
             charConfig.opacity = 0.3;
         }
 
-        // Add selection indicator (accent color outline)
+
         if (isSelected) {
             charConfig.stroke = '#C8FF00';
             charConfig.strokeWidth = 4;
             charConfig.paintFirst = 'stroke';
-            // Add extra glow for selected character
+
             if (appState.neonGlowEnabled) {
                 charConfig.shadow = {
                     color: '#C8FF00',
@@ -1720,12 +1721,12 @@ function renderMulticolorText(canvas, text, centerX, centerY, renderingFontSize)
         }
 
         const charObj = new fabric.Text(char, charConfig);
-        charObj.charIndex = i; // Store character index for click detection
+        charObj.charIndex = i;
 
-        // Measure character to get its width
+
         const charWidth = charObj.width;
 
-        // Position character
+
         charObj.set({
             left: startX - (totalWidth / 2) + (charWidth / 2),
             top: 0,
@@ -1735,19 +1736,19 @@ function renderMulticolorText(canvas, text, centerX, centerY, renderingFontSize)
 
         textGroup.addWithUpdate(charObj);
 
-        // Move X position for next character
+
         startX += charWidth;
     }
 
-    // Add the group to canvas
+
     canvas.add(textGroup);
 
-    // Ungroup to make individual characters clickable
+
     const items = textGroup.getObjects();
     textGroup._restoreObjectsState();
     canvas.remove(textGroup);
 
-    // Add each character individually with correct absolute positioning
+
     startX = centerX - (totalWidth / 2);
     items.forEach((item, index) => {
         const charWidth = item.width;
@@ -1761,7 +1762,7 @@ function renderMulticolorText(canvas, text, centerX, centerY, renderingFontSize)
         startX += charWidth;
     });
 
-    // Create a bounding box object for measurement overlays
+
     const boundingBox = {
         getBoundingRect: function () {
             return {
@@ -1787,13 +1788,13 @@ function drawMeasurementOverlays(canvas, textObject) {
     const centerX = canvas.width / 2;
     const centerY = canvas.height / 2;
 
-    // Scale padding and tick based on text size for better visibility
-    const sizeFactor = bounds.width / 400; // Adjust relative to typical text width
+
+    const sizeFactor = bounds.width / 400;
     const padding = Math.max(60, Math.min(100, 70 * sizeFactor));
     const tickLength = Math.max(8, Math.min(15, 10 * sizeFactor));
     const labelFontSize = Math.max(14, Math.min(20, 16 * sizeFactor));
 
-    // Horizontal dimension line
+
     const hLineY = bounds.top + bounds.height + padding;
     const hStartX = bounds.left - 30;
     const hEndX = bounds.left + bounds.width + 30;
@@ -1805,7 +1806,7 @@ function drawMeasurementOverlays(canvas, textObject) {
     });
     canvas.add(horizLine);
 
-    // Horizontal ticks
+
     canvas.add(new fabric.Line([hStartX, hLineY - tickLength, hStartX, hLineY + tickLength], {
         stroke: scaleColor,
         strokeWidth: 2,
@@ -1818,7 +1819,7 @@ function drawMeasurementOverlays(canvas, textObject) {
         selectable: false
     }));
 
-    // Horizontal label with background for better readability
+
     const widthLabel = new fabric.Text(`${appState.plan.widthIn}"`, {
         left: centerX,
         top: hLineY + 18,
@@ -1834,7 +1835,7 @@ function drawMeasurementOverlays(canvas, textObject) {
     });
     canvas.add(widthLabel);
 
-    // Vertical dimension line
+
     const vLineX = bounds.left + bounds.width + padding;
     const vStartY = bounds.top - 30;
     const vEndY = bounds.top + bounds.height + 30;
@@ -1846,7 +1847,7 @@ function drawMeasurementOverlays(canvas, textObject) {
     });
     canvas.add(vertLine);
 
-    // Vertical ticks
+
     canvas.add(new fabric.Line([vLineX - tickLength, vStartY, vLineX + tickLength, vStartY], {
         stroke: scaleColor,
         strokeWidth: 2,
@@ -1859,7 +1860,7 @@ function drawMeasurementOverlays(canvas, textObject) {
         selectable: false
     }));
 
-    // Vertical label with background for better readability
+
     const heightLabel = new fabric.Text(`${appState.plan.heightIn}"`, {
         left: vLineX + 18,
         top: centerY,
@@ -1876,21 +1877,21 @@ function drawMeasurementOverlays(canvas, textObject) {
     canvas.add(heightLabel);
 }
 
-// ===========================
-// FONT SIZE SCALING BASED ON PLAN
-// ===========================
+
+
+
 function updateFontSizeForPlan(currentWidth = 23) {
     const adjustment = currentWidth > appState.plan.widthIn ? -5 : 5;
     appState.fontSizePx = appState.fontSizePx + adjustment;
     appState.lineHeightPx = appState.fontSizePx * 1.2;
 }
 
-// ===========================
-// MEASUREMENT SIMULATION
-// ===========================
+
+
+
 function getMeasuredDimensions() {
-    // In real implementation, this would measure the actual rendered text
-    // For now, we estimate based on text length and font
+
+
 
     const textLength = appState.text.length || CONFIG.defaultPlaceholderText.length;
     const baseWidth = 15 + (textLength * 2.5);
@@ -1902,17 +1903,17 @@ function getMeasuredDimensions() {
     };
 }
 
-// ===========================
-// WINDOW RESIZE HANDLER
-// ===========================
+
+
+
 window.addEventListener('resize', debounce(() => {
     renderAllPreviews();
     updateMobileFooter();
 }, 250));
 
-// ===========================
-// MOBILE BOTTOM SHEET INTERACTIONS
-// ===========================
+
+
+
 let touchStartY = 0;
 let touchCurrentY = 0;
 let isDragging = false;
@@ -1924,7 +1925,7 @@ function setupMobileBottomSheet() {
     const mobileFooter = createMobileFooter();
 
 
-    // Overlay click to collapse
+
     overlay.addEventListener('click', () => {
         const activePanel = document.querySelector('.left-panel.expanded');
         if (activePanel) {
@@ -1932,7 +1933,7 @@ function setupMobileBottomSheet() {
         }
     });
 
-    // Update footer on navigation
+
     updateMobileFooter();
 }
 
@@ -1966,7 +1967,7 @@ function createMobileFooter() {
         `;
         document.body.appendChild(footer);
 
-        // Add click handler for mobile next button
+
         const mobileNextBtn = footer.querySelector('#mobileNextBtn');
         mobileNextBtn.addEventListener('click', handleMobileNavigation);
     }
@@ -1998,7 +1999,7 @@ function handleMobileNavigation() {
     if (currentStep < 4) {
         navigateToStep(currentStep + 1);
     } else {
-        // Last step - show preview modal
+
         showPreviewModal();
     }
 }
@@ -2023,20 +2024,20 @@ function updateMobileFooter() {
     }
 }
 
-// Initialize mobile bottom sheet on DOM ready
+
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', setupMobileBottomSheet);
 } else {
     setupMobileBottomSheet();
 }
 
-// Update mobile footer when step changes
+
 const originalNavigateToStep = navigateToStep;
-navigateToStep = function(stepNumber) {
+navigateToStep = function (stepNumber) {
     originalNavigateToStep(stepNumber);
     updateMobileFooter();
 
-    // Collapse panel on mobile when navigating
+
     if (window.innerWidth <= 768) {
         const activePanel = document.querySelector('.left-panel.expanded');
         const overlay = document.getElementById('mobileOverlay');
@@ -2046,9 +2047,9 @@ navigateToStep = function(stepNumber) {
     }
 };
 
-// Update mobile footer when price changes
+
 const originalRecalculateTotalPrice = recalculateTotalPrice;
-recalculateTotalPrice = function() {
+recalculateTotalPrice = function () {
     originalRecalculateTotalPrice();
     updateMobileFooter();
 };

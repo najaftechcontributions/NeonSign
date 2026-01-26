@@ -446,14 +446,6 @@ function handleTextInput(event) {
     // Render preview
     renderAllPreviews();
 
-    // Read measured dimensions (simulated - real implementation would measure from canvas)
-    const measurements = getMeasuredDimensions();
-    appState.measuredWidthIn = measurements.widthIn;
-    appState.measuredHeightIn = measurements.heightIn;
-
-    // Regenerate plans
-    generatePlansFromMeasurements();
-
     // Recalculate pricing
     recalculateTotalPrice();
 }
@@ -529,12 +521,6 @@ function selectFont(fontKey, fontFamily) {
     updateFontSizeForPlan();
 
     renderAllPreviews();
-
-    const measurements = getMeasuredDimensions();
-    appState.measuredWidthIn = measurements.widthIn;
-    appState.measuredHeightIn = measurements.heightIn;
-
-    generatePlansFromMeasurements();
     recalculateTotalPrice();
 }
 
@@ -742,65 +728,22 @@ function selectPlan(cardElement) {
     recalculateTotalPrice();
 }
 
+// Plans generation removed - using static HTML data only
 function generatePlansFromMeasurements() {
-    const baseWidth = appState.measuredWidthIn;
-    const baseHeight = appState.measuredHeightIn;
-
-    appState.generatedPlans = [];
-
-    for (let i = 0; i < CONFIG.planNames.length; i++) {
-        const scaleFactor = Math.pow(CONFIG.planScalingFactor, i);
-        const scaledWidth = Math.round(baseWidth * scaleFactor);
-        const scaledHeight = Math.round(baseHeight * scaleFactor);
-
-        const planPrice = calculatePlanPrice(scaledWidth, scaledHeight);
-
-        appState.generatedPlans.push({
-            id: CONFIG.planNames[i].toLowerCase().replace(/\s/g, '-'),
-            name: CONFIG.planNames[i],
-            widthIn: scaledWidth,
-            heightIn: scaledHeight,
-            price: planPrice
-        });
-    }
-
-    // Update UI with generated plans
-    updatePlanCardsInUI();
-
-    // Select first plan by default if none selected
-    if (!appState.plan.id || appState.plan.id === 'custom') {
-        appState.plan = { ...appState.generatedPlans[0] };
-    }
+    // Disabled: Plans are now defined directly in HTML
+    return;
 }
 
+// Initial plans generation removed - using static HTML data only
 function generateInitialPlans() {
-    // Use default measurements for initial load
-    appState.measuredWidthIn = 23;
-    appState.measuredHeightIn = 10;
-    generatePlansFromMeasurements();
+    // Disabled: Plans are now defined directly in HTML
+    return;
 }
 
+// Plan cards update removed - using static HTML data only
 function updatePlanCardsInUI() {
-    const sizeGrid = document.getElementById('sizeGrid');
-    if (!sizeGrid) return;
-
-    // Note: In a full implementation, you would dynamically generate HTML here
-    // For now, we'll update existing cards with calculated prices
-    const cards = sizeGrid.querySelectorAll('.size-card');
-
-    appState.generatedPlans.forEach((plan, index) => {
-        if (cards[index]) {
-            cards[index].setAttribute('data-width', plan.widthIn);
-            cards[index].setAttribute('data-height', plan.heightIn);
-            cards[index].setAttribute('data-price', plan.price);
-
-            const dimensions = cards[index].querySelector('.size-dimensions');
-            if (dimensions) dimensions.textContent = `${plan.widthIn}"x${plan.heightIn}"`;
-
-            const priceElem = cards[index].querySelector('.sale-price');
-            if (priceElem) priceElem.textContent = `$${plan.price.toFixed(2)}`;
-        }
-    });
+    // Disabled: Plan cards are now defined directly in HTML with static data
+    return;
 }
 
 // ===========================
@@ -1108,17 +1051,248 @@ function attachCheckoutListener() {
 
     if (checkoutBtn) {
         checkoutBtn.addEventListener('click', () => {
-            handleCheckout();
+            showPreviewModal();
         });
     }
 }
 
-function handleCheckout() {
+function showPreviewModal() {
+    // Capture the current preview as an image
+    const previewImage = capturePreviewSnapshot();
+
+    // Create modal overlay
+    const overlay = document.createElement('div');
+    overlay.className = 'preview-modal-overlay';
+    overlay.id = 'previewModalOverlay';
+
+    // Create modal content
+    const modal = document.createElement('div');
+    modal.className = 'preview-modal';
+
+    // Get selected features summary
+    const featuresSummary = generateFeaturesSummary();
+
+    modal.innerHTML = `
+        <div class="modal-header">
+            <h2 class="modal-title">Order Summary</h2>
+            <button class="modal-close-btn" onclick="closePreviewModal()">
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                    <path d="M15 5L5 15M5 5L15 15" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+            </button>
+        </div>
+
+        <div class="modal-body">
+            <div class="preview-section">
+                <img src="${previewImage}" alt="Neon Sign Preview" class="preview-snapshot" />
+            </div>
+
+            <div class="features-section">
+                <h3 class="section-title">Selected Features</h3>
+                <div class="features-grid">
+                    ${featuresSummary}
+                </div>
+            </div>
+
+            <div class="price-breakdown">
+                <div class="price-row">
+                    <span class="price-label">Base Price (${appState.plan.name} - ${appState.plan.widthIn}" × ${appState.plan.heightIn}")</span>
+                    <span class="price-value">$${appState.plan.price.toFixed(2)}</span>
+                </div>
+                ${appState.cutToPrice > 0 ? `
+                <div class="price-row">
+                    <span class="price-label">Shape Option (${formatShapeName(appState.cutTo)})</span>
+                    <span class="price-value">+$${appState.cutToPrice.toFixed(2)}</span>
+                </div>
+                ` : ''}
+                ${appState.outdoorSurcharge > 0 ? `
+                <div class="price-row">
+                    <span class="price-label">Outdoor Protection</span>
+                    <span class="price-value">+$${appState.outdoorSurcharge.toFixed(2)}</span>
+                </div>
+                ` : ''}
+                ${appState.rgbSurcharge > 0 ? `
+                <div class="price-row">
+                    <span class="price-label">RGB Color Changing</span>
+                    <span class="price-value">+$${appState.rgbSurcharge.toFixed(2)}</span>
+                </div>
+                ` : ''}
+                ${appState.extras.filter(e => e.price > 0).map(extra => `
+                <div class="price-row">
+                    <span class="price-label">${extra.description}</span>
+                    <span class="price-value">+$${extra.price.toFixed(2)}</span>
+                </div>
+                `).join('')}
+                <div class="price-row total">
+                    <span class="price-label">Total</span>
+                    <span class="price-value">$${appState.discountPrice.toFixed(2)}</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal-footer">
+            <button class="modal-btn modal-btn-secondary" onclick="closePreviewModal()">
+                Continue Editing
+            </button>
+            <button class="modal-btn modal-btn-primary" onclick="proceedToCheckout()">
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                    <path d="M6 2L3 6V18C3 18.5304 3.21071 19.0391 3.58579 19.4142C3.96086 19.7893 4.46957 20 5 20H15C15.5304 20 16.0391 19.7893 16.4142 19.4142C16.7893 19.0391 17 18.5304 17 18V6L14 2H6Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M3 6H17M13 10C13 11.0609 12.5786 12.0783 11.8284 12.8284C11.0783 13.5786 10.0609 14 9 14C7.93913 14 6.92172 13.5786 6.17157 12.8284C5.42143 12.0783 5 11.0609 5 10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                Buy Now
+            </button>
+        </div>
+    `;
+
+    overlay.appendChild(modal);
+    document.body.appendChild(overlay);
+
+    // Add close on overlay click
+    overlay.addEventListener('click', (e) => {
+        if (e.target === overlay) {
+            closePreviewModal();
+        }
+    });
+
+    // Prevent body scroll
+    document.body.style.overflow = 'hidden';
+
+    // Expose close function globally
+    window.closePreviewModal = closePreviewModal;
+    window.proceedToCheckout = proceedToCheckout;
+}
+
+function closePreviewModal() {
+    const overlay = document.getElementById('previewModalOverlay');
+    if (overlay) {
+        overlay.remove();
+    }
+    document.body.style.overflow = '';
+}
+
+function capturePreviewSnapshot() {
+    const canvas = canvasInstances['neonCanvas4'] || canvasInstances['neonCanvas'];
+
+    if (canvas) {
+        return canvas.toDataURL({
+            format: 'png',
+            quality: 1,
+            multiplier: 1
+        });
+    }
+
+    return '';
+}
+
+function generateFeaturesSummary() {
+    const features = [
+        {
+            label: 'Text',
+            value: appState.text || 'Your Text'
+        },
+        {
+            label: 'Font',
+            value: formatFontName(appState.fontKey)
+        },
+        {
+            label: 'Color',
+            value: appState.colorName
+        },
+        {
+            label: 'Size',
+            value: `${appState.plan.name} (${appState.plan.widthIn}" × ${appState.plan.heightIn}")`
+        },
+        {
+            label: 'Location',
+            value: appState.type === 'indoor' ? 'Indoor' : 'Outdoor'
+        },
+        {
+            label: 'Shape',
+            value: formatShapeName(appState.cutTo)
+        },
+        {
+            label: 'Backboard',
+            value: formatBackboardName(appState.backboard)
+        },
+        {
+            label: 'Power Adapter',
+            value: formatPowerAdapter(appState.powerAdapter || 'usa')
+        }
+    ];
+
+    // Add extras if any
+    if (appState.extras.length > 0) {
+        appState.extras.forEach(extra => {
+            features.push({
+                label: 'Extra',
+                value: extra.description
+            });
+        });
+    }
+
+    return features.map(feature => `
+        <div class="feature-item">
+            <div class="feature-label">${feature.label}</div>
+            <div class="feature-value">${feature.value}</div>
+        </div>
+    `).join('');
+}
+
+function formatFontName(fontKey) {
+    return fontKey
+        .split('-')
+        .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+        .join(' ');
+}
+
+function formatShapeName(shape) {
+    const shapeNames = {
+        'cut-to-shape': 'Cut to Shape',
+        'cut-to-letter': 'Cut to Letter',
+        'cut-rectangle': 'Rectangle',
+        'open-box': 'Open Box'
+    };
+    return shapeNames[shape] || shape;
+}
+
+function formatBackboardName(backboard) {
+    const backboardNames = {
+        'clear': 'Standard Clear Acrylic',
+        'glossy-white': 'Glossy White Acrylic',
+        'glossy-black': 'Glossy Black Acrylic',
+        'silver': 'Silver Acrylic',
+        'gold': 'Gold Acrylic'
+    };
+    return backboardNames[backboard] || backboard;
+}
+
+function formatPowerAdapter(adapter) {
+    const adapterNames = {
+        'usa': 'USA / Canada (120V)',
+        'uk': 'UK / Ireland (230V)',
+        'europe': 'Europe (230V)',
+        'australia': 'Australia / NZ (230V)',
+        'japan': 'Japan (100V)',
+        'other': 'Other'
+    };
+    return adapterNames[adapter] || adapter;
+}
+
+function proceedToCheckout() {
+    closePreviewModal();
+
     // Lock UI (prevent double submission)
     const btn = document.querySelector('.btn-final');
+    const mobileBtn = document.getElementById('mobileNextBtn');
+
     if (btn) {
         btn.disabled = true;
         btn.textContent = 'Processing...';
+    }
+
+    if (mobileBtn && appState.currentStep === 4) {
+        mobileBtn.disabled = true;
+        mobileBtn.textContent = 'Processing...';
     }
 
     // Capture SVG markup
@@ -1139,7 +1313,7 @@ function handleCheckout() {
         backboard: appState.backboard,
         cutTo: appState.cutTo,
         cutToPrice: appState.cutToPrice,
-        powerAdapter: appState.powerAdapter,
+        powerAdapter: appState.powerAdapter || 'usa',
         totalPrice: appState.totalPrice,
         discountPrice: appState.discountPrice,
         discountCode: appState.discountCode,
@@ -1164,6 +1338,11 @@ function handleCheckout() {
     if (btn) {
         btn.disabled = false;
         btn.textContent = 'Preview & Buy';
+    }
+
+    if (mobileBtn && appState.currentStep === 4) {
+        mobileBtn.disabled = false;
+        mobileBtn.textContent = 'Preview & Buy';
     }
 }
 
@@ -1194,6 +1373,13 @@ function attachStepNavigationListeners() {
 
     // Mobile panel toggle functionality
     setupMobilePanelToggle();
+
+    // Preview eye buttons
+    document.querySelectorAll('.preview-eye-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            showPreviewModal();
+        });
+    });
 }
 
 function setupMobilePanelToggle() {
@@ -1812,8 +1998,8 @@ function handleMobileNavigation() {
     if (currentStep < 4) {
         navigateToStep(currentStep + 1);
     } else {
-        // Last step - trigger checkout
-        handleCheckout();
+        // Last step - show preview modal
+        showPreviewModal();
     }
 }
 

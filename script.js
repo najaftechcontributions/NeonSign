@@ -1108,7 +1108,7 @@ function captureSvgMarkup() {
 // ===========================
 function attachStepNavigationListeners() {
     document.querySelectorAll('.step-tab').forEach(tab => {
-        tab.addEventListener('click', () => {
+        tab.addEventListener('click', (e) => {            e.stopPropagation(); // Prevent panel toggle on mobile
             const step = parseInt(tab.getAttribute('data-step'));
             navigateToStep(step);
         });
@@ -1116,6 +1116,86 @@ function attachStepNavigationListeners() {
 
     // Attach to global scope for inline onclick handlers
     window.goToStep = navigateToStep;
+
+    // Mobile panel toggle functionality
+    setupMobilePanelToggle();
+}
+
+function setupMobilePanelToggle() {
+    const isMobile = () => window.innerWidth < 768;
+
+    // Toggle buttons
+    for (let i = 1; i <= 4; i++) {
+        const toggleBtn = document.getElementById(`mobileToggle${i === 1 ? '' : i}`);
+        const handle = document.getElementById(`mobilePanelHandle${i === 1 ? '' : i}`);
+        const stepContainer = document.getElementById(`step${i}`);
+
+        if (!stepContainer) continue;
+        const leftPanel = stepContainer.querySelector('.left-panel');
+
+        if (toggleBtn && leftPanel && isMobile()) {
+            toggleBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                leftPanel.classList.toggle('expanded');
+            });
+        }
+
+        // Handle drag/click to toggle
+        if (handle && leftPanel && isMobile()) {
+            let startY = 0;
+            let currentY = 0;
+            let isDragging = false;
+
+            handle.addEventListener('touchstart', (e) => {
+                startY = e.touches[0].clientY;
+                isDragging = false;
+            }, { passive: true });
+
+            handle.addEventListener('touchmove', (e) => {
+                currentY = e.touches[0].clientY;
+                const diff = Math.abs(currentY - startY);
+                if (diff > 10) {
+                    isDragging = true;
+                }
+            }, { passive: true });
+
+            handle.addEventListener('touchend', (e) => {
+                if (!isDragging) {
+                    // It was a tap, toggle panel
+                    leftPanel.classList.toggle('expanded');
+                } else {
+                    // It was a drag
+                    const diff = currentY - startY;
+                    if (Math.abs(diff) > 50) {
+                        if (diff > 0) {
+                            // Swiped down - collapse
+                            leftPanel.classList.remove('expanded');
+                        } else {
+                            // Swiped up - expand
+                            leftPanel.classList.add('expanded');
+                        }
+                    }
+                }
+                isDragging = false;
+            }, { passive: true });
+
+            // Click handler for desktop/mouse
+            handle.addEventListener('click', () => {
+                if (isMobile()) {
+                    leftPanel.classList.toggle('expanded');
+                }
+            });
+        }
+    }
+
+    // Resize handler to clean up on desktop
+    window.addEventListener('resize', () => {
+        if (!isMobile()) {
+            document.querySelectorAll('.left-panel').forEach(panel => {
+                panel.classList.remove('expanded');
+            });
+        }
+    });
 }
 
 function navigateToStep(stepNumber) {
@@ -1135,7 +1215,19 @@ function navigateToStep(stepNumber) {
     hideColorPopup();
     renderAllPreviews();
 
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    // Keep panel expanded on mobile when switching tabs
+    const isMobile = window.innerWidth < 768;
+    if (isMobile) {
+        const leftPanel = targetStep.querySelector('.left-panel');
+        if (leftPanel && leftPanel.classList.contains('expanded')) {
+            // Keep it expanded
+        } else if (leftPanel) {
+            // Keep collapsed state when navigating
+            // Don't auto-expand
+        }
+    } else {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
 }
 
 function updateStepTabsUI() {
@@ -1554,4 +1646,148 @@ function getMeasuredDimensions() {
 // ===========================
 window.addEventListener('resize', debounce(() => {
     renderAllPreviews();
+    updateMobileFooter();
 }, 250));
+
+// ===========================
+// MOBILE BOTTOM SHEET INTERACTIONS
+// ===========================
+let touchStartY = 0;
+let touchCurrentY = 0;
+let isDragging = false;
+const DRAG_THRESHOLD = 50;
+
+function setupMobileBottomSheet() {
+    const leftPanels = document.querySelectorAll('.left-panel');
+    const overlay = createMobileOverlay();
+    const mobileFooter = createMobileFooter();
+
+
+    // Overlay click to collapse
+    overlay.addEventListener('click', () => {
+        const activePanel = document.querySelector('.left-panel.expanded');
+        if (activePanel) {
+            collapsePanel(activePanel, overlay);
+        }
+    });
+
+    // Update footer on navigation
+    updateMobileFooter();
+}
+
+function createMobileOverlay() {
+    let overlay = document.getElementById('mobileOverlay');
+    if (!overlay) {
+        overlay = document.createElement('div');
+        overlay.className = 'mobile-panel-overlay';
+        overlay.id = 'mobileOverlay';
+        document.body.appendChild(overlay);
+    }
+    return overlay;
+}
+
+function createMobileFooter() {
+    let footer = document.getElementById('mobileFooter');
+    if (!footer) {
+        footer = document.createElement('div');
+        footer.className = 'mobile-footer';
+        footer.id = 'mobileFooter';
+        footer.innerHTML = `
+            <div class="mobile-footer-content">
+                <div class="mobile-price-summary">
+                    <div class="mobile-price-label">Total Price</div>
+                    <div class="mobile-price-value">$${appState.discountPrice.toFixed(2)}</div>
+                </div>
+                <button class="mobile-action-btn" id="mobileNextBtn">
+                    Next
+                </button>
+            </div>
+        `;
+        document.body.appendChild(footer);
+
+        // Add click handler for mobile next button
+        const mobileNextBtn = footer.querySelector('#mobileNextBtn');
+        mobileNextBtn.addEventListener('click', handleMobileNavigation);
+    }
+    return footer;
+}
+
+function expandPanel(panel, overlay) {
+    panel.classList.add('expanded');
+    overlay.classList.add('active');
+    document.body.style.overflow = 'hidden';
+}
+
+function collapsePanel(panel, overlay) {
+    panel.classList.remove('expanded');
+    overlay.classList.remove('active');
+    panel.style.transform = '';
+    document.body.style.overflow = '';
+}
+
+function handleMobileNavigation() {
+    const currentStep = appState.currentStep;
+    const activePanel = document.querySelector('.left-panel.expanded');
+    const overlay = document.getElementById('mobileOverlay');
+
+    if (activePanel) {
+        collapsePanel(activePanel, overlay);
+    }
+
+    if (currentStep < 4) {
+        navigateToStep(currentStep + 1);
+    } else {
+        // Last step - trigger checkout
+        handleCheckout();
+    }
+}
+
+function updateMobileFooter() {
+    const footer = document.getElementById('mobileFooter');
+    if (!footer) return;
+
+    const priceValue = footer.querySelector('.mobile-price-value');
+    const actionBtn = footer.querySelector('#mobileNextBtn');
+
+    if (priceValue) {
+        priceValue.textContent = `$${appState.discountPrice.toFixed(2)}`;
+    }
+
+    if (actionBtn) {
+        if (appState.currentStep === 4) {
+            actionBtn.textContent = 'Preview & Buy';
+        } else {
+            actionBtn.textContent = 'Next';
+        }
+    }
+}
+
+// Initialize mobile bottom sheet on DOM ready
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', setupMobileBottomSheet);
+} else {
+    setupMobileBottomSheet();
+}
+
+// Update mobile footer when step changes
+const originalNavigateToStep = navigateToStep;
+navigateToStep = function(stepNumber) {
+    originalNavigateToStep(stepNumber);
+    updateMobileFooter();
+
+    // Collapse panel on mobile when navigating
+    if (window.innerWidth <= 768) {
+        const activePanel = document.querySelector('.left-panel.expanded');
+        const overlay = document.getElementById('mobileOverlay');
+        if (activePanel && overlay) {
+            collapsePanel(activePanel, overlay);
+        }
+    }
+};
+
+// Update mobile footer when price changes
+const originalRecalculateTotalPrice = recalculateTotalPrice;
+recalculateTotalPrice = function() {
+    originalRecalculateTotalPrice();
+    updateMobileFooter();
+};

@@ -6,7 +6,7 @@ const CONFIG = {
 
 
     defaultPlaceholderText: 'Your Text',
-    baseFontSize: 70,
+    baseFontSize: 38,
     minFontSize: 20,
     textBoundingRatioMobile: { width: 0.8, height: 0.7 },
     textBoundingRatioDesktop: { width: 0.85, height: 0.75 },
@@ -47,7 +47,7 @@ const appState = {
     userHasEnteredText: false,
 
 
-    fontFamily: "'Barcelona', cursive",
+    fontFamily: "'Dancing Script', cursive",
     fontKey: 'barcelona',
     fontSizePx: CONFIG.baseFontSize,
     lineHeightPx: CONFIG.baseFontSize * 1.2,
@@ -711,7 +711,7 @@ function selectPlan(cardElement) {
     appState.plan.widthIn = parseInt(cardElement.getAttribute('data-width')) || 38;
     appState.plan.heightIn = parseInt(cardElement.getAttribute('data-height')) || 17;
     appState.plan.price = parseFloat(cardElement.getAttribute('data-price')) || 438.99;
-    appState.fontSizePx = parseFloat(cardElement.getAttribute('data-font')) || 38;
+    appState.fontSizePx = parseFloat(cardElement.getAttribute('data-fontsize')) || 38;
 
     renderAllPreviews();
     recalculateTotalPrice();
@@ -1588,14 +1588,7 @@ function renderCanvasPreview(canvas) {
     const centerY = canvas.height / 2;
 
 
-    const defaultSizeWidth = 38;
     let renderingFontSize = appState.fontSizePx;
-
-    if (appState.plan.widthIn > defaultSizeWidth) {
-        renderingFontSize = appState.fontSizePx + 5;
-    } else if (appState.plan.widthIn < defaultSizeWidth) {
-        renderingFontSize = appState.fontSizePx - 5;
-    }
 
     if (appState.multicolor) {
 
@@ -1771,7 +1764,7 @@ function drawMeasurementOverlays(canvas, textObject) {
         ? 'rgba(255, 255, 255, 0.6)'
         : 'rgba(0, 0, 0, 0.7)';
 
-    const textColor = appState.themeMode === 'dark' ? '#FFFFFF' : '#000000';
+    const textColor = appState.themeMode === 'dark' ? '#000000' : '#FFFFFF';
 
     const bounds = textObject.getBoundingRect();
     const centerX = canvas.width / 2;
@@ -1816,10 +1809,10 @@ function drawMeasurementOverlays(canvas, textObject) {
         originY: 'top',
         fontSize: labelFontSize,
         fill: textColor,
-        fontFamily: 'Inter, sans-serif',
+        fontFamily: "'Dancing Script', 'cursive'",
         fontWeight: 700,
         selectable: false,
-        backgroundColor: appState.themeMode === 'dark' ? 'rgba(0, 0, 0, 0.6)' : 'rgba(255, 255, 255, 0.8)',
+        backgroundColor: appState.themeMode === 'dark' ? 'rgba(255, 255, 255, 0.8)' : 'rgba(0, 0, 0, 0.6)',
         padding: 4
     });
     canvas.add(widthLabel);
@@ -1857,10 +1850,10 @@ function drawMeasurementOverlays(canvas, textObject) {
         originY: 'center',
         fontSize: labelFontSize,
         fill: textColor,
-        fontFamily: 'Inter, sans-serif',
+        fontFamily: "'Dancing Script', 'cursive'",
         fontWeight: 700,
         selectable: false,
-        backgroundColor: appState.themeMode === 'dark' ? 'rgba(0, 0, 0, 0.6)' : 'rgba(255, 255, 255, 0.8)',
+        backgroundColor: appState.themeMode === 'dark' ? 'rgba(255, 255, 255, 0.8)' : 'rgba(0, 0, 0, 0.6)',
         padding: 4
     });
     canvas.add(heightLabel);

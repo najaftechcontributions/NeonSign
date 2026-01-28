@@ -20,6 +20,9 @@ const CONFIG = {
     basePrice: 90, // $90 per square inch base
     rgbSurcharge: 50,
     outdoorSurcharge: 65,
+
+    // Base discount configuration
+    enableBaseDiscount: true, // Set to false to disable default 20% discount
     basePromotionPercentage: 0.20, // 20% discount
 
 
@@ -39,7 +42,19 @@ const CONFIG = {
 
 
     planScalingFactor: 1.3,
-    planNames: ['Mini', 'Small', 'Medium', 'Large', 'XL', 'XXL', 'XXXL', '4XL']
+    planNames: ['Mini', 'Small', 'Medium', 'Large', 'XL', 'XXL', 'XXXL', '4XL'],
+
+    // Local coupon codes (can be checked without API)
+    localCoupons: {
+        'SAVE10': { type: 'percentage', value: 10 },
+        'SAVE20': { type: 'percentage', value: 20 },
+        'FIFTY': { type: 'amount', value: 50 },
+        'WELCOME15': { type: 'percentage', value: 15 },
+        'NEWYEAR': { type: 'percentage', value: 25 }
+    },
+
+    // API endpoint for coupon validation
+    couponApiEndpoint: 'https://apiv2.easyneonsigns.ca/apply-discount'
 };
 
 
@@ -169,6 +184,7 @@ document.addEventListener('DOMContentLoaded', () => {
     initializeActiveStates();
     renderAllPreviews();
     recalculateTotalPrice();
+    updateSizeCardPrices();
 });
 
 function setupCanvases() {
@@ -185,7 +201,7 @@ function setupCanvases() {
             });
 
 
-            canvasInstances[canvasId].on('mouse:down', function(options) {
+            canvasInstances[canvasId].on('mouse:down', function (options) {
                 handleCanvasClick(canvasId, options);
             });
         }
@@ -572,6 +588,26 @@ function attachColorListeners() {
 
     if (multiToggle) {
         multiToggle.addEventListener('change', () => {
+            // If multicolor is being enabled and RGB is active, disable RGB
+            if (multiToggle.checked && appState.rgbMode) {
+                stopRgbMode();
+                // Uncheck RGB color option
+                const rgbOption = document.querySelector('.color-option[data-color="rgb"]');
+                if (rgbOption) {
+                    rgbOption.classList.remove('active');
+                }
+                // Set to a default color
+                appState.colorValue = '#FFFFFF';
+                appState.colorName = 'White';
+                // Activate white color option
+                const whiteOption = document.querySelector('.color-option[data-color="#FFFFFF"]');
+                if (whiteOption) {
+                    document.querySelectorAll('.color-option').forEach(opt => opt.classList.remove('active'));
+                    whiteOption.classList.add('active');
+                }
+                recalculateTotalPrice();
+            }
+
             appState.multicolor = multiToggle.checked;
 
             if (!multiToggle.checked) {
@@ -609,6 +645,26 @@ function selectColor(colorValue, colorName) {
 }
 
 function startRgbMode() {
+    // If multicolor is enabled, disable it first
+    if (appState.multicolor) {
+        appState.multicolor = false;
+        appState.characterColors = {};
+        appState.selectedCharIndex = null;
+        hideColorPopup();
+
+        // Uncheck multicolor toggle
+        const multiToggle = document.getElementById('multicolorToggle');
+        if (multiToggle) {
+            multiToggle.checked = false;
+        }
+
+        // Hide multicolor help
+        const multiHelp = document.getElementById('multicolorHelp');
+        if (multiHelp) {
+            multiHelp.classList.add('hidden');
+        }
+    }
+
     appState.rgbMode = true;
     appState.colorName = 'RGB Color Changing';
     appState.rgbSurcharge = CONFIG.rgbSurcharge;
@@ -806,12 +862,15 @@ function recalculateTotalPrice() {
     appState.totalPrice = total;
 
 
-    let discounted = total * (1 - CONFIG.basePromotionPercentage);
+    // Apply base discount only if enabled
+    let discounted = CONFIG.enableBaseDiscount ?
+        total * (1 - CONFIG.basePromotionPercentage) :
+        total;
 
 
     if (appState.discountApplied && appState.activeDiscount) {
         if (appState.activeDiscount.type === 'percentage') {
-            discounted *= (1 - appState.activeDiscount.value);
+            discounted *= (1 - appState.activeDiscount.value / 100);
         } else if (appState.activeDiscount.type === 'amount') {
             discounted -= appState.activeDiscount.value;
         }
@@ -828,6 +887,7 @@ function recalculateTotalPrice() {
 
 
     updatePricingUI();
+    updateSizeCardPrices();
 }
 
 function updatePricingUI() {
@@ -841,6 +901,80 @@ function updatePricingUI() {
     if (finalElem) {
         finalElem.textContent = `$${appState.discountPrice.toFixed(2)}`;
     }
+
+    // Update next buttons to show price
+    document.querySelectorAll('.btn-next, .btn-final').forEach(btn => {
+        const originalText = btn.getAttribute('data-original-text') || btn.textContent.split('$')[0].trim();
+        if (!btn.getAttribute('data-original-text')) {
+            btn.setAttribute('data-original-text', originalText);
+        }
+
+        // Only update if the button text doesn't already have a price or if price changed
+        const priceText = ` - $${appState.discountPrice.toFixed(2)}`;
+        btn.innerHTML = btn.innerHTML.replace(/\s*-\s*\$[\d,.]+/, ''); // Remove old price
+
+        const svgIcon = btn.querySelector('svg');
+        if (svgIcon) {
+            btn.innerHTML = `${originalText}<span class="btn-price">${priceText}</span>` + svgIcon.outerHTML;
+        } else {
+            btn.innerHTML = `${originalText}<span class="btn-price">${priceText}</span>`;
+        }
+    });
+}
+
+function updateSizeCardPrices() {
+    // Update all size cards with calculated prices based on their dimensions
+    document.querySelectorAll('.size-card').forEach(card => {
+        const widthIn = parseInt(card.getAttribute('data-width')) || 38;
+        const heightIn = parseInt(card.getAttribute('data-height')) || 17;
+
+        // Calculate price for this size
+        let basePrice = calculatePlanPrice(widthIn, heightIn);
+
+        // Apply extras, outdoor, rgb, cutTo
+        let totalPrice = basePrice;
+        totalPrice += appState.outdoorSurcharge;
+        totalPrice += appState.rgbSurcharge;
+        totalPrice += appState.cutToPrice;
+        appState.extras.forEach(extra => {
+            totalPrice += extra.price;
+        });
+
+        totalPrice = Math.floor(totalPrice) + 0.99;
+
+        // Apply base discount if enabled
+        let discountedPrice = CONFIG.enableBaseDiscount ?
+            totalPrice * (1 - CONFIG.basePromotionPercentage) :
+            totalPrice;
+
+        // Apply coupon if active
+        if (appState.discountApplied && appState.activeDiscount) {
+            if (appState.activeDiscount.type === 'percentage') {
+                discountedPrice *= (1 - appState.activeDiscount.value / 100);
+            } else if (appState.activeDiscount.type === 'amount') {
+                discountedPrice -= appState.activeDiscount.value;
+            }
+        }
+
+        discountedPrice = Math.max(discountedPrice, 0);
+        discountedPrice = Math.floor(discountedPrice) + 0.99;
+
+        // Update card prices in UI
+        const originalPriceElem = card.querySelector('.original-price');
+        const salePriceElem = card.querySelector('.sale-price');
+
+        if (originalPriceElem) {
+            originalPriceElem.textContent = `$${totalPrice.toFixed(2)}`;
+        }
+
+        if (salePriceElem) {
+            salePriceElem.textContent = `$${discountedPrice.toFixed(2)}`;
+        }
+
+        // Update data attributes
+        card.setAttribute('data-original', totalPrice.toFixed(2));
+        card.setAttribute('data-price', discountedPrice.toFixed(2));
+    });
 }
 
 
@@ -857,7 +991,7 @@ function attachLocationListeners() {
 
             appState.type = e.target.value;
             appState.outdoorSurcharge = e.target.value === 'outdoor'
-                ? CONFIG.outdoorSurcharge 
+                ? CONFIG.outdoorSurcharge
                 : 0;
 
             recalculateTotalPrice();
@@ -1002,7 +1136,6 @@ function attachDiscountListeners() {
             const code = discountInput.value.trim();
 
             if (!code) {
-                alert('Please enter a discount code');
                 return;
             }
 
@@ -1010,31 +1143,94 @@ function attachDiscountListeners() {
 
                 removeDiscount();
                 applyBtn.textContent = 'Apply';
+                discountInput.value = '';
             } else {
 
                 validateAndApplyDiscount(code);
             }
         });
+
+        // Allow pressing Enter to apply discount
+        discountInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                applyBtn.click();
+            }
+        });
     }
 }
 
-function validateAndApplyDiscount(code) {
+async function validateAndApplyDiscount(code) {
+    const applyBtn = document.querySelector('.apply-btn');
+    const discountInput = document.getElementById('discountCode');
 
+    // Disable button during validation
+    if (applyBtn) {
+        applyBtn.disabled = true;
+        applyBtn.textContent = 'Validating...';
+    }
 
+    try {
+        // First, check local coupon codes
+        const upperCode = code.toUpperCase();
+        if (CONFIG.localCoupons[upperCode]) {
+            const discount = CONFIG.localCoupons[upperCode];
+            applyDiscount(discount, upperCode);
 
+            if (applyBtn) {
+                applyBtn.textContent = 'Remove';
+                applyBtn.disabled = false;
+            }
 
+            // Show success message
+            showDiscountMessage(`Coupon "${upperCode}" applied successfully!`, 'success');
+            return;
+        }
 
-    console.log('BACKEND CALL REQUIRED: Validate discount code:', code);
+        // If not found locally, try API validation
+        const response = await fetch(CONFIG.couponApiEndpoint, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                code: code,
+                totalAmount: appState.totalPrice
+            })
+        });
 
+        if (response.ok) {
+            const data = await response.json();
 
-    alert('Backend integration required for discount validation.\n\nEndpoint: POST https://apiv2.easyneonsigns.ca/apply-discount');
+            if (data.valid && data.discount) {
+                applyDiscount(data.discount, code);
 
+                if (applyBtn) {
+                    applyBtn.textContent = 'Remove';
+                }
 
+                showDiscountMessage(`Coupon "${code}" applied successfully!`, 'success');
+            } else {
+                showDiscountMessage(data.message || 'Invalid coupon code', 'error');
+            }
+        } else {
+            showDiscountMessage('Unable to validate coupon. Please try again.', 'error');
+        }
+    } catch (error) {
+        console.warn('API validation failed, falling back to local validation only:', error);
+        showDiscountMessage('Invalid coupon code', 'error');
+    } finally {
+        if (applyBtn && !appState.discountApplied) {
+            applyBtn.disabled = false;
+            applyBtn.textContent = 'Apply';
+        }
+    }
+}
 
-
-
-
-
+function applyDiscount(discount, code) {
+    appState.discountApplied = true;
+    appState.activeDiscount = discount;
+    appState.discountCode = code;
+    recalculateTotalPrice();
 }
 
 function removeDiscount() {
@@ -1042,7 +1238,33 @@ function removeDiscount() {
     appState.activeDiscount = null;
     appState.discountCode = null;
 
+    // Hide any discount messages
+    const messageEl = document.querySelector('.discount-message');
+    if (messageEl) {
+        messageEl.remove();
+    }
+
     recalculateTotalPrice();
+}
+
+function showDiscountMessage(message, type = 'info') {
+    // Remove existing message
+    const existingMessage = document.querySelector('.discount-message');
+    if (existingMessage) {
+        existingMessage.remove();
+    }
+
+    const discountSection = document.querySelector('.discount-code-section');
+    if (!discountSection) return;
+
+    const messageEl = document.createElement('div');
+    messageEl.className = `discount-message discount-message-${type}`;
+    messageEl.textContent = message;
+
+    discountSection.insertAdjacentElement('afterend', messageEl);
+    setTimeout(() => {
+        messageEl.remove();
+    }, 5000);
 }
 
 
@@ -1125,6 +1347,30 @@ function showPreviewModal() {
                     <span class="price-value">+$${extra.price.toFixed(2)}</span>
                 </div>
                 `).join('')}
+                <div class="price-row subtotal">
+                    <span class="price-label">Subtotal</span>
+                    <span class="price-value">$${appState.totalPrice.toFixed(2)}</span>
+                </div>
+                ${CONFIG.enableBaseDiscount ? `
+                <div class="price-row discount">
+                    <span class="price-label">Base Discount (${(CONFIG.basePromotionPercentage * 100)}%)</span>
+                    <span class="price-value discount-value">-$${(appState.totalPrice * CONFIG.basePromotionPercentage).toFixed(2)}</span>
+                </div>
+                ` : ''}
+                ${appState.discountApplied && appState.activeDiscount ? `
+                <div class="price-row discount">
+                    <span class="price-label">Coupon (${appState.discountCode})
+                        ${appState.activeDiscount.type === 'percentage' ?
+                `${appState.activeDiscount.value}%` :
+                `$${appState.activeDiscount.value}`} off
+                    </span>
+                    <span class="price-value discount-value">
+                        ${appState.activeDiscount.type === 'percentage' ?
+                `-$${((CONFIG.enableBaseDiscount ? appState.totalPrice * (1 - CONFIG.basePromotionPercentage) : appState.totalPrice) * appState.activeDiscount.value / 100).toFixed(2)}` :
+                `-$${appState.activeDiscount.value.toFixed(2)}`}
+                    </span>
+                </div>
+                ` : ''}
                 <div class="price-row total">
                     <span class="price-label">Total</span>
                     <span class="price-value">$${appState.discountPrice.toFixed(2)}</span>
@@ -1613,6 +1859,7 @@ function renderCanvasPreview(canvas) {
             top: centerY,
             originX: 'center',
             originY: 'center',
+            textAlign: 'center',
             fontFamily: appState.fontFamily,
             fontSize: renderingFontSize,
             fill: appState.colorValue,

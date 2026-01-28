@@ -22,8 +22,8 @@ const CONFIG = {
     outdoorSurcharge: 65,
 
     // Base discount configuration
-    enableBaseDiscount: true, // Set to false to disable default 20% discount
-    basePromotionPercentage: 0.20, // 20% discount
+    enableBaseDiscount: false, // Set to false to disable Discount
+    basePromotionPercentage: 0.30, // 20% discount
 
 
     // Price calculation (from referencejs.js)
@@ -892,13 +892,26 @@ function recalculateTotalPrice() {
 }
 
 function updatePricingUI() {
+    const basePercentageSpan = document.querySelector('.base-percentage');
+    const discountBadge = document.querySelector('.discount-badge');
     const originalElem = document.querySelector('.original-total');
     const finalElem = document.querySelector('.final-price');
 
     if (originalElem) {
-        originalElem.textContent = `$${appState.totalPrice.toFixed(2)}`;
+        if (!CONFIG.enableBaseDiscount) {
+            originalElem.style.display = 'none';
+        } else {
+            originalElem.textContent = `$${appState.totalPrice.toFixed(2)}`;
+        }
     }
-
+    if (discountBadge) {
+        if (!CONFIG.enableBaseDiscount) {
+            discountBadge.style.display = 'none';
+        } else {
+            console.log(CONFIG.basePromotionPercentage);
+            basePercentageSpan.textContent = `${(CONFIG.basePromotionPercentage * 100).toFixed(0)}`;
+        }
+    }
     if (finalElem) {
         finalElem.textContent = `$${appState.discountPrice.toFixed(2)}`;
     }
@@ -965,7 +978,11 @@ function updateSizeCardPrices() {
         const salePriceElem = card.querySelector('.sale-price');
 
         if (originalPriceElem) {
-            originalPriceElem.textContent = `$${totalPrice.toFixed(2)}`;
+            if (!CONFIG.enableBaseDiscount) {
+                originalPriceElem.style.display = 'none';
+            } else {
+                originalPriceElem.textContent = `$${totalPrice.toFixed(2)}`;
+            }
         }
 
         if (salePriceElem) {
@@ -1529,8 +1546,6 @@ function formatPowerAdapter(adapter) {
 
 function proceedToCheckout() {
     closePreviewModal();
-
-
     const btn = document.querySelector('.btn-final');
     const mobileBtn = document.getElementById('mobileNextBtn');
 
@@ -1572,15 +1587,9 @@ function proceedToCheckout() {
     };
 
 
-
-
-
-
     console.log('BACKEND CALL REQUIRED: Create checkout', payload);
 
     alert('Backend integration required for checkout.\n\nEndpoint: POST https://apiv2.easyneonsigns.ca/create-draft-order\n\nCheck console for payload.');
-
-
 
 
 

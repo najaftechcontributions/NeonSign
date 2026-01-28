@@ -1369,7 +1369,6 @@ body {
 
 .price-summary {
     text-align: right;
-    margin-bottom: 30px;
 }
 
 .original-total {
@@ -2516,9 +2515,6 @@ canvas {
         pointer-events: auto;
     }
 
-    .content-section {
-        padding-bottom: 30px;
-    }
 
     .section-title {
         font-size: 16px;
@@ -2876,7 +2872,6 @@ canvas {
 
     .price-summary {
         text-align: center;
-        margin-bottom: 20px;
     }
 
     .final-price {

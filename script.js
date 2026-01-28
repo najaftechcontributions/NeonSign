@@ -16,22 +16,26 @@ const CONFIG = {
     rgbColorSequence: ['#FF0000', '#FF7F00', '#FFFF00', '#00FF00', '#0000FF', '#4B0082', '#9400D3'],
 
 
+    // Pricing from referencejs.js
+    basePrice: 90, // $90 per square inch base
     rgbSurcharge: 50,
     outdoorSurcharge: 65,
-    basePromotionPercentage: 0.20,
-    costPerInch: 1.9,
-    shippingPerInch: 0.4,
-    localShippingConstant: 15,
-    minProfitPercentage: 0.25,
-    fixedMinProfit: 100,
-    currencyConversion: 1.0,
-    minimumPriceFloor: 438.99,
+    basePromotionPercentage: 0.20, // 20% discount
 
 
-    premiumFonts: {
-        'abril-fatface': 1.15,
-        'playfair-display': 1.1
-    },
+    // Price calculation (from referencejs.js)
+    productCostPerInchStandard: 0.2519,
+    productCostPerInchRGB: 0.2947,
+    shippingCostPerInch: 0.25,
+    usdToCadMultiplier: 1.42,
+    localShippingCostUSD: 45 / 1.42, // 45 CAD converted to USD
+    minProfitPercentage: 0.35,
+    minProfitUSD: 100 / 1.42, // 100 CAD converted to USD
+    minimumPriceFloor: 90,
+
+
+    // Premium fonts that double the price (from referencejs.js)
+    premiumFontsDouble: ['loveneon', 'scifi', 'mayfair'],
 
 
     planScalingFactor: 1.3,
@@ -47,8 +51,8 @@ const appState = {
     userHasEnteredText: false,
 
 
-    fontFamily: "'Dancing Script', cursive",
-    fontKey: 'barcelona',
+    fontFamily: "Barcelona",
+    fontKey: 'Barcelona',
     fontSizePx: CONFIG.baseFontSize,
     lineHeightPx: CONFIG.baseFontSize * 1.2,
 
@@ -121,8 +125,8 @@ const animationHandles = {};
 
 function initializeActiveStates() {
 
-    const defaultFontCard = document.querySelector('.font-card[data-font="barcelona"]');
-    const defaultFontItem = document.querySelector('.font-list-item[data-font="barcelona"]');
+    const defaultFontCard = document.querySelector('.font-card[data-font="Barcelona"]');
+    const defaultFontItem = document.querySelector('.font-list-item[data-font="Barcelona"]');
     if (defaultFontCard) defaultFontCard.classList.add('active');
     if (defaultFontItem) defaultFontItem.classList.add('active');
 
@@ -739,38 +743,47 @@ function updatePlanCardsInUI() {
 
 
 function calculatePlanPrice(widthIn, heightIn) {
+    // Calculate area (from referencejs.js)
     const area = widthIn * heightIn;
 
+    // Determine if RGB
+    const isRGB = appState.rgbMode || appState.rgbSurcharge > 0;
 
-    const costPerInchAdjusted = appState.rgbMode ?
-        CONFIG.costPerInch * 1.2 :
-        CONFIG.costPerInch;
+    // Cost per inch values (from referencejs.js)
+    const productCostPerInch = isRGB ? CONFIG.productCostPerInchRGB : CONFIG.productCostPerInchStandard;
+    const shippingCostPerInch = CONFIG.shippingCostPerInch;
+    const usdToCadMultiplier = CONFIG.usdToCadMultiplier;
 
-    const productCost = area * costPerInchAdjusted;
-    const shippingCost = (area * CONFIG.shippingPerInch) + CONFIG.localShippingConstant;
-    const totalCosts = productCost + shippingCost;
+    // Calculate costs for shipping and product (from referencejs.js)
+    const shippingCost = area * shippingCostPerInch;
+    const productCost = area * productCostPerInch;
+    const localShippingCostUSD = CONFIG.localShippingCostUSD;
 
+    // Calculate profit as the greater of 35% of (product + shipping + local shipping) or 100 CAD converted to USD
+    const profitUSD = Math.max(
+        CONFIG.minProfitPercentage * (productCost + shippingCost + localShippingCostUSD),
+        CONFIG.minProfitUSD
+    );
 
-    const percentageProfit = totalCosts * CONFIG.minProfitPercentage;
-    const profit = Math.max(percentageProfit, CONFIG.fixedMinProfit);
+    const totalCostUSD = productCost + shippingCost + profitUSD + localShippingCostUSD;
+    const totalCostCADWithDiscount = totalCostUSD * usdToCadMultiplier;
+    let totalCostCAD = totalCostCADWithDiscount * usdToCadMultiplier;
 
-
-    let basePrice = (totalCosts + profit) * CONFIG.currencyConversion;
-
-
-    if (CONFIG.premiumFonts[appState.fontKey]) {
-        basePrice *= CONFIG.premiumFonts[appState.fontKey];
+    // Double the price for specific fonts (from referencejs.js)
+    if (CONFIG.premiumFontsDouble.includes(appState.fontKey.toLowerCase())) {
+        totalCostCAD *= 2;
     }
 
+    // Ensure final price is not below the base price
+    const finalPrice = Math.max(totalCostCAD, CONFIG.basePrice);
 
-    basePrice = Math.max(basePrice, CONFIG.minimumPriceFloor);
-
-
-    return Math.floor(basePrice) + 0.99;
+    // Round to .99 (from referencejs.js adjustToNinetyNine)
+    return Math.ceil(finalPrice) - 0.01;
 }
 
 function recalculatePlanPrice() {
     appState.plan.price = calculatePlanPrice(appState.plan.widthIn, appState.plan.heightIn);
+    console.log(appState.plan.price);
 }
 
 function recalculateTotalPrice() {
@@ -1600,7 +1613,7 @@ function renderCanvasPreview(canvas) {
             top: centerY,
             originX: 'center',
             originY: 'center',
-            fontFamily: appState.fontFamily.replace(/['"]/g, ''),
+            fontFamily: appState.fontFamily,
             fontSize: renderingFontSize,
             fill: appState.colorValue,
             selectable: false
@@ -1634,7 +1647,7 @@ function renderMulticolorText(canvas, text, centerX, centerY, renderingFontSize)
 
 
     const tempText = new fabric.Text(text, {
-        fontFamily: appState.fontFamily.replace(/['"]/g, ''),
+        fontFamily: appState.fontFamily,
         fontSize: useFontSize,
         charSpacing: 0
     });
@@ -1667,7 +1680,7 @@ function renderMulticolorText(canvas, text, centerX, centerY, renderingFontSize)
 
 
         const charConfig = {
-            fontFamily: appState.fontFamily.replace(/['"]/g, ''),
+            fontFamily: appState.fontFamily,
             fontSize: useFontSize,
             fill: charColor,
             selectable: false,
@@ -1809,7 +1822,7 @@ function drawMeasurementOverlays(canvas, textObject) {
         originY: 'top',
         fontSize: labelFontSize,
         fill: textColor,
-        fontFamily: "'Dancing Script', 'cursive'",
+        fontFamily: "Barcelona",
         fontWeight: 700,
         selectable: false,
         backgroundColor: appState.themeMode === 'dark' ? 'rgba(255, 255, 255, 0.8)' : 'rgba(0, 0, 0, 0.6)',
@@ -1850,7 +1863,7 @@ function drawMeasurementOverlays(canvas, textObject) {
         originY: 'center',
         fontSize: labelFontSize,
         fill: textColor,
-        fontFamily: "'Dancing Script', 'cursive'",
+        fontFamily: "Barcelona",
         fontWeight: 700,
         selectable: false,
         backgroundColor: appState.themeMode === 'dark' ? 'rgba(255, 255, 255, 0.8)' : 'rgba(0, 0, 0, 0.6)',

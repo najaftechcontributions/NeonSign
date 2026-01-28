@@ -5,56 +5,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Create Your Custom Neon Sign</title>
-
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap"
         rel="stylesheet">
-    <!-- GOOGLE FONTS - These will 100% work -->
-    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@400;500;600;700&display=swap"
-        rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Sacramento&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Monoton&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap"
-        rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&display=swap"
-        rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&display=swap"
-        rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Special+Elite&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800&display=swap"
-        rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Raleway:wght@300;400;500;600;700&display=swap"
-        rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Pacifico&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Lobster&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Audiowide&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Kaushan+Script&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Shadows+Into+Light&display=swap" rel="stylesheet">
-
-    <!-- Only these few actually exist on fonts.cdnfonts.com -->
-    <link rel="preconnect" href="https://fonts.cdnfonts.com">
-    <link href="https://fonts.cdnfonts.com/css/typewriter" rel="stylesheet" media="print" onload="this.media='all'">
-    <link href="https://fonts.cdnfonts.com/css/marquee" rel="stylesheet" media="print" onload="this.media='all'">
-    <link href="https://fonts.cdnfonts.com/css/royal" rel="stylesheet" media="print" onload="this.media='all'">
-    <style>
-        /* Fallback fonts with display swap to prevent blocking */
-        @font-face {
-            font-family: 'Marquee';
-            font-display: swap;
-        }
-        @font-face {
-            font-family: 'Typewriter';
-            font-display: swap;
-        }
-        @font-face {
-            font-family: 'Royal';
-            font-display: swap;
-        }
-    </style>
+    <!-- Local Neon Fonts -->
+    <link rel="stylesheet" href="fonts.css">
 
     <!-- Custom CSS -->
     <link rel="stylesheet" href="styles.css">
@@ -65,9 +21,9 @@
     <!-- Fix for canvas textBaseline error -->
     <script>
         // Patch canvas context to fix 'alphabetical' -> 'alphabetic' error
-        (function() {
+        (function () {
             const originalGetContext = HTMLCanvasElement.prototype.getContext;
-            HTMLCanvasElement.prototype.getContext = function(type, attributes) {
+            HTMLCanvasElement.prototype.getContext = function (type, attributes) {
                 const context = originalGetContext.call(this, type, attributes);
 
                 if (type === '2d' && context) {
@@ -75,14 +31,14 @@
 
                     if (originalSetter) {
                         Object.defineProperty(context, 'textBaseline', {
-                            set: function(value) {
+                            set: function (value) {
                                 // Fix common misspelling: 'alphabetical' -> 'alphabetic'
                                 if (value === 'alphabetical') {
                                     value = 'alphabetic';
                                 }
                                 originalSetter.call(this, value);
                             },
-                            get: function() {
+                            get: function () {
                                 return this._textBaseline || 'alphabetic';
                             }
                         });
@@ -176,132 +132,102 @@
                             <div class="font-categories">
                                 <h4 class="category-title">Neon Script & Cursive</h4>
                                 <div class="font-list-grid">
-                                    <!-- Using Google Fonts as substitutes -->
-                                    <button class="font-list-item" data-font="dancing-script"
-                                        data-family="'Dancing Script', cursive"
-                                        style="font-family: 'Dancing Script', cursive;">Barcelona</button>
-                                    <button class="font-list-item" data-font="great-vibes"
-                                        data-family="'Great Vibes', cursive"
-                                        style="font-family: 'Great Vibes', cursive;">Alexa</button>
-                                    <button class="font-list-item" data-font="sacramento"
-                                        data-family="'Sacramento', cursive"
-                                        style="font-family: 'Sacramento', cursive;">Amsterdam</button>
-                                    <button class="font-list-item" data-font="kaushan-script"
-                                        data-family="'Kaushan Script', cursive"
-                                        style="font-family: 'Kaushan Script', cursive;">Amanda</button>
-                                    <button class="font-list-item" data-font="lobster" data-family="'Lobster', cursive"
-                                        style="font-family: 'Lobster', cursive;">Chelsea</button>
-                                    <button class="font-list-item" data-font="shadows-into-light"
-                                        data-family="'Shadows Into Light', cursive"
-                                        style="font-family: 'Shadows Into Light', cursive;">Freehand</button>
-                                    <button class="font-list-item" data-font="pacifico"
-                                        data-family="'Pacifico', cursive"
-                                        style="font-family: 'Pacifico', cursive;">Freespirit</button>
-                                    <button class="font-list-item" data-font="monoton" data-family="'Monoton', cursive"
-                                        style="font-family: 'Monoton', cursive;">LoveNote</button>
-                                    <button class="font-list-item" data-font="monoton" data-family="'Monoton', cursive"
-                                        style="font-family: 'Monoton', cursive;">Neonscript</button>
-                                    <button class="font-list-item" data-font="playfair-display"
-                                        data-family="'Playfair Display', serif"
-                                        style="font-family: 'Playfair Display', serif;">Photogenic</button>
-                                    <button class="font-list-item" data-font="great-vibes"
-                                        data-family="'Great Vibes', cursive"
-                                        style="font-family: 'Great Vibes', cursive;">Signature</button>
-                                    <button class="font-list-item" data-font="cinzel" data-family="'Cinzel', serif"
-                                        style="font-family: 'Cinzel', serif;">Sorrento</button>
-                                    <button class="font-list-item" data-font="dancing-script"
-                                        data-family="'Dancing Script', cursive"
-                                        style="font-family: 'Dancing Script', cursive;">WildScript</button>
-                                    <button class="font-list-item" data-font="sacramento"
-                                        data-family="'Sacramento', cursive"
-                                        style="font-family: 'Sacramento', cursive;">NewCursive</button>
+                                    <button class="font-list-item" data-font="barcelona" data-family="Barcelona"
+                                        style="font-family: 'Barcelona';">Barcelona</button>
+                                    <button class="font-list-item" data-font="alexa" data-family="Alexa"
+                                        style="font-family: Alexa;">Alexa</button>
+                                    <button class="font-list-item" data-font="amsterdam" data-family="Amsterdam"
+                                        style="font-family: Amsterdam;">Amsterdam</button>
+                                    <button class="font-list-item" data-font="amanda" data-family="Amanda"
+                                        style="font-family: Amanda;">Amanda</button>
+                                    <button class="font-list-item" data-font="chelsea" data-family="Chelsea"
+                                        style="font-family: Chelsea;">Chelsea</button>
+                                    <button class="font-list-item" data-font="freehand" data-family="Freehand"
+                                        style="font-family: Freehand;">Freehand</button>
+                                    <button class="font-list-item" data-font="freespirit" data-family="Freespirit"
+                                        style="font-family: Freespirit;">Freespirit</button>
+                                    <button class="font-list-item" data-font="lovenote" data-family="LoveNote"
+                                        style="font-family: LoveNote;">LoveNote</button>
+                                    <button class="font-list-item" data-font="neonscript" data-family="Neonscript"
+                                        style="font-family: Neonscript;">Neonscript</button>
+                                    <button class="font-list-item" data-font="photogenic" data-family="Photogenic"
+                                        style="font-family: Photogenic;">Photogenic</button>
+                                    <button class="font-list-item" data-font="signature" data-family="Signature"
+                                        style="font-family: Signature;">Signature</button>
+                                    <button class="font-list-item" data-font="sorrento" data-family="Sorrento"
+                                        style="font-family: Sorrento;">Sorrento</button>
+                                    <button class="font-list-item" data-font="wildscript" data-family="WildScript"
+                                        style="font-family: WildScript;">WildScript</button>
+                                    <button class="font-list-item" data-font="newcursive" data-family="NewCursive"
+                                        style="font-family: NewCursive;">NewCursive</button>
                                 </div>
 
                                 <h4 class="category-title">Classic & Vintage</h4>
                                 <div class="font-list-grid">
-                                    <button class="font-list-item" data-font="cinzel" data-family="'Cinzel', serif"
-                                        style="font-family: 'Cinzel', serif;">Vintage</button>
-                                    <button class="font-list-item" data-font="playfair-display"
-                                        data-family="'Playfair Display', serif"
-                                        style="font-family: 'Playfair Display', serif;">Venetian</button>
-                                    <button class="font-list-item" data-font="royale" data-family="'Royal', serif"
-                                        style="font-family: 'Royale', serif;">Royalty</button>
-                                    <button class="font-list-item" data-font="playfair-display"
-                                        data-family="'Playfair Display', serif"
-                                        style="font-family: 'Playfair Display', serif;">ClassicType</button>
-                                    <button class="font-list-item" data-font="special-elite"
-                                        data-family="'Special Elite', monospace"
-                                        style="font-family: 'Special Elite', monospace;">Typewriter</button>
-                                    <button class="font-list-item" data-font="cinzel" data-family="'Cinzel', serif"
-                                        style="font-family: 'Cinzel', serif;">Mayfair</button>
+                                    <button class="font-list-item" data-font="vintage" data-family="Vintage"
+                                        style="font-family: Vintage;">Vintage</button>
+                                    <button class="font-list-item" data-font="venetian" data-family="Venetian"
+                                        style="font-family: Venetian;">Venetian</button>
+                                    <button class="font-list-item" data-font="royalty" data-family="Royalty"
+                                        style="font-family: Royalty;">Royalty</button>
+                                    <button class="font-list-item" data-font="classictype" data-family="ClassicType"
+                                        style="font-family: ClassicType;">ClassicType</button>
+                                    <button class="font-list-item" data-font="typewriter" data-family="Typewriter"
+                                        style="font-family: Typewriter;">Typewriter</button>
+                                    <button class="font-list-item" data-font="mayfair" data-family="Mayfair"
+                                        style="font-family: Mayfair;">Mayfair</button>
                                 </div>
 
                                 <h4 class="category-title">Beach & Tropical</h4>
                                 <div class="font-list-grid">
-                                    <button class="font-list-item" data-font="pacifico"
-                                        data-family="'Pacifico', cursive"
-                                        style="font-family: 'Pacifico', cursive;">Bayview</button>
-                                    <button class="font-list-item" data-font="lobster" data-family="'Lobster', cursive"
-                                        style="font-family: 'Lobster', cursive;">Austin</button>
-                                    <button class="font-list-item" data-font="shadows-into-light"
-                                        data-family="'Shadows Into Light', cursive"
-                                        style="font-family: 'Shadows Into Light', cursive;">Beachfront</button>
-                                    <button class="font-list-item" data-font="pacifico"
-                                        data-family="'Pacifico', cursive"
-                                        style="font-family: 'Pacifico', cursive;">Northshore</button>
-                                    <button class="font-list-item" data-font="lobster" data-family="'Lobster', cursive"
-                                        style="font-family: 'Lobster', cursive;">Waikiki</button>
+                                    <button class="font-list-item" data-font="bayview" data-family="Bayview"
+                                        style="font-family: Bayview;">Bayview</button>
+                                    <button class="font-list-item" data-font="austin" data-family="Austin"
+                                        style="font-family: Austin;">Austin</button>
+                                    <button class="font-list-item" data-font="beachfront" data-family="Beachfront"
+                                        style="font-family: Beachfront;">Beachfront</button>
+                                    <button class="font-list-item" data-font="northshore" data-family="Northshore"
+                                        style="font-family: Northshore;">Northshore</button>
+                                    <button class="font-list-item" data-font="waikiki" data-family="Waikiki"
+                                        style="font-family: Waikiki;">Waikiki</button>
                                 </div>
 
                                 <h4 class="category-title">Modern Neon Styles</h4>
                                 <div class="font-list-grid">
-                                    <button class="font-list-item" data-font="monoton" data-family="'Monoton', cursive"
-                                        style="font-family: 'Monoton', cursive;">NeonGlow</button>
-                                    <button class="font-list-item" data-font="orbitron"
-                                        data-family="'Orbitron', sans-serif"
-                                        style="font-family: 'Orbitron', sans-serif;">NeonLite</button>
-                                    <button class="font-list-item" data-font="orbitron"
-                                        data-family="'Orbitron', sans-serif"
-                                        style="font-family: 'Orbitron', sans-serif;">Neontrace</button>
-                                    <button class="font-list-item" data-font="monoton" data-family="'Monoton', cursive"
-                                        style="font-family: 'Monoton', cursive;">LoveNeon</button>
-                                    <button class="font-list-item" data-font="marquee"
-                                        data-family="'Marquee', sans-serif"
-                                        style="font-family: 'Marquee', sans-serif;">Marquee</button>
-                                    <button class="font-list-item" data-font="bebas-neue"
-                                        data-family="'Bebas Neue', sans-serif"
-                                        style="font-family: 'Bebas Neue', sans-serif;">Rocket</button>
-                                    <button class="font-list-item" data-font="raleway"
-                                        data-family="'Raleway', sans-serif"
-                                        style="font-family: 'Raleway', sans-serif;">Melbourne</button>
-                                    <button class="font-list-item" data-font="montserrat"
-                                        data-family="'Montserrat', sans-serif"
-                                        style="font-family: 'Montserrat', sans-serif;">Monaco</button>
-                                    <button class="font-list-item" data-font="audiowide"
-                                        data-family="'Audiowide', sans-serif"
-                                        style="font-family: 'Audiowide', sans-serif;">Bellview</button>
-                                    <button class="font-list-item" data-font="bebas-neue"
-                                        data-family="'Bebas Neue', sans-serif"
-                                        style="font-family: 'Bebas Neue', sans-serif;">Nevada</button>
+                                    <button class="font-list-item" data-font="neonglow" data-family="NeonGlow"
+                                        style="font-family: NeonGlow;">NeonGlow</button>
+                                    <button class="font-list-item" data-font="neonlite" data-family="NeonLite"
+                                        style="font-family: NeonLite;">NeonLite</button>
+                                    <button class="font-list-item" data-font="neontrace" data-family="Neontrace"
+                                        style="font-family: Neontrace;">Neontrace</button>
+                                    <button class="font-list-item" data-font="loveneon" data-family="LoveNeon"
+                                        style="font-family: LoveNeon;">LoveNeon</button>
+                                    <button class="font-list-item" data-font="marquee" data-family="Marquee"
+                                        style="font-family: Marquee;">Marquee</button>
+                                    <button class="font-list-item" data-font="rocket" data-family="Rocket"
+                                        style="font-family: Rocket;">Rocket</button>
+                                    <button class="font-list-item" data-font="melbourne" data-family="Melbourne"
+                                        style="font-family: Melbourne;">Melbourne</button>
+                                    <button class="font-list-item" data-font="monaco" data-family="Monaco"
+                                        style="font-family: Monaco;">Monaco</button>
+                                    <button class="font-list-item" data-font="bellview" data-family="Bellview"
+                                        style="font-family: Bellview;">Bellview</button>
+                                    <button class="font-list-item" data-font="nevada" data-family="Nevada"
+                                        style="font-family: Nevada;">Nevada</button>
                                 </div>
 
                                 <h4 class="category-title">Unique & Specialty</h4>
                                 <div class="font-list-grid">
-                                    <button class="font-list-item" data-font="pacifico"
-                                        data-family="'Pacifico', cursive"
-                                        style="font-family: 'Pacifico', cursive;">Greenworld</button>
-                                    <button class="font-list-item" data-font="montserrat"
-                                        data-family="'Montserrat', sans-serif"
-                                        style="font-family: 'Montserrat', sans-serif;">Avante</button>
-                                    <button class="font-list-item" data-font="kaushan-script"
-                                        data-family="'Kaushan Script', cursive"
-                                        style="font-family: 'Kaushan Script', cursive;">Buttercup</button>
-                                    <button class="font-list-item" data-font="orbitron"
-                                        data-family="'Orbitron', sans-serif"
-                                        style="font-family: 'Orbitron', sans-serif;">NeoTokyo</button>
-                                    <button class="font-list-item" data-font="orbitron"
-                                        data-family="'Orbitron', sans-serif"
-                                        style="font-family: 'Orbitron', sans-serif;">SciFi</button>
+                                    <button class="font-list-item" data-font="greenworld" data-family="Greenworld"
+                                        style="font-family: Greenworld;">Greenworld</button>
+                                    <button class="font-list-item" data-font="avante" data-family="Avante"
+                                        style="font-family: Avante;">Avante</button>
+                                    <button class="font-list-item" data-font="buttercup" data-family="Buttercup"
+                                        style="font-family: Buttercup;">Buttercup</button>
+                                    <button class="font-list-item" data-font="neotokyo" data-family="NeoTokyo"
+                                        style="font-family: NeoTokyo;">NeoTokyo</button>
+                                    <button class="font-list-item" data-font="scifi" data-family="SciFi"
+                                        style="font-family: SciFi;">SciFi</button>
                                 </div>
                             </div>
                         </div>
@@ -310,20 +236,20 @@
                     <h3 class="subsection-title">Suggested fonts</h3>
 
                     <div class="suggested-fonts-grid">
-                        <div class="font-card" data-font="barcelona" data-family="'Dancing Script', cursive">
-                            <div class="font-preview" style="font-family: 'Dancing Script', cursive;">your text</div>
+                        <div class="font-card" data-font="barcelona" data-family="Barcelona">
+                            <div class="font-preview" style="font-family: Barcelona;">your text</div>
                             <div class="font-name">Barcelona</div>
                         </div>
-                        <div class="font-card" data-font="neonscript" data-family="'Monoton', cursive">
-                            <div class="font-preview" style="font-family: 'Monoton', cursive;">your text</div>
+                        <div class="font-card" data-font="neonscript" data-family="Neonscript">
+                            <div class="font-preview" style="font-family: Neonscript;">your text</div>
                             <div class="font-name">Neonscript</div>
                         </div>
-                        <div class="font-card" data-font="neonglow" data-family="'Monoton', cursive">
-                            <div class="font-preview" style="font-family: 'Monoton', cursive;">your text</div>
+                        <div class="font-card" data-font="neonglow" data-family="NeonGlow">
+                            <div class="font-preview" style="font-family: NeonGlow;">your text</div>
                             <div class="font-name">NeonGlow</div>
                         </div>
-                        <div class="font-card" data-font="vintage" data-family="'Cinzel', serif">
-                            <div class="font-preview" style="font-family: 'Cinzel', serif;">your text</div>
+                        <div class="font-card" data-font="vintage" data-family="Vintage">
+                            <div class="font-preview" style="font-family: Vintage;">your text</div>
                             <div class="font-name">Vintage</div>
                         </div>
                     </div>
@@ -584,8 +510,8 @@
                             </div>
                         </div>
 
-                        <div class="size-card" data-size="small" data-width="29" data-height="13"
-                            data-fontsize="46" data-original="538.99" data-price="499.99">
+                        <div class="size-card" data-size="small" data-width="29" data-height="13" data-fontsize="46"
+                            data-original="538.99" data-price="499.99">
                             <div class="size-visual">
                                 <div class="size-rect"></div>
                                 <svg class="checkmark" width="20" height="20" viewBox="0 0 20 20" fill="none">
@@ -603,8 +529,8 @@
                             </div>
                         </div>
 
-                        <div class="size-card" data-size="medium" data-width="38" data-height="17"
-                            data-fontsize="48" data-original="589.99" data-price="549.99">
+                        <div class="size-card" data-size="medium" data-width="38" data-height="17" data-fontsize="48"
+                            data-original="589.99" data-price="549.99">
                             <div class="size-visual">
                                 <div class="size-rect"></div>
                                 <svg class="checkmark" width="20" height="20" viewBox="0 0 20 20" fill="none">
@@ -622,8 +548,8 @@
                             </div>
                         </div>
 
-                        <div class="size-card" data-size="large" data-width="49" data-height="21" 
-                            data-fontsize="50" data-original="438.99" data-price="438.99">
+                        <div class="size-card" data-size="large" data-width="49" data-height="21" data-fontsize="50"
+                            data-original="438.99" data-price="438.99">
                             <div class="size-visual">
                                 <div class="size-rect"></div>
                                 <svg class="checkmark" width="20" height="20" viewBox="0 0 20 20" fill="none">
@@ -641,8 +567,8 @@
                             </div>
                         </div>
 
-                        <div class="size-card" data-size="xl" data-width="64" data-height="28" 
-                            data-fontsize="54" data-original="438.99" data-price="438.99">
+                        <div class="size-card" data-size="xl" data-width="64" data-height="28" data-fontsize="54"
+                            data-original="438.99" data-price="438.99">
                             <div class="size-visual">
                                 <div class="size-rect"></div>
                                 <svg class="checkmark" width="20" height="20" viewBox="0 0 20 20" fill="none">
@@ -660,8 +586,8 @@
                             </div>
                         </div>
 
-                        <div class="size-card" data-size="xxl" data-width="84" data-height="35" 
-                            data-fontsize="56" data-original="438.99" data-price="438.99">
+                        <div class="size-card" data-size="xxl" data-width="84" data-height="35" data-fontsize="56"
+                            data-original="438.99" data-price="438.99">
                             <div class="size-visual">
                                 <div class="size-rect"></div>
                                 <svg class="checkmark" width="20" height="20" viewBox="0 0 20 20" fill="none">
@@ -679,8 +605,8 @@
                             </div>
                         </div>
 
-                        <div class="size-card" data-size="xxxl" data-width="109" data-height="47" 
-                            data-fontsize="60" data-original="438.99" data-price="438.99">
+                        <div class="size-card" data-size="xxxl" data-width="109" data-height="47" data-fontsize="60"
+                            data-original="438.99" data-price="438.99">
                             <div class="size-visual">
                                 <div class="size-rect"></div>
                                 <svg class="checkmark" width="20" height="20" viewBox="0 0 20 20" fill="none">
@@ -698,8 +624,8 @@
                             </div>
                         </div>
 
-                        <div class="size-card" data-size="4xl" data-width="141" data-height="61" 
-                            data-fontsize="64" data-original="438.99" data-price="438.99">
+                        <div class="size-card" data-size="4xl" data-width="141" data-height="61" data-fontsize="64"
+                            data-original="438.99" data-price="438.99">
                             <div class="size-visual">
                                 <div class="size-rect"></div>
                                 <svg class="checkmark" width="20" height="20" viewBox="0 0 20 20" fill="none">

@@ -471,8 +471,6 @@ function handleTextInput(event) {
 
 
     renderAllPreviews();
-
-
     recalculateTotalPrice();
 }
 
@@ -1855,15 +1853,13 @@ function renderCanvasPreview(canvas) {
     const displayText = appState.text || CONFIG.defaultPlaceholderText;
     const centerX = canvas.width / 2;
     const centerY = canvas.height / 2;
+    const isMobile = window.innerWidth < CONFIG.mobileBreakpoint;
 
-
-    let renderingFontSize = appState.fontSizePx;
+    let renderingFontSize = isMobile ? appState.fontSizePx * 2.3 : appState.fontSizePx;
 
     if (appState.multicolor) {
-
         renderMulticolorText(canvas, displayText, centerX, centerY, renderingFontSize);
     } else {
-
         const textConfig = {
             left: centerX,
             top: centerY,
@@ -1902,7 +1898,10 @@ function renderMulticolorText(canvas, text, centerX, centerY, renderingFontSize)
 
     const useFontSize = renderingFontSize || appState.fontSizePx;
 
+    // Split text into lines to preserve line breaks
+    const lines = text.split('\n');
 
+    // Create a temp text to measure overall dimensions
     const tempText = new fabric.Text(text, {
         fontFamily: appState.fontFamily,
         fontSize: useFontSize
@@ -1911,109 +1910,98 @@ function renderMulticolorText(canvas, text, centerX, centerY, renderingFontSize)
     const totalWidth = tempText.width;
     const totalHeight = tempText.height;
 
+    // Calculate line height
+    const lineHeight = useFontSize * 1.16;
 
-    let startX = centerX - (totalWidth / 2);
-    const baseY = centerY;
+    // Calculate starting Y position to center all lines
+    const totalLinesHeight = lines.length * lineHeight;
+    let currentY = centerY - (totalLinesHeight / 2) + (lineHeight / 2);
 
+    // Track character index across all lines
+    let globalCharIndex = 0;
 
-    const textGroup = new fabric.Group([], {
-        left: centerX,
-        top: centerY,
-        originX: 'center',
-        originY: 'center',
-        selectable: false
-    });
-
-
-    for (let i = 0; i < text.length; i++) {
-        const char = text[i];
-
-
-        const charColor = appState.characterColors[i] || appState.colorValue;
-
-
-        const isSelected = appState.selectedCharIndex === i;
-
-
-        const charConfig = {
+    // Process each line
+    lines.forEach((line, lineIndex) => {
+        // Measure the width of this line
+        const tempLineText = new fabric.Text(line, {
             fontFamily: appState.fontFamily,
-            fontSize: useFontSize,
-            fill: charColor,
-            selectable: false,
-            charSpacing: 0
-        };
+            fontSize: useFontSize
+        });
+        const lineWidth = tempLineText.width;
 
+        // Calculate starting X position for this line
+        let startX = centerX - (lineWidth / 2);
 
-        if (appState.neonGlowEnabled) {
-            charConfig.shadow = {
-                color: charColor,
-                blur: 45,
-                offsetX: 0,
-                offsetY: 0
+        // Render each character in this line
+        for (let i = 0; i < line.length; i++) {
+            const char = line[i];
+
+            const charColor = appState.characterColors[globalCharIndex] || appState.colorValue;
+            const isSelected = appState.selectedCharIndex === globalCharIndex;
+
+            const charConfig = {
+                fontFamily: appState.fontFamily,
+                fontSize: useFontSize,
+                fill: charColor,
+                selectable: false,
+                charSpacing: 0
             };
-        } else {
-            charConfig.opacity = 0.3;
-        }
-
-
-        if (isSelected) {
-            charConfig.stroke = '#C8FF00';
-            charConfig.strokeWidth = 4;
-            charConfig.paintFirst = 'stroke';
 
             if (appState.neonGlowEnabled) {
                 charConfig.shadow = {
-                    color: '#C8FF00',
-                    blur: 60,
+                    color: charColor,
+                    blur: 45,
                     offsetX: 0,
                     offsetY: 0
                 };
+            } else {
+                charConfig.opacity = 0.3;
             }
+
+            if (isSelected) {
+                charConfig.stroke = '#C8FF00';
+                charConfig.strokeWidth = 4;
+                charConfig.paintFirst = 'stroke';
+
+                if (appState.neonGlowEnabled) {
+                    charConfig.shadow = {
+                        color: '#C8FF00',
+                        blur: 60,
+                        offsetX: 0,
+                        offsetY: 0
+                    };
+                }
+            }
+
+            const charObj = new fabric.Text(char, charConfig);
+            charObj.charIndex = globalCharIndex;
+
+            const charWidth = charObj.width;
+
+            charObj.set({
+                left: startX + (charWidth / 2),
+                top: currentY,
+                originX: 'center',
+                originY: 'center'
+            });
+
+            canvas.add(charObj);
+
+            startX += charWidth;
+            globalCharIndex++;
         }
 
-        const charObj = new fabric.Text(char, charConfig);
-        charObj.charIndex = i;
+        // Account for the newline character in the character index
+        // (except for the last line)
+        if (lineIndex < lines.length - 1) {
+            globalCharIndex++;
+        }
 
-
-        const charWidth = charObj.width;
-
-
-        charObj.set({
-            left: startX - (totalWidth / 2) + (charWidth / 2),
-            top: 0,
-            originX: 'center',
-            originY: 'center'
-        });
-
-        textGroup.addWithUpdate(charObj);
-
-
-        startX += charWidth;
-    }
-
-
-    canvas.add(textGroup);
-
-
-    const items = textGroup.getObjects();
-    textGroup._restoreObjectsState();
-    canvas.remove(textGroup);
-
-
-    startX = centerX - (totalWidth / 2);
-    items.forEach((item, index) => {
-        const charWidth = item.width;
-        item.set({
-            left: startX + (charWidth / 2),
-            top: centerY,
-            originX: 'center',
-            originY: 'center'
-        });
-        canvas.add(item);
-        startX += charWidth;
+        // Move to next line
+        currentY += lineHeight;
     });
 
-
+    // Create bounding box for measurements
     const boundingBox = {
         getBoundingRect: function () {
             return {
@@ -2043,7 +2031,12 @@ function drawMeasurementOverlays(canvas, textObject) {
     const sizeFactor = bounds.width / 400;
     const padding = Math.max(60, Math.min(100, 70 * sizeFactor));
     const tickLength = Math.max(8, Math.min(15, 10 * sizeFactor));
-    const labelFontSize = Math.max(14, Math.min(20, 16 * sizeFactor));
+
+    // Increase font size on mobile for better readability
+    const isMobile = window.innerWidth < CONFIG.mobileBreakpoint;
+    const labelFontSize = isMobile
+        ? Math.max(22, Math.min(32, 24 * sizeFactor))
+        : Math.max(14, Math.min(20, 16 * sizeFactor));
 
 
     const hLineY = bounds.top + bounds.height + padding;
@@ -2113,7 +2106,7 @@ function drawMeasurementOverlays(canvas, textObject) {
 
 
     const heightLabel = new fabric.Text(`${appState.plan.heightIn}"`, {
-        left: vLineX + 18,
+        left: vLineX + 15,
         top: centerY,
         originX: 'left',
         originY: 'center',

@@ -37,15 +37,62 @@
 
     <!-- Only these few actually exist on fonts.cdnfonts.com -->
     <link rel="preconnect" href="https://fonts.cdnfonts.com">
-    <link href="https://fonts.cdnfonts.com/css/typewriter" rel="stylesheet">
-    <link href="https://fonts.cdnfonts.com/css/marquee" rel="stylesheet">
-    <link href="https://fonts.cdnfonts.com/css/royal" rel="stylesheet">
+    <link href="https://fonts.cdnfonts.com/css/typewriter" rel="stylesheet" media="print" onload="this.media='all'">
+    <link href="https://fonts.cdnfonts.com/css/marquee" rel="stylesheet" media="print" onload="this.media='all'">
+    <link href="https://fonts.cdnfonts.com/css/royal" rel="stylesheet" media="print" onload="this.media='all'">
+    <style>
+        /* Fallback fonts with display swap to prevent blocking */
+        @font-face {
+            font-family: 'Marquee';
+            font-display: swap;
+        }
+        @font-face {
+            font-family: 'Typewriter';
+            font-display: swap;
+        }
+        @font-face {
+            font-family: 'Royal';
+            font-display: swap;
+        }
+    </style>
 
     <!-- Custom CSS -->
     <link rel="stylesheet" href="styles.css">
 
     <!-- Fabric.js -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.0/fabric.min.js"></script>
+
+    <!-- Fix for canvas textBaseline error -->
+    <script>
+        // Patch canvas context to fix 'alphabetical' -> 'alphabetic' error
+        (function() {
+            const originalGetContext = HTMLCanvasElement.prototype.getContext;
+            HTMLCanvasElement.prototype.getContext = function(type, attributes) {
+                const context = originalGetContext.call(this, type, attributes);
+
+                if (type === '2d' && context) {
+                    const originalSetter = Object.getOwnPropertyDescriptor(CanvasRenderingContext2D.prototype, 'textBaseline')?.set;
+
+                    if (originalSetter) {
+                        Object.defineProperty(context, 'textBaseline', {
+                            set: function(value) {
+                                // Fix common misspelling: 'alphabetical' -> 'alphabetic'
+                                if (value === 'alphabetical') {
+                                    value = 'alphabetic';
+                                }
+                                originalSetter.call(this, value);
+                            },
+                            get: function() {
+                                return this._textBaseline || 'alphabetic';
+                            }
+                        });
+                    }
+                }
+
+                return context;
+            };
+        })();
+    </script>
 </head>
 
 <body>

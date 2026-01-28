@@ -1,5 +1,24 @@
 /* Custom Neon Fonts are loaded via CDN in index.html */
 
+/* Font loading optimization */
+@font-face {
+    font-family: 'Marquee';
+    font-display: swap;
+    src: local('Marquee');
+}
+
+@font-face {
+    font-family: 'Typewriter';
+    font-display: swap;
+    src: local('Typewriter');
+}
+
+@font-face {
+    font-family: 'Royal';
+    font-display: swap;
+    src: local('Royal');
+}
+
 :root {
     --primary-bg: #000000;
     --panel-bg: #000000;

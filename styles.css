@@ -1770,30 +1770,50 @@ canvas {
 
 .character-color-popup .popup-colors {
     display: grid;
-    grid-template-columns: repeat(8, 1fr);
+    grid-template-columns: repeat(5, 1fr);
     gap: 8px;
 }
 
 .character-color-popup .popup-color-btn {
-    width: 36px;
-    height: 36px;
-    border-radius: 50%;
-    border: 2px solid rgba(255, 255, 255, 0.2);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    border: none;
     cursor: pointer;
     transition: all 0.2s;
     background: none;
     padding: 0;
+}
+
+.character-color-popup .popup-color-swatch {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    transition: all 0.2s;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
 }
 
-.character-color-popup .popup-color-btn:hover {
+.character-color-popup .popup-color-btn:hover .popup-color-swatch {
     transform: scale(1.15);
     border-color: var(--accent-color);
 }
 
-.character-color-popup .popup-color-btn.active {
+.character-color-popup .popup-color-btn.active .popup-color-swatch {
     border-color: var(--accent-color);
     box-shadow: 0 0 0 3px rgba(200, 255, 0, 0.3);
+}
+
+.character-color-popup .popup-color-name {
+    font-size: 9px;
+    color: var(--text-primary);
+    text-align: center;
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 60px;
 }
 
 .popup-custom-color-btn {
@@ -2933,13 +2953,18 @@ canvas {
     }
 
     .character-color-popup .popup-colors {
-        grid-template-columns: repeat(5, 1fr);
+        grid-template-columns: repeat(4, 1fr);
         gap: 6px;
     }
 
-    .character-color-popup .popup-color-btn {
+    .character-color-popup .popup-color-swatch {
         width: 28px;
         height: 28px;
+    }
+
+    .character-color-popup .popup-color-name {
+        font-size: 8px;
+        max-width: 50px;
     }
 
     .popup-custom-color-btn {

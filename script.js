@@ -291,9 +291,19 @@ function showColorPopup(canvasId, charObj) {
     colors.forEach(({ color, name }) => {
         const btn = document.createElement('button');
         btn.className = 'popup-color-btn';
-        btn.style.background = color;
         btn.setAttribute('data-color', color);
         btn.setAttribute('title', name);
+
+        const colorSwatch = document.createElement('div');
+        colorSwatch.className = 'popup-color-swatch';
+        colorSwatch.style.background = color;
+
+        const colorName = document.createElement('span');
+        colorName.className = 'popup-color-name';
+        colorName.textContent = name;
+
+        btn.appendChild(colorSwatch);
+        btn.appendChild(colorName);
 
         if (color === currentColor) {
             btn.classList.add('active');
@@ -595,15 +605,6 @@ function attachColorListeners() {
                 const rgbOption = document.querySelector('.color-option[data-color="rgb"]');
                 if (rgbOption) {
                     rgbOption.classList.remove('active');
-                }
-                // Set to a default color
-                appState.colorValue = '#FFFFFF';
-                appState.colorName = 'White';
-                // Activate white color option
-                const whiteOption = document.querySelector('.color-option[data-color="#FFFFFF"]');
-                if (whiteOption) {
-                    document.querySelectorAll('.color-option').forEach(opt => opt.classList.remove('active'));
-                    whiteOption.classList.add('active');
                 }
                 recalculateTotalPrice();
             }
@@ -1895,8 +1896,7 @@ function renderMulticolorText(canvas, text, centerX, centerY, renderingFontSize)
 
     const tempText = new fabric.Text(text, {
         fontFamily: appState.fontFamily,
-        fontSize: useFontSize,
-        charSpacing: 0
+        fontSize: useFontSize
     });
 
     const totalWidth = tempText.width;

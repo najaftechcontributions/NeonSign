@@ -1,9 +1,7 @@
 const CONFIG = {
-
     mobileBreakpoint: 768,
-    maxMobileLinesCount: 999,  // Unlimited lines
-    maxDesktopLinesCount: 999,  // Unlimited lines
-
+    maxMobileLinesCount: 999,
+    maxDesktopLinesCount: 999,
 
     defaultPlaceholderText: 'Your Text',
     baseFontSize: 38,
@@ -11,40 +9,30 @@ const CONFIG = {
     textBoundingRatioMobile: { width: 0.8, height: 0.7 },
     textBoundingRatioDesktop: { width: 0.85, height: 0.75 },
 
-
     rgbCycleSpeed: 500,
     rgbColorSequence: ['#FF0000', '#FF7F00', '#FFFF00', '#00FF00', '#0000FF', '#4B0082', '#9400D3'],
 
-
-    // Pricing from referencejs.js
-    basePrice: 90, // $90 per square inch base
+    basePrice: 90,
     rgbSurcharge: 50,
     outdoorSurcharge: 65,
 
-    // Base discount configuration
-    enableBaseDiscount: false, // Set to false to disable Discount
-    basePromotionPercentage: 0.30, // 20% discount
+    enableBaseDiscount: false,
+    basePromotionPercentage: 0.30,
 
-
-    // Price calculation (from referencejs.js)
     productCostPerInchStandard: 0.2519,
     productCostPerInchRGB: 0.2947,
     shippingCostPerInch: 0.25,
     usdToCadMultiplier: 1.42,
-    localShippingCostUSD: 45 / 1.42, // 45 CAD converted to USD
+    localShippingCostUSD: 45 / 1.42,
     minProfitPercentage: 0.35,
-    minProfitUSD: 100 / 1.42, // 100 CAD converted to USD
+    minProfitUSD: 100 / 1.42,
     minimumPriceFloor: 90,
 
-
-    // Premium fonts that double the price (from referencejs.js)
     premiumFontsDouble: ['loveneon', 'scifi', 'mayfair'],
-
 
     planScalingFactor: 1.3,
     planNames: ['Mini', 'Small', 'Medium', 'Large', 'XL', 'XXL', 'XXXL', '4XL'],
 
-    // Local coupon codes (can be checked without API)
     localCoupons: {
         'SAVE10': { type: 'percentage', value: 10 },
         'SAVE20': { type: 'percentage', value: 20 },
@@ -53,7 +41,6 @@ const CONFIG = {
         'NEWYEAR': { type: 'percentage', value: 25 }
     },
 
-    // API endpoint for coupon validation
     couponApiEndpoint: 'https://apiv2.easyneonsigns.ca/apply-discount'
 };
 
@@ -61,16 +48,13 @@ const CONFIG = {
 
 
 const appState = {
-
     text: '',
     userHasEnteredText: false,
-
 
     fontFamily: "Barcelona",
     fontKey: 'Barcelona',
     fontSizePx: CONFIG.baseFontSize,
     lineHeightPx: CONFIG.baseFontSize * 1.2,
-
 
     colorValue: '#FFFFFF',
     colorName: 'White',
@@ -78,18 +62,14 @@ const appState = {
     rgbMode: false,
     rgbAnimationTimer: null,
 
-
     type: 'indoor',
     outdoorSurcharge: 0,
-
 
     backboard: 'clear',
     cutTo: 'cut-to-letter',
     cutToPrice: 15,
 
-
     extras: [],
-
 
     plan: {
         id: 'mini',
@@ -99,7 +79,6 @@ const appState = {
         price: 438.99
     },
 
-
     totalPrice: 438.99,
     discountPrice: 351.19,
     originalDiscountPrice: 351.19,
@@ -107,15 +86,12 @@ const appState = {
     activeDiscount: null,
     discountCode: null,
 
-
     svgMarkup: '',
     svgWidthPx: 800,
     svgHeightPx: 600,
 
-
     measuredWidthIn: 23,
     measuredHeightIn: 10,
-
 
     currentStep: 1,
     inputType: 'text',
@@ -139,13 +115,10 @@ const animationHandles = {};
 
 
 function initializeActiveStates() {
-
     const defaultFontCard = document.querySelector('.font-card[data-font="Barcelona"]');
     const defaultFontItem = document.querySelector('.font-list-item[data-font="Barcelona"]');
     if (defaultFontCard) defaultFontCard.classList.add('active');
     if (defaultFontItem) defaultFontItem.classList.add('active');
-
-
 
     const defaultColor = document.querySelector('.color-option[data-color="#FFFFFF"]');
     if (defaultColor && !defaultColor.classList.contains('active')) {
@@ -153,25 +126,17 @@ function initializeActiveStates() {
         defaultColor.classList.add('active');
     }
 
-
-
-
-
     const defaultBackboard = document.querySelector('.backboard-color-option input[value="clear"]');
     if (defaultBackboard) {
         const parent = defaultBackboard.closest('.backboard-color-option');
         if (parent) parent.classList.add('active');
     }
 
-
     const defaultPower = document.querySelector('.radio-pill input[value="usa"]');
     if (defaultPower) {
         const parent = defaultPower.closest('.radio-pill');
         if (parent) parent.classList.add('active');
     }
-
-
-
 }
 
 
@@ -182,9 +147,12 @@ document.addEventListener('DOMContentLoaded', () => {
     attachEventListeners();
     generateInitialPlans();
     initializeActiveStates();
+
+    const initialDimensions = calculateIntelligentDimensions(appState.text);
+    regenerateSizeCards(initialDimensions.widthInches, initialDimensions.heightInches);
+
     renderAllPreviews();
     recalculateTotalPrice();
-    updateSizeCardPrices();
 });
 
 function setupCanvases() {
@@ -199,7 +167,6 @@ function setupCanvases() {
                 backgroundColor: 'transparent',
                 selection: false
             });
-
 
             canvasInstances[canvasId].on('mouse:down', function (options) {
                 handleCanvasClick(canvasId, options);
@@ -216,8 +183,6 @@ function handleCanvasClick(canvasId, options) {
     if (!canvas) return;
 
     const pointer = canvas.getPointer(options.e);
-
-
     const characterObjects = canvas.getObjects().filter(obj => obj.charIndex !== undefined);
 
     for (let obj of characterObjects) {
@@ -225,15 +190,12 @@ function handleCanvasClick(canvasId, options) {
 
         if (pointer.x >= bounds.left && pointer.x <= bounds.left + bounds.width &&
             pointer.y >= bounds.top && pointer.y <= bounds.top + bounds.height) {
-
-
             appState.selectedCharIndex = obj.charIndex;
             renderAllPreviews();
             showColorPopup(canvasId, obj);
             return;
         }
     }
-
 
     appState.selectedCharIndex = null;
     renderAllPreviews();
@@ -245,24 +207,19 @@ function showColorPopup(canvasId, charObj) {
     const canvasElement = document.getElementById(canvasId);
     if (!canvasElement) return;
 
-
     hideColorPopup();
-
 
     const wrapper = canvasElement.closest('.canvas-wrapper');
     if (!wrapper) return;
-
 
     const popup = document.createElement('div');
     popup.className = 'character-color-popup';
     popup.id = 'characterColorPopup';
 
-
     const title = document.createElement('div');
     title.className = 'popup-title';
     title.textContent = 'SELECT COLOR';
     popup.appendChild(title);
-
 
     const colorsGrid = document.createElement('div');
     colorsGrid.className = 'popup-colors';
@@ -412,40 +369,20 @@ function handlePopupOutsideClick(e) {
 
 
 function attachEventListeners() {
-
     const textInput = document.getElementById('neonText');
     if (textInput) {
         textInput.addEventListener('input', debounce(handleTextInput, 300));
     }
 
-
     attachFontListeners();
-
-
     attachColorListeners();
-
-
     attachPlanListeners();
-
-
     attachLocationListeners();
-
-
     attachShapeListeners();
-
-
     attachExtrasListeners();
-
-
     attachStepNavigationListeners();
-
-
     attachPreviewControlListeners();
-
-
     attachDiscountListeners();
-
-
     attachCheckoutListener();
 }
 
@@ -455,41 +392,31 @@ function attachEventListeners() {
 function handleTextInput(event) {
     let inputText = event.target.value.trim();
 
-    // No line limits - allow unlimited text input
     appState.text = inputText || CONFIG.defaultPlaceholderText;
     appState.userHasEnteredText = inputText.length > 0;
 
-    // Calculate intelligent dimensions based on text content
     const dimensions = calculateIntelligentDimensions(appState.text);
 
-    // Update plan dimensions
     appState.plan.widthIn = dimensions.widthInches;
     appState.plan.heightIn = dimensions.heightInches;
 
-    // Recalculate price based on new dimensions
+    regenerateSizeCards(dimensions.widthInches, dimensions.heightInches);
     recalculatePlanPrice();
 
     renderAllPreviews();
     recalculateTotalPrice();
 }
 
-// Calculate dimensions intelligently based on text content
 function calculateIntelligentDimensions(text) {
     const lines = text.split('\n');
     const numLines = lines.length;
 
-    // Base dimensions (Mini size: 23" x 10")
     const baseWidth = 23;
     const baseHeight = 10;
-    const baseCharCount = 11; // Reference: "hello world" ~ 11 chars
+    const baseCharCount = 11;
 
     if (numLines === 1) {
-        // Single line: width increases with character count, height stays constant
         const charCount = lines[0].length;
-
-        // Width grows proportionally with character count
-        // "hello world" (11 chars) = 23" width
-        // "hello world how are you" (23 chars) = ~48" width
         const widthInches = Math.max(baseWidth, Math.round((charCount / baseCharCount) * baseWidth));
         const heightInches = baseHeight;
 
@@ -498,19 +425,14 @@ function calculateIntelligentDimensions(text) {
             heightInches: heightInches
         };
     } else {
-        // Multiple lines: height increases, width adjusts to longest line
         const longestLine = lines.reduce((a, b) => a.length > b.length ? a : b, '');
         const longestCharCount = longestLine.length;
 
-        // Width based on longest line (typically smaller than single line)
-        // When text is split, each line is shorter, so width decreases
         const widthInches = Math.max(
-            Math.round(baseWidth * 0.6), // Minimum width for multi-line
+            Math.round(baseWidth * 0.6),
             Math.round((longestCharCount / baseCharCount) * baseWidth * 0.8)
         );
 
-        // Height increases with number of lines
-        // Each additional line adds ~60% of base height
         const heightInches = Math.round(baseHeight + ((numLines - 1) * (baseHeight * 0.6)));
 
         return {
@@ -518,6 +440,101 @@ function calculateIntelligentDimensions(text) {
             heightInches: heightInches
         };
     }
+}
+
+function regenerateSizeCards(baseWidth, baseHeight) {
+    const sizeGrid = document.getElementById('sizeGrid');
+    if (!sizeGrid) return;
+
+    const sizeConfigs = [
+        { id: 'mini', name: 'Mini', scale: 1.0, fontsize: 44 },
+        { id: 'small', name: 'Small', scale: 1.3, fontsize: 46 },
+        { id: 'medium', name: 'Medium', scale: 1.69, fontsize: 48 },
+        { id: 'large', name: 'Large', scale: 2.197, fontsize: 50 },
+        { id: 'xl', name: 'XL', scale: 2.8561, fontsize: 54 },
+        { id: 'xxl', name: 'XXL', scale: 3.71293, fontsize: 56 },
+        { id: 'xxxl', name: 'XXXL', scale: 4.826809, fontsize: 60 },
+        { id: '4xl', name: '4XL', scale: 6.274852, fontsize: 64 }
+    ];
+
+    const currentActiveCard = document.querySelector('.size-card.active');
+    const currentActiveSize = currentActiveCard ? currentActiveCard.getAttribute('data-size') : 'mini';
+
+    sizeGrid.innerHTML = '';
+
+    sizeConfigs.forEach((config, index) => {
+        const scaledWidth = Math.round(baseWidth * config.scale);
+        const scaledHeight = Math.round(baseHeight * config.scale);
+
+        const price = calculatePlanPrice(scaledWidth, scaledHeight);
+
+        let totalPrice = price;
+        totalPrice += appState.outdoorSurcharge;
+        totalPrice += appState.rgbSurcharge;
+        totalPrice += appState.cutToPrice;
+        appState.extras.forEach(extra => {
+            totalPrice += extra.price;
+        });
+        totalPrice = Math.floor(totalPrice) + 0.99;
+
+        let discountedPrice = CONFIG.enableBaseDiscount ?
+            totalPrice * (1 - CONFIG.basePromotionPercentage) :
+            totalPrice;
+
+        if (appState.discountApplied && appState.activeDiscount) {
+            if (appState.activeDiscount.type === 'percentage') {
+                discountedPrice *= (1 - appState.activeDiscount.value / 100);
+            } else if (appState.activeDiscount.type === 'amount') {
+                discountedPrice -= appState.activeDiscount.value;
+            }
+        }
+
+        discountedPrice = Math.max(discountedPrice, 0);
+        discountedPrice = Math.floor(discountedPrice) + 0.99;
+
+        const card = document.createElement('div');
+        card.className = `size-card ${config.id === currentActiveSize ? 'active' : ''}`;
+        card.setAttribute('data-size', config.id);
+        card.setAttribute('data-width', scaledWidth);
+        card.setAttribute('data-height', scaledHeight);
+        card.setAttribute('data-fontsize', config.fontsize);
+        card.setAttribute('data-original', totalPrice.toFixed(2));
+        card.setAttribute('data-price', discountedPrice.toFixed(2));
+
+        card.innerHTML = `
+            <div class="size-visual">
+                <div class="size-rect"></div>
+                <svg class="checkmark" width="20" height="20" viewBox="0 0 20 20" fill="none">
+                    <path d="M4 10L8 14L16 6" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
+            </div>
+            <div class="size-info">
+                <div class="size-name">${config.name}</div>
+                <div class="size-dimensions">${scaledWidth}"x${scaledHeight}"</div>
+                <div class="size-pricing">
+                    <span class="original-price" style="${!CONFIG.enableBaseDiscount ? 'display: none;' : ''}">$${totalPrice.toFixed(2)}</span>
+                    <span class="sale-price">$${discountedPrice.toFixed(2)}</span>
+                </div>
+            </div>
+        `;
+
+        sizeGrid.appendChild(card);
+
+        if (config.id === currentActiveSize) {
+            appState.plan.widthIn = scaledWidth;
+            appState.plan.heightIn = scaledHeight;
+            appState.plan.name = config.name;
+            appState.plan.id = config.id;
+            appState.fontSizePx = config.fontsize;
+        }
+    });
+
+    document.querySelectorAll('.size-card').forEach(card => {
+        card.addEventListener('click', () => {
+            selectPlan(card);
+        });
+    });
 }
 
 
@@ -537,7 +554,6 @@ function debounce(func, wait) {
 
 
 function attachFontListeners() {
-
     document.querySelectorAll('.font-card').forEach(card => {
         card.addEventListener('click', () => {
             const fontKey = card.getAttribute('data-font');
@@ -546,13 +562,11 @@ function attachFontListeners() {
         });
     });
 
-
     document.querySelectorAll('.font-list-item').forEach(item => {
         item.addEventListener('click', () => {
             const fontKey = item.getAttribute('data-font');
             const fontFamily = item.getAttribute('data-family');
             selectFont(fontKey, fontFamily);
-
 
             const content = document.getElementById('fontLibraryContent');
             const trigger = document.getElementById('fontLibraryTrigger');
@@ -560,7 +574,6 @@ function attachFontListeners() {
             if (trigger) trigger.classList.remove('open');
         });
     });
-
 
     const trigger = document.getElementById('fontLibraryTrigger');
     const content = document.getElementById('fontLibraryContent');
@@ -576,10 +589,8 @@ function selectFont(fontKey, fontFamily) {
     appState.fontKey = fontKey;
     appState.fontFamily = fontFamily;
 
-
     document.querySelectorAll('.font-card').forEach(card => card.classList.remove('active'));
     document.querySelectorAll('.font-list-item').forEach(item => item.classList.remove('active'));
-
 
     const selectedCard = document.querySelector(`.font-card[data-font="${fontKey}"]`);
     const selectedListItem = document.querySelector(`.font-list-item[data-font="${fontKey}"]`);
@@ -587,10 +598,11 @@ function selectFont(fontKey, fontFamily) {
     if (selectedCard) selectedCard.classList.add('active');
     if (selectedListItem) selectedListItem.classList.add('active');
 
-    // Recalculate dimensions when font changes
     const dimensions = calculateIntelligentDimensions(appState.text);
     appState.plan.widthIn = dimensions.widthInches;
     appState.plan.heightIn = dimensions.heightInches;
+
+    regenerateSizeCards(dimensions.widthInches, dimensions.heightInches);
     recalculatePlanPrice();
 
     renderAllPreviews();
@@ -601,7 +613,6 @@ function selectFont(fontKey, fontFamily) {
 
 
 function attachColorListeners() {
-
     document.querySelectorAll('.color-option').forEach(option => {
         option.addEventListener('click', (e) => {
             const colorValue = option.getAttribute('data-color');
@@ -611,15 +622,12 @@ function attachColorListeners() {
                 appState.characterColors[appState.selectedCharIndex] = colorValue;
                 renderAllPreviews();
             } else {
-
                 document.querySelectorAll('.color-option').forEach(opt => opt.classList.remove('active'));
                 option.classList.add('active');
-
                 selectColor(colorValue, colorName);
             }
         });
     });
-
 
     const customBtn = document.getElementById('customColorBtn');
     const customPicker = document.getElementById('customColorPicker');
@@ -640,16 +648,13 @@ function attachColorListeners() {
         });
     }
 
-
     const multiToggle = document.getElementById('multicolorToggle');
     const multiHelp = document.getElementById('multicolorHelp');
 
     if (multiToggle) {
         multiToggle.addEventListener('change', () => {
-            // If multicolor is being enabled and RGB is active, disable RGB
             if (multiToggle.checked && appState.rgbMode) {
                 stopRgbMode();
-                // Uncheck RGB color option
                 const rgbOption = document.querySelector('.color-option[data-color="rgb"]');
                 if (rgbOption) {
                     rgbOption.classList.remove('active');
@@ -675,11 +680,9 @@ function attachColorListeners() {
 }
 
 function selectColor(colorValue, colorName) {
-
     if (colorName === 'RGB Color Changing' || colorValue === 'rgb') {
         startRgbMode();
     } else {
-
         if (appState.rgbMode) {
             stopRgbMode();
         }
@@ -694,20 +697,17 @@ function selectColor(colorValue, colorName) {
 }
 
 function startRgbMode() {
-    // If multicolor is enabled, disable it first
     if (appState.multicolor) {
         appState.multicolor = false;
         appState.characterColors = {};
         appState.selectedCharIndex = null;
         hideColorPopup();
 
-        // Uncheck multicolor toggle
         const multiToggle = document.getElementById('multicolorToggle');
         if (multiToggle) {
             multiToggle.checked = false;
         }
 
-        // Hide multicolor help
         const multiHelp = document.getElementById('multicolorHelp');
         if (multiHelp) {
             multiHelp.classList.add('hidden');
@@ -742,8 +742,7 @@ function stopRgbMode() {
 
 
 
-// Global aspect ratio tracking for custom sizing
-let customSizingAspectRatio = 23 / 10; // Default aspect ratio from MINI size
+let customSizingAspectRatio = 23 / 10;
 
 function updateAspectRatio() {
     if (appState.plan.widthIn && appState.plan.heightIn) {
@@ -752,7 +751,6 @@ function updateAspectRatio() {
 }
 
 function attachPlanListeners() {
-
     document.querySelectorAll('.size-mode-btn').forEach(btn => {
         btn.addEventListener('click', () => {
             document.querySelectorAll('.size-mode-btn').forEach(b => b.classList.remove('active'));
@@ -763,12 +761,11 @@ function attachPlanListeners() {
         });
     });
 
-
     const customWidth = document.getElementById('customWidth');
     const customHeight = document.getElementById('customHeight');
     const customSizeError = document.getElementById('customSizeError');
     const customSizeErrorText = document.getElementById('customSizeErrorText');
-    const MINIMUM_WIDTH = 23; // Minimum width from MINI size
+    const MINIMUM_WIDTH = 23;
 
     function showSizeError(message) {
         if (customSizeError && customSizeErrorText) {
@@ -787,7 +784,6 @@ function attachPlanListeners() {
         customWidth.addEventListener('input', debounce(() => {
             let width = parseInt(customWidth.value);
 
-            // Validate minimum width
             if (width < MINIMUM_WIDTH) {
                 showSizeError(`The minimum possible width is ${MINIMUM_WIDTH} inches. Please enter a larger value.`);
                 customWidth.value = MINIMUM_WIDTH;
@@ -796,10 +792,7 @@ function attachPlanListeners() {
                 hideSizeError();
             }
 
-            // Calculate height based on aspect ratio to maintain proportions
             const height = Math.round(width / customSizingAspectRatio);
-
-            // Update both inputs to maintain aspect ratio lock
             customHeight.value = height;
 
             appState.plan.widthIn = width;
@@ -816,11 +809,8 @@ function attachPlanListeners() {
     if (customHeight) {
         customHeight.addEventListener('input', debounce(() => {
             let height = parseInt(customHeight.value);
-
-            // Calculate width based on aspect ratio to maintain proportions
             const width = Math.round(height * customSizingAspectRatio);
 
-            // Validate minimum width
             if (width < MINIMUM_WIDTH) {
                 showSizeError(`The minimum possible width is ${MINIMUM_WIDTH} inches based on the aspect ratio. Please enter a larger height.`);
                 const minHeight = Math.round(MINIMUM_WIDTH / customSizingAspectRatio);
@@ -830,7 +820,6 @@ function attachPlanListeners() {
                 appState.plan.heightIn = minHeight;
             } else {
                 hideSizeError();
-                // Update both inputs to maintain aspect ratio lock
                 customWidth.value = width;
                 appState.plan.widthIn = width;
                 appState.plan.heightIn = height;
@@ -844,7 +833,6 @@ function attachPlanListeners() {
             recalculateTotalPrice();
         }, 300));
     }
-
 
     document.addEventListener('click', (e) => {
         const sizeCard = e.target.closest('.size-card');
@@ -871,7 +859,6 @@ function toggleSizeMode(mode) {
 }
 
 function selectPlan(cardElement) {
-
     document.querySelectorAll('.size-card').forEach(c => c.classList.remove('active'));
     cardElement.classList.add('active');
 
@@ -879,10 +866,10 @@ function selectPlan(cardElement) {
     appState.plan.name = cardElement.querySelector('.size-name')?.textContent || 'Medium';
     appState.plan.widthIn = parseInt(cardElement.getAttribute('data-width')) || 38;
     appState.plan.heightIn = parseInt(cardElement.getAttribute('data-height')) || 17;
-    appState.plan.price = parseFloat(cardElement.getAttribute('data-price')) || 438.99;
     appState.fontSizePx = parseFloat(cardElement.getAttribute('data-fontsize')) || 38;
 
-    // Update aspect ratio for custom sizing mode
+    appState.plan.price = calculatePlanPrice(appState.plan.widthIn, appState.plan.heightIn);
+
     if (typeof updateAspectRatio === 'function') {
         updateAspectRatio();
     }
@@ -891,21 +878,15 @@ function selectPlan(cardElement) {
     recalculateTotalPrice();
 }
 
-
 function generatePlansFromMeasurements() {
-
     return;
 }
-
 
 function generateInitialPlans() {
-
     return;
 }
 
-
 function updatePlanCardsInUI() {
-
     return;
 }
 
@@ -913,23 +894,17 @@ function updatePlanCardsInUI() {
 
 
 function calculatePlanPrice(widthIn, heightIn) {
-    // Calculate area (from referencejs.js)
     const area = widthIn * heightIn;
-
-    // Determine if RGB
     const isRGB = appState.rgbMode || appState.rgbSurcharge > 0;
 
-    // Cost per inch values (from referencejs.js)
     const productCostPerInch = isRGB ? CONFIG.productCostPerInchRGB : CONFIG.productCostPerInchStandard;
     const shippingCostPerInch = CONFIG.shippingCostPerInch;
     const usdToCadMultiplier = CONFIG.usdToCadMultiplier;
 
-    // Calculate costs for shipping and product (from referencejs.js)
     const shippingCost = area * shippingCostPerInch;
     const productCost = area * productCostPerInch;
     const localShippingCostUSD = CONFIG.localShippingCostUSD;
 
-    // Calculate profit as the greater of 35% of (product + shipping + local shipping) or 100 CAD converted to USD
     const profitUSD = Math.max(
         CONFIG.minProfitPercentage * (productCost + shippingCost + localShippingCostUSD),
         CONFIG.minProfitUSD
@@ -939,15 +914,11 @@ function calculatePlanPrice(widthIn, heightIn) {
     const totalCostCADWithDiscount = totalCostUSD * usdToCadMultiplier;
     let totalCostCAD = totalCostCADWithDiscount * usdToCadMultiplier;
 
-    // Double the price for specific fonts (from referencejs.js)
     if (CONFIG.premiumFontsDouble.includes(appState.fontKey.toLowerCase())) {
         totalCostCAD *= 2;
     }
 
-    // Ensure final price is not below the base price
     const finalPrice = Math.max(totalCostCAD, CONFIG.basePrice);
-
-    // Round to .99 (from referencejs.js adjustToNinetyNine)
     return Math.ceil(finalPrice) - 0.01;
 }
 
@@ -957,30 +928,22 @@ function recalculatePlanPrice() {
 }
 
 function recalculateTotalPrice() {
-
     let total = appState.plan.price;
-
 
     appState.extras.forEach(extra => {
         total += extra.price;
     });
 
-
     total += appState.outdoorSurcharge;
     total += appState.rgbSurcharge;
     total += appState.cutToPrice;
 
-
     total = Math.floor(total) + 0.99;
-
     appState.totalPrice = total;
 
-
-    // Apply base discount only if enabled
     let discounted = CONFIG.enableBaseDiscount ?
         total * (1 - CONFIG.basePromotionPercentage) :
         total;
-
 
     if (appState.discountApplied && appState.activeDiscount) {
         if (appState.activeDiscount.type === 'percentage') {
@@ -992,13 +955,11 @@ function recalculateTotalPrice() {
 
     discounted = Math.max(discounted, 0);
     discounted = Math.floor(discounted) + 0.99;
-
     appState.discountPrice = discounted;
 
     if (!appState.activeDiscount) {
         appState.originalDiscountPrice = discounted;
     }
-
 
     updatePricingUI();
     updateSizeCardPrices();
@@ -1029,16 +990,14 @@ function updatePricingUI() {
         finalElem.textContent = `$${appState.discountPrice.toFixed(2)}`;
     }
 
-    // Update next buttons to show price
     document.querySelectorAll('.btn-next, .btn-final').forEach(btn => {
         const originalText = btn.getAttribute('data-original-text') || btn.textContent.split('$')[0].trim();
         if (!btn.getAttribute('data-original-text')) {
             btn.setAttribute('data-original-text', originalText);
         }
 
-        // Only update if the button text doesn't already have a price or if price changed
         const priceText = ` - $${appState.discountPrice.toFixed(2)}`;
-        btn.innerHTML = btn.innerHTML.replace(/\s*-\s*\$[\d,.]+/, ''); // Remove old price
+        btn.innerHTML = btn.innerHTML.replace(/\s*-\s*\$[\d,.]+/, '');
 
         const svgIcon = btn.querySelector('svg');
         if (svgIcon) {
@@ -1050,15 +1009,12 @@ function updatePricingUI() {
 }
 
 function updateSizeCardPrices() {
-    // Update all size cards with calculated prices based on their dimensions
     document.querySelectorAll('.size-card').forEach(card => {
         const widthIn = parseInt(card.getAttribute('data-width')) || 38;
         const heightIn = parseInt(card.getAttribute('data-height')) || 17;
 
-        // Calculate price for this size
         let basePrice = calculatePlanPrice(widthIn, heightIn);
 
-        // Apply extras, outdoor, rgb, cutTo
         let totalPrice = basePrice;
         totalPrice += appState.outdoorSurcharge;
         totalPrice += appState.rgbSurcharge;
@@ -1069,12 +1025,10 @@ function updateSizeCardPrices() {
 
         totalPrice = Math.floor(totalPrice) + 0.99;
 
-        // Apply base discount if enabled
         let discountedPrice = CONFIG.enableBaseDiscount ?
             totalPrice * (1 - CONFIG.basePromotionPercentage) :
             totalPrice;
 
-        // Apply coupon if active
         if (appState.discountApplied && appState.activeDiscount) {
             if (appState.activeDiscount.type === 'percentage') {
                 discountedPrice *= (1 - appState.activeDiscount.value / 100);
@@ -1086,7 +1040,6 @@ function updateSizeCardPrices() {
         discountedPrice = Math.max(discountedPrice, 0);
         discountedPrice = Math.floor(discountedPrice) + 0.99;
 
-        // Update card prices in UI
         const originalPriceElem = card.querySelector('.original-price');
         const salePriceElem = card.querySelector('.sale-price');
 
@@ -1102,7 +1055,6 @@ function updateSizeCardPrices() {
             salePriceElem.textContent = `$${discountedPrice.toFixed(2)}`;
         }
 
-        // Update data attributes
         card.setAttribute('data-original', totalPrice.toFixed(2));
         card.setAttribute('data-price', discountedPrice.toFixed(2));
     });
@@ -1130,11 +1082,7 @@ function attachLocationListeners() {
     });
 }
 
-
-
-
 function attachShapeListeners() {
-
     document.querySelectorAll('.shape-card').forEach(card => {
         card.addEventListener('click', () => {
             document.querySelectorAll('.shape-card').forEach(c => c.classList.remove('active'));
@@ -1147,12 +1095,9 @@ function attachShapeListeners() {
         });
     });
 
-
     document.querySelectorAll('input[name="backboard"]').forEach(radio => {
         radio.addEventListener('change', (e) => {
-
             document.querySelectorAll('.backboard-color-option').forEach(opt => opt.classList.remove('active'));
-
 
             const parent = e.target.closest('.backboard-color-option');
             if (parent) parent.classList.add('active');

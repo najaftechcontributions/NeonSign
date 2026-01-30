@@ -1802,8 +1802,10 @@ function attachPreviewControlListeners() {
 // Capture preview snapshot
 function capturePreviewSnapshot() {
     const canvas = canvasInstances['neonCanvas4'] || canvasInstances['neonCanvas'];
+    if (!canvas) return '';
 
-    if (canvas) {
+    const objects = canvas.getObjects();
+    if (objects.length === 0) {
         return canvas.toDataURL({
             format: 'png',
             quality: 1,
@@ -1811,7 +1813,47 @@ function capturePreviewSnapshot() {
         });
     }
 
-    return '';
+    // Calculate bounding box of all objects (text + measurements)
+    let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+
+    objects.forEach(obj => {
+        const bounds = obj.getBoundingRect();
+        minX = Math.min(minX, bounds.left);
+        minY = Math.min(minY, bounds.top);
+        maxX = Math.max(maxX, bounds.left + bounds.width);
+        maxY = Math.max(maxY, bounds.top + bounds.height);
+    });
+
+    // Add padding around the content (20px on each side)
+    const padding = 20;
+    minX = Math.max(0, minX - padding);
+    minY = Math.max(0, minY - padding);
+    maxX = Math.min(canvas.width, maxX + padding);
+    maxY = Math.min(canvas.height, maxY + padding);
+
+    const width = maxX - minX;
+    const height = maxY - minY;
+
+    // Create a temporary canvas to hold the cropped image
+    const tempCanvas = document.createElement('canvas');
+    const tempCtx = tempCanvas.getContext('2d');
+
+    // Set temp canvas size to the cropped dimensions
+    tempCanvas.width = width * 2; // 2x for better quality
+    tempCanvas.height = height * 2;
+
+    // Get the current canvas as image data
+    const canvasElement = canvas.getElement();
+
+    // Draw the cropped portion onto the temp canvas
+    tempCtx.drawImage(
+        canvasElement,
+        minX, minY, width, height,  // Source rectangle
+        0, 0, width * 2, height * 2 // Destination rectangle (2x size)
+    );
+
+    // Return the cropped image as data URL
+    return tempCanvas.toDataURL('image/png', 1.0);
 }
 
 // Generate features summary for modal
@@ -1889,20 +1931,6 @@ function formatBackboardName(backboard) {
         'gold': 'Gold Acrylic'
     };
     return names[backboard] || backboard;
-}
-
-function capturePreviewSnapshot() {
-    const canvas = canvasInstances['neonCanvas4'] || canvasInstances['neonCanvas'];
-
-    if (canvas) {
-        return canvas.toDataURL({
-            format: 'png',
-            quality: 1,
-            multiplier: 1
-        });
-    }
-
-    return '';
 }
 
 function generateFeaturesSummary() {
@@ -2278,11 +2306,57 @@ function exportPreviewImage(stepNumber) {
         return;
     }
 
-    const dataURL = canvas.toDataURL({
-        format: 'png',
-        quality: 1,
-        multiplier: 2
-    });
+    const objects = canvas.getObjects();
+    let dataURL;
+
+    if (objects.length === 0) {
+        dataURL = canvas.toDataURL({
+            format: 'png',
+            quality: 1,
+            multiplier: 2
+        });
+    } else {
+        // Calculate bounding box of all objects (text + measurements)
+        let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+
+        objects.forEach(obj => {
+            const bounds = obj.getBoundingRect();
+            minX = Math.min(minX, bounds.left);
+            minY = Math.min(minY, bounds.top);
+            maxX = Math.max(maxX, bounds.left + bounds.width);
+            maxY = Math.max(maxY, bounds.top + bounds.height);
+        });
+
+        // Add padding around the content (20px on each side)
+        const padding = 20;
+        minX = Math.max(0, minX - padding);
+        minY = Math.max(0, minY - padding);
+        maxX = Math.min(canvas.width, maxX + padding);
+        maxY = Math.min(canvas.height, maxY + padding);
+
+        const width = maxX - minX;
+        const height = maxY - minY;
+
+        // Create a temporary canvas to hold the cropped image
+        const tempCanvas = document.createElement('canvas');
+        const tempCtx = tempCanvas.getContext('2d');
+
+        // Set temp canvas size to the cropped dimensions
+        tempCanvas.width = width * 2; // 2x for better quality
+        tempCanvas.height = height * 2;
+
+        // Get the current canvas as image data
+        const canvasElement = canvas.getElement();
+
+        // Draw the cropped portion onto the temp canvas
+        tempCtx.drawImage(
+            canvasElement,
+            minX, minY, width, height,  // Source rectangle
+            0, 0, width * 2, height * 2 // Destination rectangle (2x size)
+        );
+
+        dataURL = tempCanvas.toDataURL('image/png', 1.0);
+    }
 
     const link = document.createElement('a');
     link.download = `neon-sign-preview-${Date.now()}.png`;

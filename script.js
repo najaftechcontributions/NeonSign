@@ -2389,17 +2389,17 @@ function renderCanvasPreview(canvas) {
 
     // Check if text with measurements would exceed canvas bounds
     // Increase space to ensure measurements never overlap text
-    const MEASUREMENT_SPACE = isMobile ? 200 : 250; // Space needed for measurement rulers and labels
+    const MEASUREMENT_SPACE = isMobile ? 250 : 350; // Increased space for measurement rulers and labels
     const textBounds = tempText.getBoundingRect();
     const requiredWidth = textBounds.width + MEASUREMENT_SPACE;
     const requiredHeight = textBounds.height + MEASUREMENT_SPACE;
 
     // Calculate scale factor to fit content within canvas
-    // Use more conservative scaling (0.85 instead of 0.9) to ensure everything fits
+    // Use conservative scaling (0.75) to ensure everything fits with padding
     let scaleFactor = 1;
-    if (requiredWidth > canvas.width * 0.85 || requiredHeight > canvas.height * 0.85) {
-        const widthScale = (canvas.width * 0.85) / requiredWidth;
-        const heightScale = (canvas.height * 0.85) / requiredHeight;
+    if (requiredWidth > canvas.width * 0.75 || requiredHeight > canvas.height * 0.75) {
+        const widthScale = (canvas.width * 0.75) / requiredWidth;
+        const heightScale = (canvas.height * 0.75) / requiredHeight;
         scaleFactor = Math.min(widthScale, heightScale);
         renderingFontSize = renderingFontSize * scaleFactor;
     }
@@ -2576,10 +2576,10 @@ function drawMeasurementOverlays(canvas, textObject) {
 
     // Calculate safe margins to keep rulers within canvas
     const CANVAS_MARGIN = 60; // Minimum margin from canvas edges
-    const MIN_PADDING = 50; // Minimum padding from text - increased to prevent overlap
+    const MIN_PADDING = 60; // Minimum padding from text - increased to prevent overlap
 
     const sizeFactor = bounds.width / 400;
-    let padding = Math.max(MIN_PADDING, Math.min(120, 80 * sizeFactor));
+    let padding = Math.max(MIN_PADDING, Math.min(130, 90 * sizeFactor));
     const tickLength = Math.max(8, Math.min(15, 10 * sizeFactor));
 
     // Increase font size on mobile for better readability
@@ -2604,7 +2604,8 @@ function drawMeasurementOverlays(canvas, textObject) {
     padding = Math.max(MIN_PADDING, padding);
 
     // Horizontal measurement line (width) - positioned below text with safe distance
-    const hLineY = Math.min(bounds.top + bounds.height + padding, canvas.height - CANVAS_MARGIN - labelFontSize - 20);
+    // Always maintain minimum padding - never allow line to touch text
+    const hLineY = bounds.top + bounds.height + padding;
     const hStartX = Math.max(bounds.left - 20, CANVAS_MARGIN);
     const hEndX = Math.min(bounds.left + bounds.width + 20, canvas.width - CANVAS_MARGIN);
 
@@ -2646,7 +2647,8 @@ function drawMeasurementOverlays(canvas, textObject) {
     canvas.add(widthLabel);
 
     // Vertical measurement line (height) - positioned to the right of text with safe distance
-    const vLineX = Math.min(bounds.left + bounds.width + padding, canvas.width - labelFontSize * 3 - 20);
+    // Always maintain minimum padding - never allow line to touch text
+    const vLineX = bounds.left + bounds.width + padding;
     const vStartY = Math.max(bounds.top - 20, CANVAS_MARGIN);
     const vEndY = Math.min(bounds.top + bounds.height + 20, canvas.height - CANVAS_MARGIN);
 

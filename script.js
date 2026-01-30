@@ -1,8 +1,8 @@
 const CONFIG = {
 
     mobileBreakpoint: 768,
-    maxMobileLinesCount: 3,
-    maxDesktopLinesCount: 4,
+    maxMobileLinesCount: 999,  // Unlimited lines
+    maxDesktopLinesCount: 999,  // Unlimited lines
 
 
     defaultPlaceholderText: 'Your Text',
@@ -455,17 +455,7 @@ function attachEventListeners() {
 function handleTextInput(event) {
     let inputText = event.target.value.trim();
 
-
-    const isMobile = window.innerWidth < CONFIG.mobileBreakpoint;
-    const maxLines = isMobile ? CONFIG.maxMobileLinesCount : CONFIG.maxDesktopLinesCount;
-    const lines = inputText.split('\n');
-
-    if (lines.length > maxLines) {
-        inputText = lines.slice(0, maxLines).join('\n');
-        event.target.value = inputText;
-    }
-
-
+    // No line limits - allow unlimited text input
     appState.text = inputText || CONFIG.defaultPlaceholderText;
     appState.userHasEnteredText = inputText.length > 0;
 
@@ -1591,43 +1581,55 @@ function renderNeonPreview(canvas) {
     appState.measuredWidthIn = measurements.widthInches;
     appState.measuredHeightIn = measurements.heightInches;
 
-    // Split text into lines
+    // Split text into lines - no limits, allow all lines
     const lines = displayText.split('\n');
-    const isMobile = window.innerWidth < CONFIG.mobileBreakpoint;
-    const maxLines = isMobile ? CONFIG.maxMobileLinesCount : CONFIG.maxDesktopLinesCount;
-    const limitedLines = lines.slice(0, maxLines);
 
-    // Calculate total height needed
+    // Calculate dimensions for scaling
     const lineHeight = appState.fontSizePx * 1.2;
-    const totalTextHeight = limitedLines.length * lineHeight;
+    const totalTextHeight = lines.length * lineHeight;
+
+    // Measure max text width
+    const tempCanvas = document.createElement('canvas');
+    const tempCtx = tempCanvas.getContext('2d');
+    tempCtx.font = `${appState.fontSizePx}px ${appState.fontFamily}`;
+    const maxTextWidth = Math.max(...lines.map(line => tempCtx.measureText(line).width));
+
+    // Calculate scale factor to fit text in canvas
+    const widthScale = canvas.width / (maxTextWidth * 1.1); // 1.1 for padding
+    const heightScale = canvas.height / (totalTextHeight * 1.1); // 1.1 for padding
+    const scaleFactor = Math.min(widthScale, heightScale, 1); // Never scale up, only down
+
+    // Apply scale factor to font size for rendering
+    const scaledFontSize = appState.fontSizePx * scaleFactor;
+    const scaledLineHeight = scaledFontSize * 1.2;
+    const scaledTotalHeight = lines.length * scaledLineHeight;
 
     // Calculate starting Y position to center vertically
-    const startY = (canvas.height - totalTextHeight) / 2 + lineHeight;
+    const startY = (canvas.height - scaledTotalHeight) / 2 + scaledLineHeight;
 
-    // Render each line
+    // Render each line with scaled font
     let charIndex = 0;
-    limitedLines.forEach((line, lineIdx) => {
-        const yPos = startY + (lineIdx * lineHeight);
+    lines.forEach((line, lineIdx) => {
+        const yPos = startY + (lineIdx * scaledLineHeight);
 
         if (appState.multicolor) {
             // Render character by character for multicolor
             let xOffset = 0;
-            const tempCanvas = document.createElement('canvas');
-            const tempCtx = tempCanvas.getContext('2d');
-            tempCtx.font = `${appState.fontSizePx}px ${appState.fontFamily}`;
+            const measureCtx = document.createElement('canvas').getContext('2d');
+            measureCtx.font = `${scaledFontSize}px ${appState.fontFamily}`;
 
             for (let i = 0; i < line.length; i++) {
                 const char = line[i];
                 const charColor = appState.characterColors[charIndex] || appState.colorValue;
 
-                const charWidth = tempCtx.measureText(char).width;
-                const charX = (canvas.width - tempCtx.measureText(line).width) / 2 + xOffset;
+                const charWidth = measureCtx.measureText(char).width;
+                const charX = (canvas.width - measureCtx.measureText(line).width) / 2 + xOffset;
 
                 const fabricText = new fabric.Text(char, {
                     left: charX,
                     top: yPos,
                     fontFamily: appState.fontFamily,
-                    fontSize: appState.fontSizePx,
+                    fontSize: scaledFontSize,
                     fill: appState.neonGlowEnabled ? '#FFFFFF' : charColor,
                     selectable: false,
                     charIndex: charIndex
@@ -1647,7 +1649,7 @@ function renderNeonPreview(canvas) {
                 left: canvas.width / 2,
                 top: yPos,
                 fontFamily: appState.fontFamily,
-                fontSize: appState.fontSizePx,
+                fontSize: scaledFontSize,
                 fill: appState.neonGlowEnabled ? '#FFFFFF' : appState.colorValue,
                 originX: 'center',
                 selectable: false

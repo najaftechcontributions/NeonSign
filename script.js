@@ -2386,16 +2386,18 @@ function renderCanvasPreview(canvas) {
     });
 
     // Check if text with measurements would exceed canvas bounds
-    const MEASUREMENT_SPACE = 150; // Space needed for measurement rulers and labels
+    // Increase space to ensure measurements never overlap text
+    const MEASUREMENT_SPACE = isMobile ? 200 : 250; // Space needed for measurement rulers and labels
     const textBounds = tempText.getBoundingRect();
     const requiredWidth = textBounds.width + MEASUREMENT_SPACE;
     const requiredHeight = textBounds.height + MEASUREMENT_SPACE;
 
     // Calculate scale factor to fit content within canvas
+    // Use more conservative scaling (0.85 instead of 0.9) to ensure everything fits
     let scaleFactor = 1;
-    if (requiredWidth > canvas.width * 0.9 || requiredHeight > canvas.height * 0.9) {
-        const widthScale = (canvas.width * 0.9) / requiredWidth;
-        const heightScale = (canvas.height * 0.9) / requiredHeight;
+    if (requiredWidth > canvas.width * 0.85 || requiredHeight > canvas.height * 0.85) {
+        const widthScale = (canvas.width * 0.85) / requiredWidth;
+        const heightScale = (canvas.height * 0.85) / requiredHeight;
         scaleFactor = Math.min(widthScale, heightScale);
         renderingFontSize = renderingFontSize * scaleFactor;
     }
@@ -2571,11 +2573,11 @@ function drawMeasurementOverlays(canvas, textObject) {
     const centerY = canvas.height / 2;
 
     // Calculate safe margins to keep rulers within canvas
-    const CANVAS_MARGIN = 50; // Minimum margin from canvas edges
-    const MIN_PADDING = 30; // Minimum padding from text
+    const CANVAS_MARGIN = 60; // Minimum margin from canvas edges
+    const MIN_PADDING = 50; // Minimum padding from text - increased to prevent overlap
 
     const sizeFactor = bounds.width / 400;
-    let padding = Math.max(MIN_PADDING, Math.min(100, 70 * sizeFactor));
+    let padding = Math.max(MIN_PADDING, Math.min(120, 80 * sizeFactor));
     const tickLength = Math.max(8, Math.min(15, 10 * sizeFactor));
 
     // Increase font size on mobile for better readability
@@ -2585,24 +2587,24 @@ function drawMeasurementOverlays(canvas, textObject) {
         : Math.max(12, Math.min(18, 14 * sizeFactor));
 
     // Check if text + rulers would exceed canvas bounds and scale if needed
-    const textWithRulerHeight = bounds.top + bounds.height + padding + labelFontSize + 30;
-    const textWithRulerWidth = bounds.left + bounds.width + padding + labelFontSize + 30;
+    const textWithRulerHeight = bounds.top + bounds.height + padding + labelFontSize + 40;
+    const textWithRulerWidth = bounds.left + bounds.width + padding + labelFontSize * 3 + 40;
 
-    // If content exceeds canvas, reduce padding
+    // If content exceeds canvas, reduce padding but ensure minimum distance
     if (textWithRulerHeight > canvas.height - CANVAS_MARGIN) {
-        padding = Math.max(MIN_PADDING, canvas.height - bounds.top - bounds.height - labelFontSize - CANVAS_MARGIN - 30);
+        padding = Math.max(MIN_PADDING, canvas.height - bounds.top - bounds.height - labelFontSize - CANVAS_MARGIN - 40);
     }
     if (textWithRulerWidth > canvas.width - CANVAS_MARGIN) {
-        padding = Math.min(padding, canvas.width - bounds.left - bounds.width - labelFontSize - CANVAS_MARGIN - 30);
+        padding = Math.max(MIN_PADDING, canvas.width - bounds.left - bounds.width - labelFontSize * 3 - CANVAS_MARGIN - 40);
     }
 
-    // Ensure padding is never negative
+    // Ensure padding is never less than minimum to prevent text overlap
     padding = Math.max(MIN_PADDING, padding);
 
-    // Horizontal measurement line (width)
-    const hLineY = Math.min(bounds.top + bounds.height + padding, canvas.height - CANVAS_MARGIN - labelFontSize - 10);
-    const hStartX = Math.max(bounds.left - 30, CANVAS_MARGIN);
-    const hEndX = Math.min(bounds.left + bounds.width + 30, canvas.width - CANVAS_MARGIN);
+    // Horizontal measurement line (width) - positioned below text with safe distance
+    const hLineY = Math.min(bounds.top + bounds.height + padding, canvas.height - CANVAS_MARGIN - labelFontSize - 20);
+    const hStartX = Math.max(bounds.left - 20, CANVAS_MARGIN);
+    const hEndX = Math.min(bounds.left + bounds.width + 20, canvas.width - CANVAS_MARGIN);
 
     const horizLine = new fabric.Line([hStartX, hLineY, hEndX, hLineY], {
         stroke: scaleColor,
@@ -2624,8 +2626,8 @@ function drawMeasurementOverlays(canvas, textObject) {
         selectable: false
     }));
 
-    // Width label - ensure it stays within canvas
-    const widthLabelTop = Math.min(hLineY + 10, canvas.height - labelFontSize - 10);
+    // Width label - positioned safely below the measurement line
+    const widthLabelTop = Math.min(hLineY + 12, canvas.height - labelFontSize - 15);
     const widthLabel = new fabric.Text(`${appState.plan.widthIn}"`, {
         left: centerX,
         top: widthLabelTop,
@@ -2641,10 +2643,10 @@ function drawMeasurementOverlays(canvas, textObject) {
     });
     canvas.add(widthLabel);
 
-    // Vertical measurement line (height)
-    const vLineX = Math.min(bounds.left + bounds.width + padding, canvas.width - CANVAS_MARGIN - labelFontSize * 3);
-    const vStartY = Math.max(bounds.top - 30, CANVAS_MARGIN);
-    const vEndY = Math.min(bounds.top + bounds.height + 30, canvas.height - CANVAS_MARGIN);
+    // Vertical measurement line (height) - positioned to the right of text with safe distance
+    const vLineX = Math.min(bounds.left + bounds.width + padding, canvas.width - labelFontSize * 3 - 20);
+    const vStartY = Math.max(bounds.top - 20, CANVAS_MARGIN);
+    const vEndY = Math.min(bounds.top + bounds.height + 20, canvas.height - CANVAS_MARGIN);
 
     const vertLine = new fabric.Line([vLineX, vStartY, vLineX, vEndY], {
         stroke: scaleColor,
@@ -2666,8 +2668,8 @@ function drawMeasurementOverlays(canvas, textObject) {
         selectable: false
     }));
 
-    // Height label - ensure it stays within canvas
-    const heightLabelLeft = Math.min(vLineX + 10, canvas.width - labelFontSize * 2 - 10);
+    // Height label - positioned safely to the right of the measurement line
+    const heightLabelLeft = Math.min(vLineX + 12, canvas.width - labelFontSize * 2.5 - 15);
     const heightLabel = new fabric.Text(`${appState.plan.heightIn}"`, {
         left: heightLabelLeft,
         top: centerY,

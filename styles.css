@@ -790,6 +790,22 @@ body {
     border-left: 3px solid var(--accent-color);
 }
 
+.custom-size-error {
+    font-size: 12px;
+    color: #ef4444;
+    line-height: 1.5;
+    padding: 12px;
+    background: rgba(239, 68, 68, 0.05);
+    border-radius: 6px;
+    border-left: 3px solid #ef4444;
+    margin-bottom: 12px;
+    transition: all 0.3s ease;
+}
+
+.custom-size-error.hidden {
+    display: none;
+}
+
 .size-grid {
     display: grid;
     grid-template-columns: repeat(4, 1fr);

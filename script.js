@@ -469,9 +469,65 @@ function handleTextInput(event) {
     appState.text = inputText || CONFIG.defaultPlaceholderText;
     appState.userHasEnteredText = inputText.length > 0;
 
+    // Calculate intelligent dimensions based on text content
+    const dimensions = calculateIntelligentDimensions(appState.text);
+
+    // Update plan dimensions
+    appState.plan.widthIn = dimensions.widthInches;
+    appState.plan.heightIn = dimensions.heightInches;
+
+    // Recalculate price based on new dimensions
+    recalculatePlanPrice();
 
     renderAllPreviews();
     recalculateTotalPrice();
+}
+
+// Calculate dimensions intelligently based on text content
+function calculateIntelligentDimensions(text) {
+    const lines = text.split('\n');
+    const numLines = lines.length;
+
+    // Base dimensions (Mini size: 23" x 10")
+    const baseWidth = 23;
+    const baseHeight = 10;
+    const baseCharCount = 11; // Reference: "hello world" ~ 11 chars
+
+    if (numLines === 1) {
+        // Single line: width increases with character count, height stays constant
+        const charCount = lines[0].length;
+
+        // Width grows proportionally with character count
+        // "hello world" (11 chars) = 23" width
+        // "hello world how are you" (23 chars) = ~48" width
+        const widthInches = Math.max(baseWidth, Math.round((charCount / baseCharCount) * baseWidth));
+        const heightInches = baseHeight;
+
+        return {
+            widthInches: widthInches,
+            heightInches: heightInches
+        };
+    } else {
+        // Multiple lines: height increases, width adjusts to longest line
+        const longestLine = lines.reduce((a, b) => a.length > b.length ? a : b, '');
+        const longestCharCount = longestLine.length;
+
+        // Width based on longest line (typically smaller than single line)
+        // When text is split, each line is shorter, so width decreases
+        const widthInches = Math.max(
+            Math.round(baseWidth * 0.6), // Minimum width for multi-line
+            Math.round((longestCharCount / baseCharCount) * baseWidth * 0.8)
+        );
+
+        // Height increases with number of lines
+        // Each additional line adds ~60% of base height
+        const heightInches = Math.round(baseHeight + ((numLines - 1) * (baseHeight * 0.6)));
+
+        return {
+            widthInches: widthInches,
+            heightInches: heightInches
+        };
+    }
 }
 
 
@@ -541,7 +597,11 @@ function selectFont(fontKey, fontFamily) {
     if (selectedCard) selectedCard.classList.add('active');
     if (selectedListItem) selectedListItem.classList.add('active');
 
-
+    // Recalculate dimensions when font changes
+    const dimensions = calculateIntelligentDimensions(appState.text);
+    appState.plan.widthIn = dimensions.widthInches;
+    appState.plan.heightIn = dimensions.heightInches;
+    recalculatePlanPrice();
 
     renderAllPreviews();
     recalculateTotalPrice();
@@ -692,6 +752,15 @@ function stopRgbMode() {
 
 
 
+// Global aspect ratio tracking for custom sizing
+let customSizingAspectRatio = 23 / 10; // Default aspect ratio from MINI size
+
+function updateAspectRatio() {
+    if (appState.plan.widthIn && appState.plan.heightIn) {
+        customSizingAspectRatio = appState.plan.widthIn / appState.plan.heightIn;
+    }
+}
+
 function attachPlanListeners() {
 
     document.querySelectorAll('.size-mode-btn').forEach(btn => {
@@ -707,11 +776,41 @@ function attachPlanListeners() {
 
     const customWidth = document.getElementById('customWidth');
     const customHeight = document.getElementById('customHeight');
+    const customSizeError = document.getElementById('customSizeError');
+    const customSizeErrorText = document.getElementById('customSizeErrorText');
+    const MINIMUM_WIDTH = 23; // Minimum width from MINI size
+
+    function showSizeError(message) {
+        if (customSizeError && customSizeErrorText) {
+            customSizeErrorText.textContent = message;
+            customSizeError.classList.remove('hidden');
+        }
+    }
+
+    function hideSizeError() {
+        if (customSizeError) {
+            customSizeError.classList.add('hidden');
+        }
+    }
 
     if (customWidth) {
         customWidth.addEventListener('input', debounce(() => {
-            const width = parseInt(customWidth.value) || 38;
-            const height = parseInt(customHeight.value) || Math.round(width * 0.45);
+            let width = parseInt(customWidth.value);
+
+            // Validate minimum width
+            if (width < MINIMUM_WIDTH) {
+                showSizeError(`The minimum possible width is ${MINIMUM_WIDTH} inches. Please enter a larger value.`);
+                customWidth.value = MINIMUM_WIDTH;
+                width = MINIMUM_WIDTH;
+            } else {
+                hideSizeError();
+            }
+
+            // Calculate height based on aspect ratio to maintain proportions
+            const height = Math.round(width / customSizingAspectRatio);
+
+            // Update both inputs to maintain aspect ratio lock
+            customHeight.value = height;
 
             appState.plan.widthIn = width;
             appState.plan.heightIn = height;
@@ -726,8 +825,29 @@ function attachPlanListeners() {
 
     if (customHeight) {
         customHeight.addEventListener('input', debounce(() => {
-            const height = parseInt(customHeight.value) || 17;
-            appState.plan.heightIn = height;
+            let height = parseInt(customHeight.value);
+
+            // Calculate width based on aspect ratio to maintain proportions
+            const width = Math.round(height * customSizingAspectRatio);
+
+            // Validate minimum width
+            if (width < MINIMUM_WIDTH) {
+                showSizeError(`The minimum possible width is ${MINIMUM_WIDTH} inches based on the aspect ratio. Please enter a larger height.`);
+                const minHeight = Math.round(MINIMUM_WIDTH / customSizingAspectRatio);
+                customHeight.value = minHeight;
+                customWidth.value = MINIMUM_WIDTH;
+                appState.plan.widthIn = MINIMUM_WIDTH;
+                appState.plan.heightIn = minHeight;
+            } else {
+                hideSizeError();
+                // Update both inputs to maintain aspect ratio lock
+                customWidth.value = width;
+                appState.plan.widthIn = width;
+                appState.plan.heightIn = height;
+            }
+
+            appState.plan.name = 'Custom';
+            appState.plan.id = 'custom';
 
             recalculatePlanPrice();
             renderAllPreviews();
@@ -771,6 +891,11 @@ function selectPlan(cardElement) {
     appState.plan.heightIn = parseInt(cardElement.getAttribute('data-height')) || 17;
     appState.plan.price = parseFloat(cardElement.getAttribute('data-price')) || 438.99;
     appState.fontSizePx = parseFloat(cardElement.getAttribute('data-fontsize')) || 38;
+
+    // Update aspect ratio for custom sizing mode
+    if (typeof updateAspectRatio === 'function') {
+        updateAspectRatio();
+    }
 
     renderAllPreviews();
     recalculateTotalPrice();
@@ -1434,6 +1559,391 @@ function closePreviewModal() {
     document.body.style.overflow = '';
 }
 
+function proceedToCheckout() {
+    // Placeholder for checkout functionality
+    alert('Proceeding to checkout...');
+}
+
+
+
+
+// Render all previews across all steps
+function renderAllPreviews() {
+    for (let step = 1; step <= 4; step++) {
+        const canvasId = step === 1 ? 'neonCanvas' : `neonCanvas${step}`;
+        const canvas = canvasInstances[canvasId];
+
+        if (canvas) {
+            renderNeonPreview(canvas);
+        }
+    }
+}
+
+function renderNeonPreview(canvas) {
+    canvas.clear();
+
+    const displayText = appState.text || CONFIG.defaultPlaceholderText;
+
+    // Measure text and calculate dimensions in inches
+    const measurements = measureTextDimensions(displayText, appState.fontFamily, appState.fontSizePx);
+
+    // Update measured dimensions in appState
+    appState.measuredWidthIn = measurements.widthInches;
+    appState.measuredHeightIn = measurements.heightInches;
+
+    // Split text into lines
+    const lines = displayText.split('\n');
+    const isMobile = window.innerWidth < CONFIG.mobileBreakpoint;
+    const maxLines = isMobile ? CONFIG.maxMobileLinesCount : CONFIG.maxDesktopLinesCount;
+    const limitedLines = lines.slice(0, maxLines);
+
+    // Calculate total height needed
+    const lineHeight = appState.fontSizePx * 1.2;
+    const totalTextHeight = limitedLines.length * lineHeight;
+
+    // Calculate starting Y position to center vertically
+    const startY = (canvas.height - totalTextHeight) / 2 + lineHeight;
+
+    // Render each line
+    let charIndex = 0;
+    limitedLines.forEach((line, lineIdx) => {
+        const yPos = startY + (lineIdx * lineHeight);
+
+        if (appState.multicolor) {
+            // Render character by character for multicolor
+            let xOffset = 0;
+            const tempCanvas = document.createElement('canvas');
+            const tempCtx = tempCanvas.getContext('2d');
+            tempCtx.font = `${appState.fontSizePx}px ${appState.fontFamily}`;
+
+            for (let i = 0; i < line.length; i++) {
+                const char = line[i];
+                const charColor = appState.characterColors[charIndex] || appState.colorValue;
+
+                const charWidth = tempCtx.measureText(char).width;
+                const charX = (canvas.width - tempCtx.measureText(line).width) / 2 + xOffset;
+
+                const fabricText = new fabric.Text(char, {
+                    left: charX,
+                    top: yPos,
+                    fontFamily: appState.fontFamily,
+                    fontSize: appState.fontSizePx,
+                    fill: appState.neonGlowEnabled ? '#FFFFFF' : charColor,
+                    selectable: false,
+                    charIndex: charIndex
+                });
+
+                if (appState.neonGlowEnabled) {
+                    fabricText.set('shadow', createNeonShadow(charColor));
+                }
+
+                canvas.add(fabricText);
+                xOffset += charWidth;
+                charIndex++;
+            }
+        } else {
+            // Render entire line at once
+            const fabricText = new fabric.Text(line, {
+                left: canvas.width / 2,
+                top: yPos,
+                fontFamily: appState.fontFamily,
+                fontSize: appState.fontSizePx,
+                fill: appState.neonGlowEnabled ? '#FFFFFF' : appState.colorValue,
+                originX: 'center',
+                selectable: false
+            });
+
+            if (appState.neonGlowEnabled) {
+                fabricText.set('shadow', createNeonShadow(appState.colorValue));
+            }
+
+            canvas.add(fabricText);
+            charIndex += line.length;
+        }
+        charIndex++; // Account for newline
+    });
+
+    canvas.renderAll();
+}
+
+// Measure text dimensions and calculate inches (based on referencejs.js logic)
+function measureTextDimensions(text, fontFamily, fontSize) {
+    // Create a temporary canvas for measuring
+    const tempCanvas = document.createElement('canvas');
+    const ctx = tempCanvas.getContext('2d');
+    ctx.font = `${fontSize}px ${fontFamily}`;
+
+    const lines = text.split('\n');
+    const isMobile = window.innerWidth < CONFIG.mobileBreakpoint;
+    const maxLines = isMobile ? CONFIG.maxMobileLinesCount : CONFIG.maxDesktopLinesCount;
+    const limitedLines = lines.slice(0, maxLines);
+
+    // Find the longest line by character count
+    let maxCharacters = 0;
+    limitedLines.forEach(line => {
+        maxCharacters = Math.max(maxCharacters, line.length);
+    });
+
+    // Calculate width in inches based on character count (from referencejs.js)
+    // Formula: maxCharacters * 2.5 inches per letter
+    const widthInches = Math.max(maxCharacters * 2.5, 23); // Minimum 23 inches
+
+    // Measure actual pixel dimensions
+    let maxWidthPx = 0;
+    const lineMetrics = limitedLines.map(line => {
+        const metrics = ctx.measureText(line);
+        const width = metrics.width;
+        maxWidthPx = Math.max(maxWidthPx, width);
+        return {
+            width,
+            ascent: metrics.actualBoundingBoxAscent || fontSize * 0.8,
+            descent: metrics.actualBoundingBoxDescent || fontSize * 0.2
+        };
+    });
+
+    // Calculate total height in pixels
+    const lineHeight = fontSize * 1.2;
+    const totalHeightPx = limitedLines.length * lineHeight;
+
+    // Calculate aspect ratio (from referencejs.js)
+    const aspectRatio = maxWidthPx / totalHeightPx;
+
+    // Calculate height in inches based on aspect ratio (from referencejs.js)
+    const heightInches = Math.max(widthInches / aspectRatio, 10); // Minimum 10 inches
+
+    return {
+        widthInches: Math.round(widthInches),
+        heightInches: Math.round(heightInches),
+        maxWidthPx,
+        totalHeightPx,
+        aspectRatio
+    };
+}
+
+function createNeonShadow(color) {
+    return new fabric.Shadow({
+        color: color,
+        blur: 40,
+        offsetX: 0,
+        offsetY: 0
+    });
+}
+
+
+
+
+// Step navigation
+function attachStepNavigationListeners() {
+    // Step tabs
+    document.querySelectorAll('.step-tab').forEach(tab => {
+        tab.addEventListener('click', () => {
+            const stepNum = parseInt(tab.getAttribute('data-step'));
+            goToStep(stepNum);
+        });
+    });
+
+    // Mobile toggle buttons
+    document.querySelectorAll('.mobile-toggle-btn').forEach((btn, idx) => {
+        btn.addEventListener('click', () => {
+            const stepContainer = btn.closest('.step-container');
+            if (stepContainer) {
+                stepContainer.classList.toggle('mobile-preview-open');
+            }
+        });
+    });
+}
+
+function goToStep(stepNum) {
+    // Hide all steps
+    document.querySelectorAll('.step-container').forEach(container => {
+        container.classList.remove('active');
+    });
+
+    // Show target step
+    const targetStep = document.getElementById(`step${stepNum}`);
+    if (targetStep) {
+        targetStep.classList.add('active');
+    }
+
+    // Update step tabs
+    document.querySelectorAll('.step-tab').forEach(tab => {
+        const tabStep = parseInt(tab.getAttribute('data-step'));
+        tab.classList.remove('active', 'completed');
+
+        if (tabStep === stepNum) {
+            tab.classList.add('active');
+        } else if (tabStep < stepNum) {
+            tab.classList.add('completed');
+        }
+    });
+
+    appState.currentStep = stepNum;
+}
+
+
+
+
+// Preview controls
+function attachPreviewControlListeners() {
+    // Neon toggle switches
+    document.querySelectorAll('[id^="neonToggle"]').forEach(toggle => {
+        toggle.addEventListener('change', (e) => {
+            appState.neonGlowEnabled = e.target.checked;
+            toggle.nextElementSibling.textContent = e.target.checked ? 'ON' : 'OFF';
+            renderAllPreviews();
+        });
+    });
+
+    // Theme mode toggles
+    document.querySelectorAll('.mode-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const mode = btn.getAttribute('data-mode');
+            const group = btn.closest('.theme-mode-toggle');
+
+            group.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+
+            appState.themeMode = mode;
+
+            // Update background images
+            document.querySelectorAll('.background-image-wrapper').forEach(wrapper => {
+                if (mode === 'dark') {
+                    wrapper.style.opacity = '1';
+                } else {
+                    wrapper.style.opacity = '0.3';
+                }
+            });
+        });
+    });
+
+    // Save preview buttons
+    document.querySelectorAll('[id^="saveBtn"]').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const stepNum = btn.id.replace('saveBtn', '') || '1';
+            const canvasId = stepNum === '1' ? 'neonCanvas' : `neonCanvas${stepNum}`;
+            const canvas = canvasInstances[canvasId];
+
+            if (canvas) {
+                const dataURL = canvas.toDataURL({
+                    format: 'png',
+                    quality: 1,
+                    multiplier: 2
+                });
+
+                const link = document.createElement('a');
+                link.download = `neon-preview-${Date.now()}.png`;
+                link.href = dataURL;
+                link.click();
+            }
+        });
+    });
+
+    // Preview eye button
+    document.querySelectorAll('.preview-eye-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const rightPanel = btn.closest('.right-panel');
+            if (rightPanel) {
+                rightPanel.classList.toggle('preview-fullscreen');
+            }
+        });
+    });
+}
+
+
+
+
+// Capture preview snapshot
+function capturePreviewSnapshot() {
+    const canvas = canvasInstances['neonCanvas4'] || canvasInstances['neonCanvas'];
+
+    if (canvas) {
+        return canvas.toDataURL({
+            format: 'png',
+            quality: 1,
+            multiplier: 2
+        });
+    }
+
+    return '';
+}
+
+// Generate features summary for modal
+function generateFeaturesSummary() {
+    const features = [];
+
+    features.push(`
+        <div class="feature-item">
+            <span class="feature-label">Text:</span>
+            <span class="feature-value">${appState.text || 'Your Text'}</span>
+        </div>
+    `);
+
+    features.push(`
+        <div class="feature-item">
+            <span class="feature-label">Font:</span>
+            <span class="feature-value">${appState.fontFamily}</span>
+        </div>
+    `);
+
+    features.push(`
+        <div class="feature-item">
+            <span class="feature-label">Color:</span>
+            <span class="feature-value">${appState.colorName}</span>
+        </div>
+    `);
+
+    features.push(`
+        <div class="feature-item">
+            <span class="feature-label">Size:</span>
+            <span class="feature-value">${appState.plan.name} (${appState.plan.widthIn}" × ${appState.plan.heightIn}")</span>
+        </div>
+    `);
+
+    features.push(`
+        <div class="feature-item">
+            <span class="feature-label">Location:</span>
+            <span class="feature-value">${appState.type.charAt(0).toUpperCase() + appState.type.slice(1)}</span>
+        </div>
+    `);
+
+    features.push(`
+        <div class="feature-item">
+            <span class="feature-label">Shape:</span>
+            <span class="feature-value">${formatShapeName(appState.cutTo)}</span>
+        </div>
+    `);
+
+    features.push(`
+        <div class="feature-item">
+            <span class="feature-label">Backboard:</span>
+            <span class="feature-value">${formatBackboardName(appState.backboard)}</span>
+        </div>
+    `);
+
+    return features.join('');
+}
+
+function formatShapeName(shape) {
+    const names = {
+        'cut-to-shape': 'Cut to Shape',
+        'cut-to-letter': 'Cut to Letter',
+        'cut-rectangle': 'Cut Rectangle',
+        'open-box': 'Open Box'
+    };
+    return names[shape] || shape;
+}
+
+function formatBackboardName(backboard) {
+    const names = {
+        'clear': 'Standard Clear Acrylic',
+        'glossy-white': 'Glossy White Acrylic',
+        'glossy-black': 'Glossy Black Acrylic',
+        'silver': 'Silver Acrylic',
+        'gold': 'Gold Acrylic'
+    };
+    return names[backboard] || backboard;
+}
+
 function capturePreviewSnapshot() {
     const canvas = canvasInstances['neonCanvas4'] || canvasInstances['neonCanvas'];
 
@@ -1855,7 +2365,40 @@ function renderCanvasPreview(canvas) {
     const centerY = canvas.height / 2;
     const isMobile = window.innerWidth < CONFIG.mobileBreakpoint;
 
-    let renderingFontSize = isMobile ? appState.fontSizePx * 2.3 : appState.fontSizePx;
+    // Calculate proportional font size based on plan dimensions
+    const planWidth = appState.plan.widthIn || 23;
+    const planHeight = appState.plan.heightIn || 10;
+    const baseFontSize = appState.fontSizePx;
+
+    // Scale font size proportionally with plan size (relative to MINI: 23x10)
+    const sizeRatio = Math.sqrt((planWidth * planHeight) / (23 * 10));
+    let renderingFontSize = baseFontSize * sizeRatio;
+
+    if (isMobile) {
+        renderingFontSize = renderingFontSize * 2.3;
+    }
+
+    // Create a temporary text object to measure dimensions
+    const tempText = new fabric.Text(displayText, {
+        fontFamily: appState.fontFamily,
+        fontSize: renderingFontSize,
+        textAlign: 'center'
+    });
+
+    // Check if text with measurements would exceed canvas bounds
+    const MEASUREMENT_SPACE = 150; // Space needed for measurement rulers and labels
+    const textBounds = tempText.getBoundingRect();
+    const requiredWidth = textBounds.width + MEASUREMENT_SPACE;
+    const requiredHeight = textBounds.height + MEASUREMENT_SPACE;
+
+    // Calculate scale factor to fit content within canvas
+    let scaleFactor = 1;
+    if (requiredWidth > canvas.width * 0.9 || requiredHeight > canvas.height * 0.9) {
+        const widthScale = (canvas.width * 0.9) / requiredWidth;
+        const heightScale = (canvas.height * 0.9) / requiredHeight;
+        scaleFactor = Math.min(widthScale, heightScale);
+        renderingFontSize = renderingFontSize * scaleFactor;
+    }
 
     if (appState.multicolor) {
         renderMulticolorText(canvas, displayText, centerX, centerY, renderingFontSize);
@@ -1876,7 +2419,7 @@ function renderCanvasPreview(canvas) {
         if (appState.neonGlowEnabled) {
             textConfig.shadow = {
                 color: appState.colorValue,
-                blur: 45,
+                blur: 45 * scaleFactor,
                 offsetX: 0,
                 offsetY: 0
             };
@@ -2027,21 +2570,39 @@ function drawMeasurementOverlays(canvas, textObject) {
     const centerX = canvas.width / 2;
     const centerY = canvas.height / 2;
 
+    // Calculate safe margins to keep rulers within canvas
+    const CANVAS_MARGIN = 50; // Minimum margin from canvas edges
+    const MIN_PADDING = 30; // Minimum padding from text
 
     const sizeFactor = bounds.width / 400;
-    const padding = Math.max(60, Math.min(100, 70 * sizeFactor));
+    let padding = Math.max(MIN_PADDING, Math.min(100, 70 * sizeFactor));
     const tickLength = Math.max(8, Math.min(15, 10 * sizeFactor));
 
     // Increase font size on mobile for better readability
     const isMobile = window.innerWidth < CONFIG.mobileBreakpoint;
     const labelFontSize = isMobile
-        ? Math.max(22, Math.min(32, 24 * sizeFactor))
-        : Math.max(14, Math.min(20, 16 * sizeFactor));
+        ? Math.max(18, Math.min(28, 20 * sizeFactor))
+        : Math.max(12, Math.min(18, 14 * sizeFactor));
 
+    // Check if text + rulers would exceed canvas bounds and scale if needed
+    const textWithRulerHeight = bounds.top + bounds.height + padding + labelFontSize + 30;
+    const textWithRulerWidth = bounds.left + bounds.width + padding + labelFontSize + 30;
 
-    const hLineY = bounds.top + bounds.height + padding;
-    const hStartX = bounds.left - 30;
-    const hEndX = bounds.left + bounds.width + 30;
+    // If content exceeds canvas, reduce padding
+    if (textWithRulerHeight > canvas.height - CANVAS_MARGIN) {
+        padding = Math.max(MIN_PADDING, canvas.height - bounds.top - bounds.height - labelFontSize - CANVAS_MARGIN - 30);
+    }
+    if (textWithRulerWidth > canvas.width - CANVAS_MARGIN) {
+        padding = Math.min(padding, canvas.width - bounds.left - bounds.width - labelFontSize - CANVAS_MARGIN - 30);
+    }
+
+    // Ensure padding is never negative
+    padding = Math.max(MIN_PADDING, padding);
+
+    // Horizontal measurement line (width)
+    const hLineY = Math.min(bounds.top + bounds.height + padding, canvas.height - CANVAS_MARGIN - labelFontSize - 10);
+    const hStartX = Math.max(bounds.left - 30, CANVAS_MARGIN);
+    const hEndX = Math.min(bounds.left + bounds.width + 30, canvas.width - CANVAS_MARGIN);
 
     const horizLine = new fabric.Line([hStartX, hLineY, hEndX, hLineY], {
         stroke: scaleColor,
@@ -2050,7 +2611,7 @@ function drawMeasurementOverlays(canvas, textObject) {
     });
     canvas.add(horizLine);
 
-
+    // Horizontal tick marks
     canvas.add(new fabric.Line([hStartX, hLineY - tickLength, hStartX, hLineY + tickLength], {
         stroke: scaleColor,
         strokeWidth: 2,
@@ -2063,10 +2624,11 @@ function drawMeasurementOverlays(canvas, textObject) {
         selectable: false
     }));
 
-
+    // Width label - ensure it stays within canvas
+    const widthLabelTop = Math.min(hLineY + 10, canvas.height - labelFontSize - 10);
     const widthLabel = new fabric.Text(`${appState.plan.widthIn}"`, {
         left: centerX,
-        top: hLineY + 18,
+        top: widthLabelTop,
         originX: 'center',
         originY: 'top',
         fontSize: labelFontSize,
@@ -2079,10 +2641,10 @@ function drawMeasurementOverlays(canvas, textObject) {
     });
     canvas.add(widthLabel);
 
-
-    const vLineX = bounds.left + bounds.width + padding;
-    const vStartY = bounds.top - 30;
-    const vEndY = bounds.top + bounds.height + 30;
+    // Vertical measurement line (height)
+    const vLineX = Math.min(bounds.left + bounds.width + padding, canvas.width - CANVAS_MARGIN - labelFontSize * 3);
+    const vStartY = Math.max(bounds.top - 30, CANVAS_MARGIN);
+    const vEndY = Math.min(bounds.top + bounds.height + 30, canvas.height - CANVAS_MARGIN);
 
     const vertLine = new fabric.Line([vLineX, vStartY, vLineX, vEndY], {
         stroke: scaleColor,
@@ -2091,7 +2653,7 @@ function drawMeasurementOverlays(canvas, textObject) {
     });
     canvas.add(vertLine);
 
-
+    // Vertical tick marks
     canvas.add(new fabric.Line([vLineX - tickLength, vStartY, vLineX + tickLength, vStartY], {
         stroke: scaleColor,
         strokeWidth: 2,
@@ -2104,9 +2666,10 @@ function drawMeasurementOverlays(canvas, textObject) {
         selectable: false
     }));
 
-
+    // Height label - ensure it stays within canvas
+    const heightLabelLeft = Math.min(vLineX + 10, canvas.width - labelFontSize * 2 - 10);
     const heightLabel = new fabric.Text(`${appState.plan.heightIn}"`, {
-        left: vLineX + 15,
+        left: heightLabelLeft,
         top: centerY,
         originX: 'left',
         originY: 'center',
@@ -2124,16 +2687,44 @@ function drawMeasurementOverlays(canvas, textObject) {
 
 
 function getMeasuredDimensions() {
+    // Get text and split into lines to find max line length
+    const text = appState.text || CONFIG.defaultPlaceholderText;
+    const lines = text.split('\n');
 
+    // Find the longest line
+    let maxCharacters = 0;
+    lines.forEach(line => {
+        maxCharacters = Math.max(maxCharacters, line.length);
+    });
 
+    // If no characters, use default placeholder length
+    if (maxCharacters === 0) {
+        maxCharacters = CONFIG.defaultPlaceholderText.length;
+    }
 
-    const textLength = appState.text.length || CONFIG.defaultPlaceholderText.length;
-    const baseWidth = 15 + (textLength * 2.5);
-    const baseHeight = Math.round(baseWidth * 0.43);
+    // Calculate base dimensions using character count (2.5 inches per character)
+    // This matches the logic from referencejs.js
+    const baseWidthInches = maxCharacters * 2.5;
+
+    // Apply font size scaling factor
+    // Base font size is 38px, so we scale proportionally
+    const fontSizeScaleFactor = appState.fontSizePx / CONFIG.baseFontSize;
+    const scaledWidth = baseWidthInches * fontSizeScaleFactor;
+
+    // Calculate height proportionally based on aspect ratio
+    // Using measured aspect ratio that considers actual text rendering
+    // For multi-line text, height increases
+    const lineCount = lines.length;
+    const aspectRatio = 2.3; // Width to height ratio (typical for text)
+    const baseHeight = scaledWidth / aspectRatio;
+
+    // Add extra height for multi-line text
+    const lineHeightFactor = lineCount > 1 ? 1 + ((lineCount - 1) * 0.15) : 1;
+    const scaledHeight = baseHeight * lineHeightFactor;
 
     return {
-        widthIn: Math.round(baseWidth),
-        heightIn: Math.round(baseHeight)
+        widthIn: Math.max(23, Math.round(scaledWidth)), // Minimum width of 23 inches
+        heightIn: Math.max(10, Math.round(scaledHeight)) // Minimum height of 10 inches
     };
 }
 

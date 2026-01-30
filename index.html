@@ -493,7 +493,7 @@
                             <div class="dimension-input-group">
                                 <label class="dimension-label">Width (inches)</label>
                                 <input type="number" class="dimension-input" id="customWidth" placeholder="Enter width"
-                                    min="10" max="200" value="38">
+                                    min="23" max="200" value="38">
                             </div>
                             <div class="dimension-input-group">
                                 <label class="dimension-label">Height (inches)</label>
@@ -501,8 +501,19 @@
                                     placeholder="Enter height" min="5" max="100" value="17">
                             </div>
                         </div>
+                        <div class="custom-size-error hidden" id="customSizeError">
+                            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" style="display: inline-block; vertical-align: middle; margin-right: 4px;">
+                                <circle cx="7" cy="7" r="6" stroke="#ef4444" stroke-width="1.5" fill="none" />
+                                <path d="M7 4V7M7 9.5H7.01" stroke="#ef4444" stroke-width="1.5" stroke-linecap="round" />
+                            </svg>
+                            <span id="customSizeErrorText"></span>
+                        </div>
                         <div class="custom-size-note">
-                            Custom sizes are calculated based on the LED neon required. Larger sizes cost more.
+                            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" style="display: inline-block; vertical-align: middle; margin-right: 4px;">
+                                <circle cx="7" cy="7" r="6" stroke="currentColor" stroke-width="1.5" />
+                                <path d="M7 3.5V7.5M7 10H7.01" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
+                            </svg>
+                            Aspect ratio is locked to maintain proportions. Minimum width: 23 inches. Custom sizes are calculated based on the LED neon required.
                         </div>
                     </div>
 

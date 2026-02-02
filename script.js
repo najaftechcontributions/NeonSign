@@ -41,7 +41,50 @@ const CONFIG = {
         'NEWYEAR': { type: 'percentage', value: 25 }
     },
 
-    couponApiEndpoint: 'https://apiv2.easyneonsigns.ca/apply-discount'
+    couponApiEndpoint: 'https://apiv2.easyneonsigns.ca/apply-discount',
+
+    lineHeightMultipliers: {
+        'Barcelona': 1.4,
+        'Alexa': 0.8,
+        'Bayview': 1,
+        'Amsterdam': 1,
+        'Greenworld': 1,
+        'NewCursive': 1,
+        'Vintage': 1,
+        'Venetian': 1.2,
+        'Amanda': 1.2,
+        'Austin': 0.9,
+        'Beachfront': 1.1,
+        'Chelsea': 1.1,
+        'Freehand': 1.2,
+        'Freespirit': 2,
+        'LoveNote': 1,
+        'Neonscript': 1.3,
+        'Northshore': 1.4,
+        'Photogenic': 1,
+        'Royalty': 1.25,
+        'Rocket': 1.4,
+        'Signature': 1,
+        'Sorrento': 1.6,
+        'WildScript': 1,
+        'Avante': 1,
+        'Buttercup': 1,
+        'ClassicType': 1.1,
+        'Typewriter': 1,
+        'Melbourne': 1.1,
+        'NeoTokyo': 1.1,
+        'Monaco': 1,
+        'Waikiki': 1.2,
+        'Bellview': 1,
+        'LoveNeon': 1,
+        'Marquee': 1,
+        'Mayfair': 1,
+        'NeonGlow': 1,
+        'NeonLite': 1,
+        'Neontrace': 1,
+        'Nevada': 1.1,
+        'SciFi': 1
+    }
 };
 
 
@@ -54,8 +97,8 @@ const appState = {
     fontFamily: "Barcelona",
     fontKey: 'Barcelona',
     fontSizePx: CONFIG.baseFontSize,
-    lineHeightPx: CONFIG.baseFontSize * 1.2,
-
+    lineHeightPx: CONFIG.lineHeightMultipliers['Barcelona'] || 1.2,
+    
     colorValue: '#FFFFFF',
     colorName: 'White',
     rgbSurcharge: 0,
@@ -104,9 +147,6 @@ const appState = {
     neonGlowEnabled: true,
     generatedPlans: []
 };
-
-
-
 
 const canvasInstances = {};
 const animationHandles = {};
@@ -465,7 +505,6 @@ function regenerateSizeCards(baseWidth, baseHeight) {
     sizeConfigs.forEach((config, index) => {
         const scaledWidth = Math.round(baseWidth * config.scale);
         const scaledHeight = Math.round(baseHeight * config.scale);
-
         const price = calculatePlanPrice(scaledWidth, scaledHeight);
 
         let totalPrice = price;
@@ -588,6 +627,9 @@ function attachFontListeners() {
 function selectFont(fontKey, fontFamily) {
     appState.fontKey = fontKey;
     appState.fontFamily = fontFamily;
+
+    // Update line height based on the new font family
+    appState.lineHeightPx = CONFIG.lineHeightMultipliers[fontFamily] || 1.2;
 
     document.querySelectorAll('.font-card').forEach(card => card.classList.remove('active'));
     document.querySelectorAll('.font-list-item').forEach(item => item.classList.remove('active'));
@@ -755,7 +797,6 @@ function attachPlanListeners() {
         btn.addEventListener('click', () => {
             document.querySelectorAll('.size-mode-btn').forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
-
             const mode = btn.getAttribute('data-mode');
             toggleSizeMode(mode);
         });
@@ -765,7 +806,15 @@ function attachPlanListeners() {
     const customHeight = document.getElementById('customHeight');
     const customSizeError = document.getElementById('customSizeError');
     const customSizeErrorText = document.getElementById('customSizeErrorText');
-    const MINIMUM_WIDTH = 23;
+
+    if (customWidth) {
+        customWidth.min = MINIMUM_WIDTH;
+        customWidth.value = Math.max(customWidth.value || MINIMUM_WIDTH, MINIMUM_WIDTH);
+    }
+    if (customHeight) {
+        customHeight.min = MINIMUM_HEIGHT;
+        customHeight.value = Math.max(customHeight.value || MINIMUM_HEIGHT, MINIMUM_HEIGHT);
+    }
 
     function showSizeError(message) {
         if (customSizeError && customSizeErrorText) {
@@ -809,6 +858,13 @@ function attachPlanListeners() {
     if (customHeight) {
         customHeight.addEventListener('input', debounce(() => {
             let height = parseInt(customHeight.value);
+
+            if (height < MINIMUM_HEIGHT) {
+                showSizeError(`The minimum possible height is ${MINIMUM_HEIGHT} inches. Please enter a larger value.`);
+                customHeight.value = MINIMUM_HEIGHT;
+                height = MINIMUM_HEIGHT;
+            }
+
             const width = Math.round(height * customSizingAspectRatio);
 
             if (width < MINIMUM_WIDTH) {
@@ -874,6 +930,12 @@ function selectPlan(cardElement) {
         updateAspectRatio();
     }
 
+    // Update custom size inputs to match selected card
+    const customWidth = document.getElementById('customWidth');
+    const customHeight = document.getElementById('customHeight');
+    if (customWidth) customWidth.value = appState.plan.widthIn;
+    if (customHeight) customHeight.value = appState.plan.heightIn;
+
     renderAllPreviews();
     recalculateTotalPrice();
 }
@@ -924,7 +986,6 @@ function calculatePlanPrice(widthIn, heightIn) {
 
 function recalculatePlanPrice() {
     appState.plan.price = calculatePlanPrice(appState.plan.widthIn, appState.plan.heightIn);
-    console.log(appState.plan.price);
 }
 
 function recalculateTotalPrice() {
@@ -982,7 +1043,6 @@ function updatePricingUI() {
         if (!CONFIG.enableBaseDiscount) {
             discountBadge.style.display = 'none';
         } else {
-            console.log(CONFIG.basePromotionPercentage);
             basePercentageSpan.textContent = `${(CONFIG.basePromotionPercentage * 100).toFixed(0)}`;
         }
     }
@@ -1058,6 +1118,7 @@ function updateSizeCardPrices() {
         card.setAttribute('data-original', totalPrice.toFixed(2));
         card.setAttribute('data-price', discountedPrice.toFixed(2));
     });
+    attachPlanListeners();
 }
 
 
@@ -1499,118 +1560,14 @@ function proceedToCheckout() {
     alert('Proceeding to checkout...');
 }
 
-
-
-
 // Render all previews across all steps
 function renderAllPreviews() {
-    for (let step = 1; step <= 4; step++) {
-        const canvasId = step === 1 ? 'neonCanvas' : `neonCanvas${step}`;
+    Object.keys(canvasInstances).forEach(canvasId => {
         const canvas = canvasInstances[canvasId];
-
         if (canvas) {
-            renderNeonPreview(canvas);
+            renderCanvasPreview(canvas);
         }
-    }
-}
-
-function renderNeonPreview(canvas) {
-    canvas.clear();
-
-    const displayText = appState.text || CONFIG.defaultPlaceholderText;
-
-    // Measure text and calculate dimensions in inches
-    const measurements = measureTextDimensions(displayText, appState.fontFamily, appState.fontSizePx);
-
-    // Update measured dimensions in appState
-    appState.measuredWidthIn = measurements.widthInches;
-    appState.measuredHeightIn = measurements.heightInches;
-
-    // Split text into lines - no limits, allow all lines
-    const lines = displayText.split('\n');
-
-    // Calculate dimensions for scaling
-    const lineHeight = appState.fontSizePx * 1.2;
-    const totalTextHeight = lines.length * lineHeight;
-
-    // Measure max text width
-    const tempCanvas = document.createElement('canvas');
-    const tempCtx = tempCanvas.getContext('2d');
-    tempCtx.font = `${appState.fontSizePx}px ${appState.fontFamily}`;
-    const maxTextWidth = Math.max(...lines.map(line => tempCtx.measureText(line).width));
-
-    // Calculate scale factor to fit text in canvas
-    const widthScale = canvas.width / (maxTextWidth * 1.1); // 1.1 for padding
-    const heightScale = canvas.height / (totalTextHeight * 1.1); // 1.1 for padding
-    const scaleFactor = Math.min(widthScale, heightScale, 1); // Never scale up, only down
-
-    // Apply scale factor to font size for rendering
-    const scaledFontSize = appState.fontSizePx * scaleFactor;
-    const scaledLineHeight = scaledFontSize * 1.2;
-    const scaledTotalHeight = lines.length * scaledLineHeight;
-
-    // Calculate starting Y position to center vertically
-    const startY = (canvas.height - scaledTotalHeight) / 2 + scaledLineHeight;
-
-    // Render each line with scaled font
-    let charIndex = 0;
-    lines.forEach((line, lineIdx) => {
-        const yPos = startY + (lineIdx * scaledLineHeight);
-
-        if (appState.multicolor) {
-            // Render character by character for multicolor
-            let xOffset = 0;
-            const measureCtx = document.createElement('canvas').getContext('2d');
-            measureCtx.font = `${scaledFontSize}px ${appState.fontFamily}`;
-
-            for (let i = 0; i < line.length; i++) {
-                const char = line[i];
-                const charColor = appState.characterColors[charIndex] || appState.colorValue;
-
-                const charWidth = measureCtx.measureText(char).width;
-                const charX = (canvas.width - measureCtx.measureText(line).width) / 2 + xOffset;
-
-                const fabricText = new fabric.Text(char, {
-                    left: charX,
-                    top: yPos,
-                    fontFamily: appState.fontFamily,
-                    fontSize: scaledFontSize,
-                    fill: appState.neonGlowEnabled ? '#FFFFFF' : charColor,
-                    selectable: false,
-                    charIndex: charIndex
-                });
-
-                if (appState.neonGlowEnabled) {
-                    fabricText.set('shadow', createNeonShadow(charColor));
-                }
-
-                canvas.add(fabricText);
-                xOffset += charWidth;
-                charIndex++;
-            }
-        } else {
-            // Render entire line at once
-            const fabricText = new fabric.Text(line, {
-                left: canvas.width / 2,
-                top: yPos,
-                fontFamily: appState.fontFamily,
-                fontSize: scaledFontSize,
-                fill: appState.neonGlowEnabled ? '#FFFFFF' : appState.colorValue,
-                originX: 'center',
-                selectable: false
-            });
-
-            if (appState.neonGlowEnabled) {
-                fabricText.set('shadow', createNeonShadow(appState.colorValue));
-            }
-
-            canvas.add(fabricText);
-            charIndex += line.length;
-        }
-        charIndex++; // Account for newline
     });
-
-    canvas.renderAll();
 }
 
 // Measure text dimensions and calculate inches (based on referencejs.js logic)
@@ -1649,8 +1606,9 @@ function measureTextDimensions(text, fontFamily, fontSize) {
     });
 
     // Calculate total height in pixels
-    const lineHeight = fontSize * 1.2;
-    const totalHeightPx = limitedLines.length * lineHeight;
+    const lineHeightMultiplier = CONFIG.lineHeightMultipliers[fontFamily] || 1.2;
+    const lineHeightPx = lineHeightMultiplier;
+    const totalHeightPx = limitedLines.length * lineHeightPx;
 
     // Calculate aspect ratio (from referencejs.js)
     const aspectRatio = maxWidthPx / totalHeightPx;
@@ -1675,9 +1633,6 @@ function createNeonShadow(color) {
         offsetY: 0
     });
 }
-
-
-
 
 // Step navigation
 function attachStepNavigationListeners() {
@@ -1726,9 +1681,6 @@ function goToStep(stepNum) {
 
     appState.currentStep = stepNum;
 }
-
-
-
 
 // Preview controls
 function attachPreviewControlListeners() {
@@ -1796,9 +1748,6 @@ function attachPreviewControlListeners() {
     });
 }
 
-
-
-
 // Capture preview snapshot
 function capturePreviewSnapshot() {
     const canvas = canvasInstances['neonCanvas4'] || canvasInstances['neonCanvas'];
@@ -1855,7 +1804,6 @@ function capturePreviewSnapshot() {
     // Return the cropped image as data URL
     return tempCanvas.toDataURL('image/png', 1.0);
 }
-
 // Generate features summary for modal
 function generateFeaturesSummary() {
     const features = [];
@@ -2098,9 +2046,6 @@ function captureSvgMarkup() {
     }
 }
 
-
-
-
 function attachStepNavigationListeners() {
     document.querySelectorAll('.step-tab').forEach(tab => {
         tab.addEventListener('click', (e) => {
@@ -2125,7 +2070,7 @@ function attachStepNavigationListeners() {
 }
 
 function setupMobilePanelToggle() {
-    const isMobile = () => window.innerWidth < 768;
+    const isMobile = () => window.innerWidth < 1200;
 
 
     for (let i = 1; i <= 4; i++) {
@@ -2246,9 +2191,6 @@ function updateStepTabsUI() {
     });
 }
 
-
-
-
 function attachPreviewControlListeners() {
     for (let step = 1; step <= 4; step++) {
         const container = document.getElementById(`step${step}`);
@@ -2364,18 +2306,6 @@ function exportPreviewImage(stepNumber) {
     link.click();
 }
 
-
-
-
-function renderAllPreviews() {
-    Object.keys(canvasInstances).forEach(canvasId => {
-        const canvas = canvasInstances[canvasId];
-        if (canvas) {
-            renderCanvasPreview(canvas);
-        }
-    });
-}
-
 function renderCanvasPreview(canvas) {
     if (!canvas) return;
 
@@ -2426,6 +2356,8 @@ function renderCanvasPreview(canvas) {
     if (appState.multicolor) {
         renderMulticolorText(canvas, displayText, centerX, centerY, renderingFontSize);
     } else {
+        const lineHeightMultiplier = appState.lineHeightPx || 1.2;
+
         const textConfig = {
             left: centerX,
             top: centerY,
@@ -2434,6 +2366,7 @@ function renderCanvasPreview(canvas) {
             textAlign: 'center',
             fontFamily: appState.fontFamily,
             fontSize: renderingFontSize,
+            lineHeight: lineHeightMultiplier,
             fill: appState.colorValue,
             selectable: false
         };
@@ -2476,12 +2409,13 @@ function renderMulticolorText(canvas, text, centerX, centerY, renderingFontSize)
     const totalWidth = tempText.width;
     const totalHeight = tempText.height;
 
-    // Calculate line height
-    const lineHeight = useFontSize * 1.16;
+    // Calculate line height - use direct multiplier value
+    const lineHeightMultiplier = appState.lineHeightPx || 1.2;
+    const lineHeightPx = lineHeightMultiplier;
 
     // Calculate starting Y position to center all lines
-    const totalLinesHeight = lines.length * lineHeight;
-    let currentY = centerY - (totalLinesHeight / 2) + (lineHeight / 2);
+    const totalLinesHeight = lines.length * lineHeightPx;
+    let currentY = centerY - (totalLinesHeight / 2) + (lineHeightPx / 2);
 
     // Track character index across all lines
     let globalCharIndex = 0;
@@ -2508,6 +2442,7 @@ function renderMulticolorText(canvas, text, centerX, centerY, renderingFontSize)
             const charConfig = {
                 fontFamily: appState.fontFamily,
                 fontSize: useFontSize,
+                lineHeight: lineHeightMultiplier,
                 fill: charColor,
                 selectable: false,
                 charSpacing: 0
@@ -2564,7 +2499,7 @@ function renderMulticolorText(canvas, text, centerX, centerY, renderingFontSize)
         }
 
         // Move to next line
-        currentY += lineHeight;
+        currentY += lineHeightPx;
     });
 
     // Create bounding box for measurements
@@ -2708,8 +2643,6 @@ function drawMeasurementOverlays(canvas, textObject) {
     });
     canvas.add(heightLabel);
 }
-
-
 
 function getMeasuredDimensions() {
     // Get text and split into lines to find max line length

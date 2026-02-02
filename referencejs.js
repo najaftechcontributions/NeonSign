@@ -3,6 +3,49 @@
 // ---------------------------
 // Holds the available fonts with both display name and family name.
 
+// Font-specific line height multipliers for consistent visual spacing
+const lineHeightMultipliers = {
+  'Barcelona': 1.15,
+  'Alexa': 1.2,
+  'Bayview': 1.1,
+  'Amsterdam': 1.2,
+  'Greenworld': 1.2,
+  'NewCursive': 1.2,
+  'Vintage': 1.2,
+  'Venetian': 1.2,
+  'Amanda': 1.2,
+  'Austin': 1.05,
+  'Beachfront': 1.25,
+  'Chelsea': 1.1,
+  'Freehand': 1.2,
+  'Freespirit': 1.25,
+  'LoveNote': 1.2,
+  'Neonscript': 1.2,
+  'Northshore': 1.2,
+  'Photogenic': 1.2,
+  'Royalty': 1.25,
+  'Rocket': 1.2,
+  'Signature': 1.2,
+  'Sorrento': 1.2,
+  'WildScript': 1.2,
+  'Avante': 1.2,
+  'Buttercup': 1.2,
+  'ClassicType': 1.3,
+  'Typewriter': 1.25,
+  'Melbourne': 1.25,
+  'NeoTokyo': 1.25,
+  'Monaco': 1.2,
+  'Waikiki': 1.2,
+  'Bellview': 1.1,
+  'LoveNeon': 1.3,
+  'Marquee': 1.2,
+  'Mayfair': 1.2,
+  'NeonGlow': 1.2,
+  'NeonLite': 1.2,
+  'Neontrace': 1.3,
+  'Nevada': 1.1,
+  'SciFi': 1.2
+};
 
 const fontFamilies = [
   {
@@ -202,7 +245,7 @@ const neonObject = {
   userHasEnteredText: false, // Track if user has entered any text
   colorName: "Warm White", // Default color name
   plan: {},
-  lineHeight: 20,
+  lineHeight: parseInt("60px") * (lineHeightMultipliers["Avante"] || 1.2),
   variantId: "gid://shopify/ProductVariant/47595020091680",
   discountApplied: false,
   type: "indoor", // Indoor or Outdoor
@@ -305,6 +348,10 @@ function initFontSelection() {
     initialFontRadio.checked = true;
     const fontStyle = `${neonObject.fontSize} ${initialFontRadio.value}`; // Build font style string
     neonObject.fontFamily = initialFontRadio.value;
+    // Update line height based on the selected font
+    const baseFontSize = parseInt(neonObject.fontSize);
+    const lineHeightMultiplier = lineHeightMultipliers[neonObject.fontFamily] || 1.2;
+    neonObject.lineHeight = baseFontSize * lineHeightMultiplier;
     // Draw text with initial settings on SVG with id "mySVG"
     // Show placeholder text for visual, but don't calculate price yet
     drawTextWithMeasurement(
@@ -428,6 +475,11 @@ function initEventListeners() {
       if (radio.checked) {
         neonObject.fontFamily = radio.value;
         const fontStyle = `${neonObject.fontSize} ${radio.value}`;
+
+        // Update line height based on the selected font
+        const baseFontSize = parseInt(neonObject.fontSize);
+        const lineHeightMultiplier = lineHeightMultipliers[neonObject.fontFamily] || 1.2;
+        neonObject.lineHeight = baseFontSize * lineHeightMultiplier;
 
         // ✅ Update dropdown font name and style
         const selectedFontText = radio.getAttribute("data-name");
@@ -2016,5 +2068,3 @@ if (document.readyState === 'loading') {
   // DOM is already ready
   initializeNeonBuilder();
 }
-
-

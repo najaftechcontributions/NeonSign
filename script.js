@@ -98,7 +98,7 @@ const appState = {
     fontKey: 'Barcelona',
     fontSizePx: CONFIG.baseFontSize,
     lineHeightPx: CONFIG.lineHeightMultipliers['Barcelona'] || 1.2,
-    
+
     colorValue: '#FFFFFF',
     colorName: 'White',
     rgbSurcharge: 0,
@@ -150,6 +150,10 @@ const appState = {
 
 const canvasInstances = {};
 const animationHandles = {};
+
+// Minimum dimensions for custom sizing (will be updated when cards regenerate)
+let MINIMUM_WIDTH = 23;
+let MINIMUM_HEIGHT = 10;
 
 
 
@@ -497,6 +501,41 @@ function regenerateSizeCards(baseWidth, baseHeight) {
         { id: '4xl', name: '4XL', scale: 6.274852, fontsize: 64 }
     ];
 
+    // Update minimum dimensions based on mini size (first config)
+    const miniConfig = sizeConfigs[0];
+    MINIMUM_WIDTH = Math.round(baseWidth * miniConfig.scale);
+    MINIMUM_HEIGHT = Math.round(baseHeight * miniConfig.scale);
+
+    // Update custom input min attributes
+    const customWidth = document.getElementById('customWidth');
+    const customHeight = document.getElementById('customHeight');
+    if (customWidth) {
+        customWidth.min = MINIMUM_WIDTH;
+        // Ensure current value is not below new minimum
+        if (parseInt(customWidth.value) < MINIMUM_WIDTH) {
+            customWidth.value = MINIMUM_WIDTH;
+        }
+    }
+    if (customHeight) {
+        customHeight.min = MINIMUM_HEIGHT;
+        // Ensure current value is not below new minimum
+        if (parseInt(customHeight.value) < MINIMUM_HEIGHT) {
+            customHeight.value = MINIMUM_HEIGHT;
+        }
+    }
+
+    // Update the custom size note to show current minimum width
+    const customSizeNote = document.querySelector('.custom-size-note');
+    if (customSizeNote) {
+        customSizeNote.innerHTML = `
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" style="display: inline-block; vertical-align: middle; margin-right: 4px;">
+                <circle cx="7" cy="7" r="6" stroke="currentColor" stroke-width="1.5" />
+                <path d="M7 3.5V7.5M7 10H7.01" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
+            </svg>
+            Aspect ratio is locked to maintain proportions. Minimum width: ${MINIMUM_WIDTH} inches, Minimum height: ${MINIMUM_HEIGHT} inches. Custom sizes are calculated based on the LED neon required.
+        `;
+    }
+
     const currentActiveCard = document.querySelector('.size-card.active');
     const currentActiveSize = currentActiveCard ? currentActiveCard.getAttribute('data-size') : 'mini';
 
@@ -807,13 +846,13 @@ function attachPlanListeners() {
     const customSizeError = document.getElementById('customSizeError');
     const customSizeErrorText = document.getElementById('customSizeErrorText');
 
+    // Initial min values will be set by regenerateSizeCards
+    // Ensure current values are valid
     if (customWidth) {
         customWidth.min = MINIMUM_WIDTH;
-        customWidth.value = Math.max(customWidth.value || MINIMUM_WIDTH, MINIMUM_WIDTH);
     }
     if (customHeight) {
         customHeight.min = MINIMUM_HEIGHT;
-        customHeight.value = Math.max(customHeight.value || MINIMUM_HEIGHT, MINIMUM_HEIGHT);
     }
 
     function showSizeError(message) {

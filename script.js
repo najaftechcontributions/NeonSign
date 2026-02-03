@@ -2453,9 +2453,9 @@ function renderMulticolorText(canvas, text, centerX, centerY, renderingFontSize)
     const totalWidth = tempText.width;
     const totalHeight = tempText.height;
 
-    // Calculate line height - use direct multiplier value
+    // Calculate line height - multiply by font size to get actual pixel height
     const lineHeightMultiplier = appState.lineHeightPx || 1.2;
-    const lineHeightPx = lineHeightMultiplier;
+    const lineHeightPx = lineHeightMultiplier * useFontSize;
 
     // Calculate starting Y position to center all lines
     const totalLinesHeight = lines.length * lineHeightPx;

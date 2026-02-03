@@ -877,6 +877,12 @@ function attachPlanListeners() {
         customWidth.addEventListener('input', debounce(() => {
             let width = parseInt(customWidth.value);
 
+            // If input is empty or NaN, use minimum width
+            if (!customWidth.value || isNaN(width)) {
+                width = MINIMUM_WIDTH;
+                customWidth.value = MINIMUM_WIDTH;
+            }
+
             if (width < MINIMUM_WIDTH) {
                 showSizeError(`The minimum possible width is ${MINIMUM_WIDTH} inches. Please enter a larger value.`);
                 customWidth.value = MINIMUM_WIDTH;
@@ -902,6 +908,12 @@ function attachPlanListeners() {
     if (customHeight) {
         customHeight.addEventListener('input', debounce(() => {
             let height = parseInt(customHeight.value);
+
+            // If input is empty or NaN, use minimum height
+            if (!customHeight.value || isNaN(height)) {
+                height = MINIMUM_HEIGHT;
+                customHeight.value = MINIMUM_HEIGHT;
+            }
 
             if (height < MINIMUM_HEIGHT) {
                 showSizeError(`The minimum possible height is ${MINIMUM_HEIGHT} inches. Please enter a larger value.`);

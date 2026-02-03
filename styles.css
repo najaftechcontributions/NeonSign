@@ -597,15 +597,18 @@ body {
     }
 }
 
-.rgb-price, .text-white {
+.rgb-price,
+.text-white {
     font-size: 11px;
     font-weight: 700;
     color: var(--accent-color);
     white-space: nowrap;
 }
+
 .text-white {
     color: var(--text-primary) !important;
 }
+
 .custom-color-btn {
     background: transparent;
     border: 1px solid var(--accent-color);
@@ -1037,6 +1040,7 @@ body {
     padding: 16px;
     cursor: pointer;
     transition: all 0.2s;
+    position: relative;
 }
 
 .shape-card:hover {
@@ -1049,36 +1053,30 @@ body {
 }
 
 .shape-preview {
-    height: 80px;
+    height: 90px;
     display: flex;
     align-items: center;
     justify-content: center;
     margin-bottom: 12px;
-    position: relative;
 }
 
-.shape-text {
-    font-size: 16px;
-    color: var(--text-primary);
-    font-family: 'Pacifico', cursive;
+.shape-image {
+    width: 100%;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
-.shape-text.underlined {
-    text-decoration: underline;
-    text-decoration-color: var(--accent-color);
-    text-decoration-thickness: 2px;
-}
-
-.shape-text.boxed {
-    border: 2px solid var(--accent-color);
-    padding: 8px 16px;
-    border-radius: 4px;
-}
-
-.shape-text.open-boxed {
-    border: 2px solid var(--accent-color);
-    border-top: none;
-    padding: 8px 16px;
+.shape-image img {
+    object-fit: cover;
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -60%) scale(2.6);
+    pointer-events: none;
 }
 
 .checkmark-shape {
@@ -1424,6 +1422,7 @@ body {
         opacity: 0;
         transform: translateY(-10px);
     }
+
     to {
         opacity: 1;
         transform: translateY(0);
@@ -2324,6 +2323,7 @@ canvas {
     .step-tab {
         gap: 5px;
     }
+
     .size-grid {
         grid-template-columns: repeat(3, 1fr);
     }
@@ -2789,10 +2789,6 @@ canvas {
         border-radius: 10px;
     }
 
-    .shape-preview {
-        height: 70px;
-        margin-bottom: 12px;
-    }
 
     .shape-text {
         font-size: 15px;

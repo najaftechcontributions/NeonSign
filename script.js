@@ -44,22 +44,22 @@ const CONFIG = {
     couponApiEndpoint: 'https://apiv2.easyneonsigns.ca/apply-discount',
 
     lineHeightMultipliers: {
-        'Barcelona': 1.4,
+        'Barcelona': 1,
         'Alexa': 0.8,
         'Bayview': 1,
         'Amsterdam': 1,
         'Greenworld': 1,
-        'NewCursive': 1,
+        'NewCursive': 0.9,
         'Vintage': 1,
         'Venetian': 1.2,
         'Amanda': 1.2,
         'Austin': 0.9,
         'Beachfront': 1.1,
         'Chelsea': 1.1,
-        'Freehand': 1.2,
+        'Freehand': 1,
         'Freespirit': 2,
         'LoveNote': 1,
-        'Neonscript': 1.3,
+        'Neonscript': 1,
         'Northshore': 1.4,
         'Photogenic': 1,
         'Royalty': 1.25,
@@ -159,10 +159,15 @@ let MINIMUM_HEIGHT = 10;
 
 
 function initializeActiveStates() {
-    const defaultFontCard = document.querySelector('.font-card[data-font="Barcelona"]');
-    const defaultFontItem = document.querySelector('.font-list-item[data-font="Barcelona"]');
-    if (defaultFontCard) defaultFontCard.classList.add('active');
-    if (defaultFontItem) defaultFontItem.classList.add('active');
+    const defaultFontCard = document.querySelector('.font-card[data-font="barcelona"]');
+    const defaultFontItem = document.querySelector('.font-list-item[data-font="barcelona"]');
+    if (defaultFontCard) {
+        defaultFontCard.classList.add('active');
+    }
+
+    if (defaultFontItem) {
+        defaultFontItem.classList.add('active');
+    }
 
     const defaultColor = document.querySelector('.color-option[data-color="#FFFFFF"]');
     if (defaultColor && !defaultColor.classList.contains('active')) {

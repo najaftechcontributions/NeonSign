@@ -44,7 +44,7 @@ const CONFIG = {
     couponApiEndpoint: 'https://apiv2.easyneonsigns.ca/apply-discount',
 
     lineHeightMultipliers: {
-        'Barcelona': 1,
+        'Barcelona': 1.4,
         'Alexa': 0.8,
         'Bayview': 1,
         'Amsterdam': 1,
@@ -57,9 +57,9 @@ const CONFIG = {
         'Beachfront': 1.1,
         'Chelsea': 1.1,
         'Freehand': 1,
-        'Freespirit': 2,
+        'Freespirit': 1.8,
         'LoveNote': 1,
-        'Neonscript': 1,
+        'Neonscript': 1.2,
         'Northshore': 1.4,
         'Photogenic': 1,
         'Royalty': 1.25,
@@ -155,6 +155,27 @@ const animationHandles = {};
 let MINIMUM_WIDTH = 23;
 let MINIMUM_HEIGHT = 10;
 
+// Font loading utility - ensures fonts are loaded before rendering
+async function ensureFontLoaded(fontFamily) {
+    // Check if document.fonts API is available
+    if (!document.fonts) {
+        // Fallback: wait a bit for fonts to load
+        return new Promise(resolve => setTimeout(resolve, 500));
+    }
+
+    try {
+        // Wait for the specific font to be loaded
+        await document.fonts.load(`38px ${fontFamily}`);
+        // Also wait for all fonts to be ready (in case of dependencies)
+        await document.fonts.ready;
+        return true;
+    } catch (error) {
+        console.warn(`Font ${fontFamily} failed to load, using fallback:`, error);
+        // Wait a bit anyway to give fonts time to load
+        return new Promise(resolve => setTimeout(resolve, 500));
+    }
+}
+
 
 
 
@@ -200,8 +221,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const initialDimensions = calculateIntelligentDimensions(appState.text);
     regenerateSizeCards(initialDimensions.widthInches, initialDimensions.heightInches);
 
-    renderAllPreviews();
-    recalculateTotalPrice();
+    // Ensure default font (Barcelona) is loaded before rendering
+    ensureFontLoaded('Barcelona').then(() => {
+        renderAllPreviews();
+        recalculateTotalPrice();
+    });
 });
 
 function setupCanvases() {
@@ -691,8 +715,11 @@ function selectFont(fontKey, fontFamily) {
     regenerateSizeCards(dimensions.widthInches, dimensions.heightInches);
     recalculatePlanPrice();
 
-    renderAllPreviews();
-    recalculateTotalPrice();
+    // Ensure the font is loaded before rendering
+    ensureFontLoaded(fontFamily).then(() => {
+        renderAllPreviews();
+        recalculateTotalPrice();
+    });
 }
 
 
@@ -2586,10 +2613,10 @@ function drawMeasurementOverlays(canvas, textObject) {
 
     // Calculate safe margins to keep rulers within canvas
     const CANVAS_MARGIN = 60; // Minimum margin from canvas edges
-    const MIN_PADDING = 60; // Minimum padding from text - increased to prevent overlap
+    const MIN_PADDING = 35; // Minimum padding from text - closer but not too close
 
     const sizeFactor = bounds.width / 400;
-    let padding = Math.max(MIN_PADDING, Math.min(130, 90 * sizeFactor));
+    let padding = Math.max(MIN_PADDING, Math.min(80, 50 * sizeFactor));
     const tickLength = Math.max(8, Math.min(15, 10 * sizeFactor));
 
     // Increase font size on mobile for better readability
@@ -2616,8 +2643,9 @@ function drawMeasurementOverlays(canvas, textObject) {
     // Horizontal measurement line (width) - positioned below text with safe distance
     // Always maintain minimum padding - never allow line to touch text
     const hLineY = bounds.top + bounds.height + padding;
-    const hStartX = Math.max(bounds.left - 20, CANVAS_MARGIN);
-    const hEndX = Math.min(bounds.left + bounds.width + 20, canvas.width - CANVAS_MARGIN);
+    // Align measurement line closely with text bounds (minimal extension)
+    const hStartX = Math.max(bounds.left, CANVAS_MARGIN);
+    const hEndX = Math.min(bounds.left + bounds.width, canvas.width - CANVAS_MARGIN);
 
     const horizLine = new fabric.Line([hStartX, hLineY, hEndX, hLineY], {
         stroke: scaleColor,
@@ -2659,8 +2687,9 @@ function drawMeasurementOverlays(canvas, textObject) {
     // Vertical measurement line (height) - positioned to the right of text with safe distance
     // Always maintain minimum padding - never allow line to touch text
     const vLineX = bounds.left + bounds.width + padding;
-    const vStartY = Math.max(bounds.top - 20, CANVAS_MARGIN);
-    const vEndY = Math.min(bounds.top + bounds.height + 20, canvas.height - CANVAS_MARGIN);
+    // Align measurement line closely with text bounds (minimal extension)
+    const vStartY = Math.max(bounds.top, CANVAS_MARGIN);
+    const vEndY = Math.min(bounds.top + bounds.height, canvas.height - CANVAS_MARGIN);
 
     const vertLine = new fabric.Line([vLineX, vStartY, vLineX, vEndY], {
         stroke: scaleColor,

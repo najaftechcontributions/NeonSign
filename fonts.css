@@ -3,7 +3,7 @@
 @font-face {
     font-family: 'Barcelona';
     src: url('/easyneonsignsfont/Barcelona.ttf') format('truetype');
-    font-display: swap;
+    font-display: block;
 }
 
 @font-face {

@@ -3023,6 +3023,7 @@ canvas {
 }
 
 @media (max-width: 480px) {
+    
     .left-panel {
         max-height: 80vh;
         transform: translateY(calc(100% - 190px));
@@ -3050,7 +3051,12 @@ canvas {
         width: 28px;
         height: 28px;
     }
-
+    .header-section > div {
+        max-width: 250px !important;
+        .main-title {
+            font-size: 15px !important;
+        }
+    }
     .custom-color-btn {
         grid-column: span 2;
         font-size: 10px;

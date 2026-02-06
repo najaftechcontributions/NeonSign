@@ -1500,9 +1500,18 @@ function attachCheckoutListener() {
     }
 }
 
-function showPreviewModal() {
+async function showPreviewModal() {
+    // Ensure all canvases have current content rendered
+    renderAllPreviews();
 
-    const previewImage = capturePreviewSnapshot();
+    // Wait for the canvas to finish rendering including filters
+    await new Promise(resolve => requestAnimationFrame(() =>
+        requestAnimationFrame(() =>
+            setTimeout(resolve, 100)
+        )
+    ));
+
+    const previewImage = await capturePreviewSnapshot();
 
 
     const overlay = document.createElement('div');
@@ -1832,9 +1841,19 @@ function attachPreviewControlListeners() {
 }
 
 // Capture preview snapshot
-function capturePreviewSnapshot() {
+async function capturePreviewSnapshot() {
     const canvas = canvasInstances['neonCanvas4'] || canvasInstances['neonCanvas'];
     if (!canvas) return '';
+
+    // Force another render to ensure all filters are applied
+    canvas.renderAll();
+
+    // Wait for filters to be fully applied
+    await new Promise(resolve => requestAnimationFrame(() =>
+        requestAnimationFrame(() =>
+            setTimeout(resolve, 50)
+        )
+    ));
 
     const objects = canvas.getObjects();
     if (objects.length === 0) {
@@ -1856,8 +1875,8 @@ function capturePreviewSnapshot() {
         maxY = Math.max(maxY, bounds.top + bounds.height);
     });
 
-    // Add padding around the content (20px on each side)
-    const padding = 20;
+    // Add padding around the content (60px on each side to accommodate blur of 40px)
+    const padding = 60;
     minX = Math.max(0, minX - padding);
     minY = Math.max(0, minY - padding);
     maxX = Math.min(canvas.width, maxX + padding);
@@ -2352,8 +2371,8 @@ function exportPreviewImage(stepNumber) {
             maxY = Math.max(maxY, bounds.top + bounds.height);
         });
 
-        // Add padding around the content (20px on each side)
-        const padding = 20;
+        // Add padding around the content (60px on each side to accommodate blur of 40px)
+        const padding = 60;
         minX = Math.max(0, minX - padding);
         minY = Math.max(0, minY - padding);
         maxX = Math.min(canvas.width, maxX + padding);

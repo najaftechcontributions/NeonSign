@@ -20,6 +20,45 @@
     <!-- Fabric.js -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.0/fabric.min.js"></script>
 
+    <!-- Patch Fabric.js to use passive event listeners -->
+    <script>
+        (function () {
+            // Store original addEventListener
+            const originalAddEventListener = EventTarget.prototype.addEventListener;
+
+            // Override addEventListener to make scroll-blocking events passive
+            EventTarget.prototype.addEventListener = function (type, listener, options) {
+                // Only patch wheel events that can block scrolling
+                if (type === 'wheel' || type === 'mousewheel') {
+                    // Convert options to object format if needed
+                    let newOptions = options;
+
+                    if (typeof options === 'boolean') {
+                        newOptions = {
+                            capture: options,
+                            passive: true
+                        };
+                    } else if (options === undefined || options === null) {
+                        newOptions = {
+                            passive: true
+                        };
+                    } else if (typeof options === 'object') {
+                        // Merge options, setting passive to true
+                        newOptions = {
+                            ...options,
+                            passive: true
+                        };
+                    }
+
+                    return originalAddEventListener.call(this, type, listener, newOptions);
+                }
+
+                // For all other events, use original behavior
+                return originalAddEventListener.call(this, type, listener, options);
+            };
+        })();
+    </script>
+
     <!-- Fix for canvas textBaseline error -->
     <script>
         // Patch canvas context to fix 'alphabetical' -> 'alphabetic' error

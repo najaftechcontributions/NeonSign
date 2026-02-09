@@ -222,14 +222,18 @@ document.addEventListener('DOMContentLoaded', () => {
     regenerateSizeCards(initialDimensions.widthInches, initialDimensions.heightInches);
 
     // Ensure default font (Barcelona) is loaded before rendering
-    // Add a small delay to ensure canvas is fully ready
     ensureFontLoaded('Barcelona').then(() => {
         // Use requestAnimationFrame to ensure DOM is fully painted
         requestAnimationFrame(() => {
-            requestAnimationFrame(() => {
-                renderAllPreviews();
-                recalculateTotalPrice();
-            });
+            renderAllPreviews();
+            recalculateTotalPrice();
+        });
+    }).catch(err => {
+        console.warn('Font loading failed, rendering with fallback:', err);
+        // Render anyway with fallback font
+        requestAnimationFrame(() => {
+            renderAllPreviews();
+            recalculateTotalPrice();
         });
     });
 });
@@ -241,14 +245,13 @@ window.addEventListener('load', () => {
         const canvas = canvasInstances[canvasId];
         if (canvas) {
             canvas.viewportTransform = [1, 0, 0, 1, 0, 0];
-            canvas.requestRenderAll();
         }
     });
 
-    // Re-render all canvases after full page load (including images, fonts, etc.)
+    // Re-render all canvases after full page load to ensure everything displays
     setTimeout(() => {
         renderAllPreviews();
-    }, 150);
+    }, 100);
 });
 
 function setupCanvases() {
@@ -261,8 +264,22 @@ function setupCanvases() {
                 width: 800,
                 height: 600,
                 backgroundColor: 'transparent',
-                selection: false
+                selection: false,
+                renderOnAddRemove: false,
+                skipTargetFind: false,
+                // Disable interactive features to prevent passive listener violations
+                interactive: true,
+                // Disable default zoom with mouse wheel to prevent passive listener issues
+                allowTouchScrolling: true,
+                stopContextMenu: true,
+                fireRightClick: false,
+                // Performance optimizations
+                enableRetinaScaling: false,
+                imageSmoothingEnabled: true
             });
+
+            // Disable wheel zoom to prevent passive listener violations
+            canvasInstances[canvasId].off('mouse:wheel');
 
             canvasInstances[canvasId].on('mouse:down', function (options) {
                 handleCanvasClick(canvasId, options);
@@ -1675,13 +1692,33 @@ function proceedToCheckout() {
     alert('Proceeding to checkout...');
 }
 
+// Throttle mechanism to prevent excessive render calls
+let renderPending = false;
+let renderTimeout = null;
+
 // Render all previews across all steps
 function renderAllPreviews() {
-    Object.keys(canvasInstances).forEach(canvasId => {
-        const canvas = canvasInstances[canvasId];
-        if (canvas) {
-            renderCanvasPreview(canvas);
-        }
+    // Cancel any pending render
+    if (renderTimeout) {
+        clearTimeout(renderTimeout);
+    }
+
+    // If a render is already scheduled, don't schedule another
+    if (renderPending) {
+        return;
+    }
+
+    renderPending = true;
+
+    // Use requestAnimationFrame for optimal rendering timing
+    requestAnimationFrame(() => {
+        Object.keys(canvasInstances).forEach(canvasId => {
+            const canvas = canvasInstances[canvasId];
+            if (canvas) {
+                renderCanvasPreview(canvas);
+            }
+        });
+        renderPending = false;
     });
 }
 
@@ -2534,7 +2571,8 @@ function renderCanvasPreview(canvas) {
             fontSize: renderingFontSize,
             lineHeight: lineHeightMultiplier,
             fill: appState.colorValue,
-            selectable: false
+            selectable: false,
+            objectCaching: true
         };
 
 
@@ -2556,7 +2594,8 @@ function renderCanvasPreview(canvas) {
         drawMeasurementOverlays(canvas, textObject);
     }
 
-    canvas.renderAll();
+    // Use requestRenderAll to batch rendering and avoid forced reflow
+    canvas.requestRenderAll();
 }
 
 function renderMulticolorText(canvas, text, centerX, centerY, renderingFontSize) {
@@ -2586,6 +2625,9 @@ function renderMulticolorText(canvas, text, centerX, centerY, renderingFontSize)
     // Track character index across all lines
     let globalCharIndex = 0;
 
+    // Collect all objects to add at once (batch operation)
+    const objectsToAdd = [];
+
     // Process each line
     lines.forEach((line, lineIndex) => {
         // Measure the width of this line
@@ -2611,7 +2653,8 @@ function renderMulticolorText(canvas, text, centerX, centerY, renderingFontSize)
                 lineHeight: lineHeightMultiplier,
                 fill: charColor,
                 selectable: false,
-                charSpacing: 0
+                charSpacing: 0,
+                objectCaching: true
             };
 
             if (appState.neonGlowEnabled) {
@@ -2652,7 +2695,8 @@ function renderMulticolorText(canvas, text, centerX, centerY, renderingFontSize)
                 originY: 'center'
             });
 
-            canvas.add(charObj);
+            // Add to batch array instead of directly to canvas
+            objectsToAdd.push(charObj);
 
             startX += charWidth;
             globalCharIndex++;
@@ -2667,6 +2711,11 @@ function renderMulticolorText(canvas, text, centerX, centerY, renderingFontSize)
         // Move to next line
         currentY += lineHeightPx;
     });
+
+    // Batch add all character objects at once for better performance
+    if (objectsToAdd.length > 0) {
+        canvas.add(...objectsToAdd);
+    }
 
     // Create bounding box for measurements
     const boundingBox = {

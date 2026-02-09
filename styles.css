@@ -1053,7 +1053,7 @@ body {
 }
 
 .shape-preview {
-    height: 90px;
+    height: 120px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -1075,7 +1075,7 @@ body {
     height: 100%;
     left: 50%;
     top: 50%;
-    transform: translate(-50%, -60%) scale(2.6);
+    transform: translate(-50%, -60%) scale(2);
     pointer-events: none;
 }
 
@@ -2375,6 +2375,14 @@ canvas {
     .features-grid {
         grid-template-columns: 1fr;
     }
+
+    .shape-preview {
+        height: 140px;
+    }
+
+    .shape-image img {
+        transform: translate(-50%, -60%) scale(2.3);
+    }
 }
 
 
@@ -3023,7 +3031,10 @@ canvas {
 }
 
 @media (max-width: 480px) {
-    
+    .shape-image img {
+        transform: translate(-50%, -60%) scale(1.5);
+    }
+
     .left-panel {
         max-height: 80vh;
         transform: translateY(calc(100% - 190px));
@@ -3051,12 +3062,15 @@ canvas {
         width: 28px;
         height: 28px;
     }
-    .header-section > div {
+
+    .header-section>div {
         max-width: 250px !important;
+
         .main-title {
             font-size: 15px !important;
         }
     }
+
     .custom-color-btn {
         grid-column: span 2;
         font-size: 10px;

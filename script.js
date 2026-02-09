@@ -222,10 +222,24 @@ document.addEventListener('DOMContentLoaded', () => {
     regenerateSizeCards(initialDimensions.widthInches, initialDimensions.heightInches);
 
     // Ensure default font (Barcelona) is loaded before rendering
+    // Add a small delay to ensure canvas is fully ready
     ensureFontLoaded('Barcelona').then(() => {
-        renderAllPreviews();
-        recalculateTotalPrice();
+        // Use requestAnimationFrame to ensure DOM is fully painted
+        requestAnimationFrame(() => {
+            requestAnimationFrame(() => {
+                renderAllPreviews();
+                recalculateTotalPrice();
+            });
+        });
     });
+});
+
+// Additional render on window load to ensure everything is ready after refresh
+window.addEventListener('load', () => {
+    // Re-render all canvases after full page load (including images, fonts, etc.)
+    setTimeout(() => {
+        renderAllPreviews();
+    }, 100);
 });
 
 function setupCanvases() {
@@ -1900,7 +1914,7 @@ async function capturePreviewSnapshot() {
     tempCtx.drawImage(
         canvasElement,
         minX, minY, width, height,  // Source rectangle
-        0, 0, width * 2, height * 2 // Destination rectangle (2x size)
+        minX, minY, width, height // Destination rectangle (2x size)
     );
 
     // Return the cropped image as data URL
@@ -1967,7 +1981,7 @@ function formatShapeName(shape) {
         'cut-to-shape': 'Cut to Shape',
         'cut-to-letter': 'Cut to Letter',
         'cut-rectangle': 'Cut Rectangle',
-        'open-box': 'Open Box'
+        'cut-to-cirlce': 'Cut to Circle'
     };
     return names[shape] || shape;
 }
@@ -2049,7 +2063,7 @@ function formatShapeName(shape) {
         'cut-to-shape': 'Cut to Shape',
         'cut-to-letter': 'Cut to Letter',
         'cut-rectangle': 'Rectangle',
-        'open-box': 'Open Box'
+        'cut-to-cirlce': 'Open Box'
     };
     return shapeNames[shape] || shape;
 }
@@ -2182,6 +2196,7 @@ function setupMobilePanelToggle() {
 
         if (!stepContainer) continue;
         const leftPanel = stepContainer.querySelector('.left-panel');
+        const contentSection = leftPanel.querySelector('.content-section');
 
         if (toggleBtn && leftPanel && isMobile()) {
             toggleBtn.addEventListener('click', (e) => {
@@ -2236,7 +2251,50 @@ function setupMobilePanelToggle() {
                 }
             });
         }
+
+        // Add scroll listener to expand/collapse panel
+        if (contentSection && leftPanel) {
+            let lastScrollTop = 0;
+
+            contentSection.addEventListener('scroll', () => {
+
+                const scrollTop = contentSection.scrollTop;
+                const scrollHeight = contentSection.scrollHeight;
+                const clientHeight = contentSection.clientHeight;
+
+                // If scrolled to top, expand the panel
+                if (scrollTop === 0 && !leftPanel.classList.contains('expanded')) {
+                    leftPanel.classList.add('expanded');
+                }
+
+                // If scrolled to bottom, collapse the panel
+                if (scrollTop + clientHeight >= scrollHeight - 10 && leftPanel.classList.contains('expanded')) {
+                    leftPanel.classList.remove('expanded');
+                }
+
+                lastScrollTop = scrollTop;
+            });
+        }
     }
+
+    // Add click listeners to step tabs to expand panel
+    document.querySelectorAll('.step-tab').forEach(tab => {
+        tab.addEventListener('click', () => {
+            if (!isMobile()) return;
+
+            const stepNum = parseInt(tab.getAttribute('data-step'));
+            const stepContainer = document.getElementById(`step${stepNum}`);
+            if (stepContainer) {
+                const leftPanel = stepContainer.querySelector('.left-panel');
+                if (leftPanel) {
+                    // Expand panel when step is clicked
+                    setTimeout(() => {
+                        leftPanel.classList.add('expanded');
+                    }, 100);
+                }
+            }
+        });
+    });
 
 
     window.addEventListener('resize', () => {

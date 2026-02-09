@@ -2292,50 +2292,72 @@ function setupMobilePanelToggle() {
             });
         }
 
-        // Add scroll listener to expand/collapse panel
-        if (contentSection && leftPanel) {
-            let lastScrollTop = 0;
+        // Add swipe gesture detection on left-panel
+        if (leftPanel) {
+            let touchStartY = 0;
+            let touchStartX = 0;
+            let touchEndY = 0;
+            let touchEndX = 0;
+            let isSwiping = false;
 
-            contentSection.addEventListener('scroll', () => {
+            leftPanel.addEventListener('touchstart', (e) => {
+                if (!isMobile()) return;
+                touchStartY = e.touches[0].clientY;
+                touchStartX = e.touches[0].clientX;
+                isSwiping = false;
+            }, { passive: true });
 
-                const scrollTop = contentSection.scrollTop;
-                const scrollHeight = contentSection.scrollHeight;
-                const clientHeight = contentSection.clientHeight;
+            leftPanel.addEventListener('touchmove', (e) => {
+                if (!isMobile()) return;
+                touchEndY = e.touches[0].clientY;
+                touchEndX = e.touches[0].clientX;
+                const diffY = Math.abs(touchEndY - touchStartY);
+                const diffX = Math.abs(touchEndX - touchStartX);
+                // Only consider it a swipe if vertical movement is greater than horizontal
+                if (diffY > 30 && diffY > diffX) {
+                    isSwiping = true;
+                }
+            }, { passive: true });
 
-                // If scrolled to top, expand the panel
-                if (scrollTop === 0 && !leftPanel.classList.contains('expanded')) {
-                    leftPanel.classList.add('expanded');
+            leftPanel.addEventListener('touchend', (e) => {
+                if (!isMobile() || !isSwiping) {
+                    isSwiping = false;
+                    return;
                 }
 
-                // If scrolled to bottom, collapse the panel
-                if (scrollTop + clientHeight >= scrollHeight - 10 && leftPanel.classList.contains('expanded')) {
+                const verticalDiff = touchStartY - touchEndY;
+                const isExpanded = leftPanel.classList.contains('expanded');
+                const scrollTop = contentSection ? contentSection.scrollTop : 0;
+
+                // Swipe up (vertical diff > 0) - expand when collapsed
+                if (verticalDiff > 50 && !isExpanded) {
+                    leftPanel.classList.add('expanded');
+                }
+                // Swipe down (vertical diff < 0) - collapse when expanded and at top
+                else if (verticalDiff < -300 && isExpanded && scrollTop === 0) {
                     leftPanel.classList.remove('expanded');
                 }
 
-                lastScrollTop = scrollTop;
-            });
+                isSwiping = false;
+            }, { passive: true });
         }
     }
 
-    // Add click listeners to step tabs to expand panel
+    // Add click listeners to step tabs to preserve expanded state
     document.querySelectorAll('.step-tab').forEach(tab => {
         tab.addEventListener('click', () => {
             if (!isMobile()) return;
-
+    
+            // Expand ALL left panels immediately
+            document.querySelectorAll('.left-panel').forEach(leftPanel => {
+                leftPanel.classList.add('expanded');
+            });
+    
             const stepNum = parseInt(tab.getAttribute('data-step'));
             const stepContainer = document.getElementById(`step${stepNum}`);
-            if (stepContainer) {
-                const leftPanel = stepContainer.querySelector('.left-panel');
-                if (leftPanel) {
-                    // Expand panel when step is clicked
-                    setTimeout(() => {
-                        leftPanel.classList.add('expanded');
-                    }, 100);
-                }
-            }
+            
         });
     });
-
 
     window.addEventListener('resize', () => {
         if (!isMobile()) {
@@ -3034,15 +3056,25 @@ if (document.readyState === 'loading') {
 
 const originalNavigateToStep = navigateToStep;
 navigateToStep = function (stepNumber) {
+    // Store expanded state before navigation
+    const isMobile = window.innerWidth < 1200;
+    let wasExpanded = false;
+    if (isMobile) {
+        const currentContainer = document.querySelector('.step-container.active');
+        wasExpanded = currentContainer && currentContainer.querySelector('.left-panel.expanded');
+    }
+
     originalNavigateToStep(stepNumber);
     updateMobileFooter();
 
-
-    if (window.innerWidth <= 768) {
-        const activePanel = document.querySelector('.left-panel.expanded');
-        const overlay = document.getElementById('mobileOverlay');
-        if (activePanel && overlay) {
-            collapsePanel(activePanel, overlay);
+    // Preserve expanded state after navigation
+    if (isMobile && wasExpanded) {
+        const newActiveContainer = document.querySelector('.step-container.active');
+        const newLeftPanel = newActiveContainer ? newActiveContainer.querySelector('.left-panel') : null;
+        if (newLeftPanel) {
+            setTimeout(() => {
+                newLeftPanel.classList.add('expanded');
+            }, 50);
         }
     }
 };

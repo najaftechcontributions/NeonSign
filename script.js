@@ -236,10 +236,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // Additional render on window load to ensure everything is ready after refresh
 window.addEventListener('load', () => {
+    // Reset all canvas viewports to ensure proper centering after refresh
+    Object.keys(canvasInstances).forEach(canvasId => {
+        const canvas = canvasInstances[canvasId];
+        if (canvas) {
+            canvas.viewportTransform = [1, 0, 0, 1, 0, 0];
+            canvas.requestRenderAll();
+        }
+    });
+
     // Re-render all canvases after full page load (including images, fonts, etc.)
     setTimeout(() => {
         renderAllPreviews();
-    }, 100);
+    }, 150);
 });
 
 function setupCanvases() {
@@ -1843,15 +1852,6 @@ function attachPreviewControlListeners() {
         });
     });
 
-    // Preview eye button
-    document.querySelectorAll('.preview-eye-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
-            const rightPanel = btn.closest('.right-panel');
-            if (rightPanel) {
-                rightPanel.classList.toggle('preview-fullscreen');
-            }
-        });
-    });
 }
 
 // Capture preview snapshot
@@ -1903,18 +1903,21 @@ async function capturePreviewSnapshot() {
     const tempCanvas = document.createElement('canvas');
     const tempCtx = tempCanvas.getContext('2d');
 
-    // Set temp canvas size to the cropped dimensions
-    tempCanvas.width = width * 2; // 2x for better quality
-    tempCanvas.height = height * 2;
+    // Set temp canvas size to the cropped dimensions (2x for better quality)
+    const multiplier = 2;
+    tempCanvas.width = width * multiplier;
+    tempCanvas.height = height * multiplier;
 
     // Get the current canvas as image data
     const canvasElement = canvas.getElement();
 
     // Draw the cropped portion onto the temp canvas
+    // Source: crop from original canvas
+    // Destination: draw at 0,0 on temp canvas, scaled up by multiplier
     tempCtx.drawImage(
         canvasElement,
-        minX, minY, width, height,  // Source rectangle
-        minX, minY, width, height // Destination rectangle (2x size)
+        minX, minY, width, height,  // Source rectangle (crop region)
+        0, 0, width * multiplier, height * multiplier // Destination rectangle (scaled)
     );
 
     // Return the cropped image as data URL
@@ -2470,6 +2473,9 @@ function renderCanvasPreview(canvas) {
     if (!canvas) return;
 
     canvas.clear();
+
+    // Reset viewport transform to ensure canvas is properly centered after refresh
+    canvas.viewportTransform = [1, 0, 0, 1, 0, 0];
 
     const displayText = appState.text || CONFIG.defaultPlaceholderText;
     const centerX = canvas.width / 2;

@@ -521,38 +521,80 @@ function handleTextInput(event) {
 }
 
 function calculateIntelligentDimensions(text) {
+    // MATCHING neonText.js logic EXACTLY (lines 656-828)
+
+    // Handle empty text - return default dimensions
+    if (!text || text.trim() === '') {
+        return { widthInches: 23, heightInches: 10 };
+    }
+
     const lines = text.split('\n');
-    const numLines = lines.length;
+    const fontFamily = appState.fontFamily || 'Barcelona';
+    const fontSize = 60; // Matching neonText.js default fontSize (line 200)
 
-    const baseWidth = 23;
-    const baseHeight = 10;
-    const baseCharCount = 11;
+    // Create a canvas for measuring text (matching neonText.js line 657-659)
+    const canvas = document.createElement("canvas");
+    const context = canvas.getContext("2d");
+    context.font = `${fontSize}px ${fontFamily}`;
 
-    if (numLines === 1) {
-        const charCount = lines[0].length;
-        const widthInches = Math.max(baseWidth, Math.round((charCount / baseCharCount) * baseWidth));
-        const heightInches = baseHeight;
-
+    // Function to get text metrics (matching neonText.js line 662-673)
+    function getTextMetrics(text) {
+        context.font = `${fontSize}px ${fontFamily}`;
+        const metrics = context.measureText(text);
         return {
-            widthInches: widthInches,
-            heightInches: heightInches
-        };
-    } else {
-        const longestLine = lines.reduce((a, b) => a.length > b.length ? a : b, '');
-        const longestCharCount = longestLine.length;
-
-        const widthInches = Math.max(
-            Math.round(baseWidth * 0.6),
-            Math.round((longestCharCount / baseCharCount) * baseWidth * 0.8)
-        );
-
-        const heightInches = Math.round(baseHeight + ((numLines - 1) * (baseHeight * 0.6)));
-
-        return {
-            widthInches: widthInches,
-            heightInches: heightInches
+            width: metrics.width,
+            ascent: metrics.actualBoundingBoxAscent || fontSize * 0.8,
+            descent: metrics.actualBoundingBoxDescent || fontSize * 0.2,
         };
     }
+
+    const extraSpacing = 3; // Matching neonText.js line 683
+
+    // Calculate text positions and dimensions (matching neonText.js line 686-713)
+    const maxX = [];
+    const minX = [];
+    const maxY = [];
+    const minY = [];
+    let currentY = 0;
+
+    lines.forEach((line) => {
+        const { width: lineWidth, ascent, descent } = getTextMetrics(line);
+        const xPos = 0; // Centered position doesn't affect width calculation
+        const yPos = currentY + ascent;
+
+        maxX.push(xPos + lineWidth);
+        minX.push(xPos);
+        maxY.push(yPos + descent);
+        minY.push(currentY);
+
+        currentY += ascent + descent + extraSpacing; // Matching neonText.js line 710
+    });
+
+    // Calculate pixel dimensions (matching neonText.js line 818-819)
+    const maxWidth = Math.max(...maxX) - Math.min(...minX);
+    const totalCalculatedHeight = Math.max(...maxY) - Math.min(...minY);
+
+    // Calculate max characters (matching neonText.js line 821-825)
+    let maxCharacters = 0;
+    lines.forEach((line) => {
+        maxCharacters = Math.max(maxCharacters, line.length);
+    });
+
+    // Calculate width in inches (matching neonText.js line 824)
+    const maxWidthInches = maxCharacters * 2.5; // NO minimum, exactly as neonText.js
+
+    // Calculate aspect ratio and height in inches (matching neonText.js line 827-828)
+    const aspectRatio = maxWidth / totalCalculatedHeight;
+    const maxHeightInches = maxWidthInches / aspectRatio; // NO minimum, exactly as neonText.js
+
+    // Safety check for invalid values
+    const finalWidth = Math.round(maxWidthInches) || 23;
+    const finalHeight = Math.round(maxHeightInches) || 10;
+
+    return {
+        widthInches: isFinite(finalWidth) ? finalWidth : 23,
+        heightInches: isFinite(finalHeight) ? finalHeight : 10
+    };
 }
 
 function regenerateSizeCards(baseWidth, baseHeight) {
@@ -1722,60 +1764,7 @@ function renderAllPreviews() {
     });
 }
 
-// Measure text dimensions and calculate inches (based on referencejs.js logic)
-function measureTextDimensions(text, fontFamily, fontSize) {
-    // Create a temporary canvas for measuring
-    const tempCanvas = document.createElement('canvas');
-    const ctx = tempCanvas.getContext('2d');
-    ctx.font = `${fontSize}px ${fontFamily}`;
 
-    const lines = text.split('\n');
-    const isMobile = window.innerWidth < CONFIG.mobileBreakpoint;
-    const maxLines = isMobile ? CONFIG.maxMobileLinesCount : CONFIG.maxDesktopLinesCount;
-    const limitedLines = lines.slice(0, maxLines);
-
-    // Find the longest line by character count
-    let maxCharacters = 0;
-    limitedLines.forEach(line => {
-        maxCharacters = Math.max(maxCharacters, line.length);
-    });
-
-    // Calculate width in inches based on character count (from referencejs.js)
-    // Formula: maxCharacters * 2.5 inches per letter
-    const widthInches = Math.max(maxCharacters * 2.5, 23); // Minimum 23 inches
-
-    // Measure actual pixel dimensions
-    let maxWidthPx = 0;
-    const lineMetrics = limitedLines.map(line => {
-        const metrics = ctx.measureText(line);
-        const width = metrics.width;
-        maxWidthPx = Math.max(maxWidthPx, width);
-        return {
-            width,
-            ascent: metrics.actualBoundingBoxAscent || fontSize * 0.8,
-            descent: metrics.actualBoundingBoxDescent || fontSize * 0.2
-        };
-    });
-
-    // Calculate total height in pixels
-    const lineHeightMultiplier = CONFIG.lineHeightMultipliers[fontFamily] || 1.2;
-    const lineHeightPx = lineHeightMultiplier;
-    const totalHeightPx = limitedLines.length * lineHeightPx;
-
-    // Calculate aspect ratio (from referencejs.js)
-    const aspectRatio = maxWidthPx / totalHeightPx;
-
-    // Calculate height in inches based on aspect ratio (from referencejs.js)
-    const heightInches = Math.max(widthInches / aspectRatio, 10); // Minimum 10 inches
-
-    return {
-        widthInches: Math.round(widthInches),
-        heightInches: Math.round(heightInches),
-        maxWidthPx,
-        totalHeightPx,
-        aspectRatio
-    };
-}
 
 function createNeonShadow(color) {
     return new fabric.Shadow({
@@ -2611,8 +2600,6 @@ function renderCanvasPreview(canvas) {
 
         const textObject = new fabric.Text(displayText, textConfig);
         canvas.add(textObject);
-
-
         drawMeasurementOverlays(canvas, textObject);
     }
 

@@ -1997,6 +1997,25 @@ canvas {
     margin: 0 auto;
 }
 
+.preview-snapshot-svg {
+    max-width: 100%;
+    max-height: 500px;
+    width: auto;
+    height: auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto;
+}
+
+.preview-snapshot-svg svg {
+    max-width: 100%;
+    max-height: 500px;
+    width: auto;
+    height: auto;
+    border-radius: 8px;
+}
+
 .features-section {
     margin-bottom: 32px;
 }
@@ -3026,6 +3045,15 @@ canvas {
         min-height: 350px;
     }
 
+    .preview-snapshot-svg {
+        max-height: 600px;
+        min-height: 350px;
+    }
+
+    .preview-snapshot-svg svg {
+        max-height: 600px;
+    }
+
     .features-grid {
         grid-template-columns: 1fr;
         gap: 12px;
@@ -3104,6 +3132,15 @@ canvas {
     .preview-snapshot {
         max-height: 450px;
         min-height: 250px;
+    }
+
+    .preview-snapshot-svg {
+        max-height: 450px;
+        min-height: 250px;
+    }
+
+    .preview-snapshot-svg svg {
+        max-height: 450px;
     }
 
     .modal-body {
@@ -3207,4 +3244,3 @@ canvas {
         font-size: 10px !important;
     }
 }
-

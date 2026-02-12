@@ -1603,7 +1603,7 @@ async function showPreviewModal() {
         )
     ));
 
-    const previewImage = await capturePreviewSnapshot();
+    const previewSVG = await capturePreviewSnapshot();
 
 
     const overlay = document.createElement('div');
@@ -1629,7 +1629,7 @@ async function showPreviewModal() {
 
         <div class="modal-body">
             <div class="preview-section">
-                <img src="${previewImage}" alt="Neon Sign Preview" class="preview-snapshot" />
+                <div class="preview-snapshot-svg">${previewSVG}</div>
             </div>
 
             <div class="features-section">
@@ -1882,6 +1882,57 @@ function attachPreviewControlListeners() {
 
 }
 
+// Generate SVG string for preview (helper function)
+function generatePreviewSVG(canvas) {
+    if (!canvas) return '';
+
+    const objects = canvas.getObjects();
+    if (objects.length === 0) {
+        return '';
+    }
+
+    // Calculate bounding box of all objects
+    let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+
+    objects.forEach(obj => {
+        const bounds = obj.getBoundingRect();
+        minX = Math.min(minX, bounds.left);
+        minY = Math.min(minY, bounds.top);
+        maxX = Math.max(maxX, bounds.left + bounds.width);
+        maxY = Math.max(maxY, bounds.top + bounds.height);
+    });
+
+    // Add padding
+    const padding = 80;
+    minX = Math.max(0, minX - padding);
+    minY = Math.max(0, minY - padding);
+    maxX = Math.min(canvas.width, maxX + padding);
+    maxY = Math.min(canvas.height, maxY + padding);
+
+    const width = maxX - minX;
+    const height = maxY - minY;
+
+    // Get SVG string from Fabric.js
+    let svgString = canvas.toSVG({
+        viewBox: {
+            x: minX,
+            y: minY,
+            width: width,
+            height: height
+        },
+        width: width,
+        height: height,
+        suppressPreamble: false
+    });
+
+    // Add background color based on current theme
+    const isDarkMode = document.querySelector('.mode-btn.active[data-mode="dark"]') !== null;
+    const bgColor = isDarkMode ? '#000000' : '#ffffff';
+
+
+    return svgString;
+}
+
 // Capture preview snapshot
 async function capturePreviewSnapshot() {
     const canvas = canvasInstances['neonCanvas4'] || canvasInstances['neonCanvas'];
@@ -1897,59 +1948,9 @@ async function capturePreviewSnapshot() {
         )
     ));
 
-    const objects = canvas.getObjects();
-    if (objects.length === 0) {
-        return canvas.toDataURL({
-            format: 'png',
-            quality: 1,
-            multiplier: 2
-        });
-    }
-
-    // Calculate bounding box of all objects (text + measurements)
-    let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
-
-    objects.forEach(obj => {
-        const bounds = obj.getBoundingRect();
-        minX = Math.min(minX, bounds.left);
-        minY = Math.min(minY, bounds.top);
-        maxX = Math.max(maxX, bounds.left + bounds.width);
-        maxY = Math.max(maxY, bounds.top + bounds.height);
-    });
-
-    // Add padding around the content (60px on each side to accommodate blur of 40px)
-    const padding = 60;
-    minX = Math.max(0, minX - padding);
-    minY = Math.max(0, minY - padding);
-    maxX = Math.min(canvas.width, maxX + padding);
-    maxY = Math.min(canvas.height, maxY + padding);
-
-    const width = maxX - minX;
-    const height = maxY - minY;
-
-    // Create a temporary canvas to hold the cropped image
-    const tempCanvas = document.createElement('canvas');
-    const tempCtx = tempCanvas.getContext('2d');
-
-    // Set temp canvas size to the cropped dimensions (2x for better quality)
-    const multiplier = 2;
-    tempCanvas.width = width * multiplier;
-    tempCanvas.height = height * multiplier;
-
-    // Get the current canvas as image data
-    const canvasElement = canvas.getElement();
-
-    // Draw the cropped portion onto the temp canvas
-    // Source: crop from original canvas
-    // Destination: draw at 0,0 on temp canvas, scaled up by multiplier
-    tempCtx.drawImage(
-        canvasElement,
-        minX, minY, width, height,  // Source rectangle (crop region)
-        0, 0, width * multiplier, height * multiplier // Destination rectangle (scaled)
-    );
-
-    // Return the cropped image as data URL
-    return tempCanvas.toDataURL('image/png', 1.0);
+    // Generate and return SVG string directly for inline embedding
+    const svgString = generatePreviewSVG(canvas);
+    return svgString || '';
 }
 // Generate features summary for modal
 function generateFeaturesSummary() {
@@ -2644,55 +2645,59 @@ function exportPreviewImage(stepNumber) {
         return;
     }
 
-    // Calculate bounding box of all objects (text + measurements)
-    let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+    // Generate SVG string
+    const svgString = generatePreviewSVG(canvas);
+    if (!svgString) {
+        alert('Failed to generate preview');
+        return;
+    }
 
-    objects.forEach(obj => {
-        const bounds = obj.getBoundingRect();
-        minX = Math.min(minX, bounds.left);
-        minY = Math.min(minY, bounds.top);
-        maxX = Math.max(maxX, bounds.left + bounds.width);
-        maxY = Math.max(maxY, bounds.top + bounds.height);
-    });
+    // Convert SVG to PNG using high-quality rendering
+    // Create a blob from SVG string
+    const blob = new Blob([svgString], { type: 'image/svg+xml;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
 
-    // Add padding around the content (80px on each side to accommodate blur effects)
-    const padding = 80;
-    minX = Math.max(0, minX - padding);
-    minY = Math.max(0, minY - padding);
-    maxX = Math.min(canvas.width, maxX + padding);
-    maxY = Math.min(canvas.height, maxY + padding);
+    // Create an Image element to load the SVG
+    const img = new Image();
 
-    const width = maxX - minX;
-    const height = maxY - minY;
+    img.onload = function() {
+        // Use 6x multiplier for high-resolution, print-quality output
+        const multiplier = 6;
 
-    // Use 6x multiplier for high-resolution, print-quality output
-    const multiplier = 6;
+        // Create a temporary canvas to hold the high-res image
+        const tempCanvas = document.createElement('canvas');
+        const tempCtx = tempCanvas.getContext('2d');
 
-    // Create a temporary canvas to hold the high-res image
-    const tempCanvas = document.createElement('canvas');
-    const tempCtx = tempCanvas.getContext('2d');
+        // Set temp canvas size to match SVG dimensions at high resolution
+        tempCanvas.width = img.width * multiplier;
+        tempCanvas.height = img.height * multiplier;
 
-    // Set temp canvas size to the cropped dimensions at high resolution
-    tempCanvas.width = width * multiplier;
-    tempCanvas.height = height * multiplier;
+        // Enable image smoothing for better quality
+        tempCtx.imageSmoothingEnabled = true;
+        tempCtx.imageSmoothingQuality = 'high';
 
-    // Get the current canvas as image data
-    const canvasElement = canvas.getElement();
+        // Draw the SVG image onto the canvas at high resolution
+        tempCtx.drawImage(img, 0, 0, img.width * multiplier, img.height * multiplier);
 
-    // Draw the cropped portion onto the temp canvas at high resolution
-    tempCtx.drawImage(
-        canvasElement,
-        minX, minY, width, height,  // Source rectangle (crop region)
-        0, 0, width * multiplier, height * multiplier // Destination rectangle (scaled up 6x)
-    );
+        // Export as high-quality PNG
+        const dataURL = tempCanvas.toDataURL('image/png', 1.0);
 
-    // Export as high-quality PNG
-    const dataURL = tempCanvas.toDataURL('image/png', 1.0);
+        const link = document.createElement('a');
+        link.download = `neon-sign-preview-${Date.now()}.png`;
+        link.href = dataURL;
+        link.click();
 
-    const link = document.createElement('a');
-    link.download = `neon-sign-preview-${Date.now()}.png`;
-    link.href = dataURL;
-    link.click();
+        // Clean up
+        URL.revokeObjectURL(url);
+    };
+
+    img.onerror = function() {
+        alert('Failed to convert SVG to PNG');
+        URL.revokeObjectURL(url);
+    };
+
+    // Load the SVG
+    img.src = url;
 }
 
 function renderCanvasPreview(canvas) {

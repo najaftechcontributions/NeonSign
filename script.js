@@ -1868,23 +1868,15 @@ function attachPreviewControlListeners() {
 
     // Save preview buttons
     document.querySelectorAll('[id^="saveBtn"]').forEach(btn => {
-        btn.addEventListener('click', () => {
+        btn.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+
             const stepNum = btn.id.replace('saveBtn', '') || '1';
-            const canvasId = stepNum === '1' ? 'neonCanvas' : `neonCanvas${stepNum}`;
-            const canvas = canvasInstances[canvasId];
+            const rect = btn.getBoundingClientRect();
 
-            if (canvas) {
-                const dataURL = canvas.toDataURL({
-                    format: 'png',
-                    quality: 1,
-                    multiplier: 2
-                });
-
-                const link = document.createElement('a');
-                link.download = `neon-preview-${Date.now()}.png`;
-                link.href = dataURL;
-                link.click();
-            }
+            // Show export format menu
+            showExportMenu(parseInt(stepNum), rect);
         });
     });
 
@@ -2443,8 +2435,11 @@ function attachPreviewControlListeners() {
 
         const saveBtn = document.getElementById(`saveBtn${step}`);
         if (saveBtn) {
-            saveBtn.addEventListener('click', () => {
-                exportPreviewImage(step);
+            saveBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                const rect = saveBtn.getBoundingClientRect();
+                showExportMenu(step, rect);
             });
         }
     }
@@ -2460,6 +2455,179 @@ function updateBackgroundTheme() {
     }
 }
 
+function showExportMenu(stepNumber, buttonRect) {
+    // Remove existing menu if any
+    const existingMenu = document.querySelector('.export-format-menu');
+    if (existingMenu) {
+        existingMenu.remove();
+    }
+
+    // Create menu
+    const menu = document.createElement('div');
+    menu.className = 'export-format-menu';
+    menu.style.cssText = `
+        position: fixed;
+        top:0,
+        background: #1a1a1a;
+        border: 1px solid #333;
+        border-radius: 8px;
+        padding: 8px;
+        z-index: 10000;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        min-width: 180px;
+    `;
+
+    // Position menu near the button
+    menu.style.left = `${buttonRect.left}px`;
+    menu.style.top = `${buttonRect.top - 100}px`;
+
+    // Add export options
+    menu.innerHTML = `
+        <button class="export-option" data-format="svg" style="
+            display: block;
+            width: 100%;
+            padding: 10px 12px;
+            background: transparent;
+            border: none;
+            color: #fff;
+            text-align: left;
+            cursor: pointer;
+            border-radius: 4px;
+            font-size: 14px;
+            margin-bottom: 4px;
+        ">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" style="display: inline-block; vertical-align: middle; margin-right: 8px;">
+                <path d="M2 2L14 2L14 14L2 14Z" stroke="currentColor" stroke-width="1.5" fill="none"/>
+                <path d="M5 6L8 9L11 6" stroke="currentColor" stroke-width="1.5"/>
+            </svg>
+            Export as SVG (Vector)
+        </button>
+        <button class="export-option" data-format="png" style="
+            display: block;
+            width: 100%;
+            padding: 10px 12px;
+            background: transparent;
+            border: none;
+            color: #fff;
+            text-align: left;
+            cursor: pointer;
+            border-radius: 4px;
+            font-size: 14px;
+        ">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" style="display: inline-block; vertical-align: middle; margin-right: 8px;">
+                <rect x="2" y="2" width="12" height="12" rx="2" stroke="currentColor" stroke-width="1.5" fill="none"/>
+                <circle cx="8" cy="8" r="2" fill="currentColor"/>
+            </svg>
+            Export as PNG (High-Res)
+        </button>
+    `;
+
+    document.body.appendChild(menu);
+
+    // Add hover effects
+    menu.querySelectorAll('.export-option').forEach(option => {
+        option.addEventListener('mouseenter', () => {
+            option.style.background = '#333';
+        });
+        option.addEventListener('mouseleave', () => {
+            option.style.background = 'transparent';
+        });
+        option.addEventListener('click', () => {
+            const format = option.dataset.format;
+            menu.remove();
+            if (format === 'svg') {
+                exportPreviewAsSVG(stepNumber);
+            } else {
+                exportPreviewImage(stepNumber);
+            }
+        });
+    });
+
+    // Close menu when clicking outside
+    setTimeout(() => {
+        const closeMenu = (e) => {
+            if (!menu.contains(e.target)) {
+                menu.remove();
+                document.removeEventListener('click', closeMenu);
+            }
+        };
+        document.addEventListener('click', closeMenu);
+    }, 100);
+}
+
+function exportPreviewAsSVG(stepNumber) {
+    const canvasId = stepNumber === 1 ? 'neonCanvas' : `neonCanvas${stepNumber}`;
+    const canvas = canvasInstances[canvasId];
+
+    if (!canvas) {
+        alert('Canvas not found');
+        return;
+    }
+
+    const objects = canvas.getObjects();
+
+    if (objects.length === 0) {
+        alert('Please add some text to your sign before exporting');
+        return;
+    }
+
+    // Calculate bounding box of all objects
+    let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+
+    objects.forEach(obj => {
+        const bounds = obj.getBoundingRect();
+        minX = Math.min(minX, bounds.left);
+        minY = Math.min(minY, bounds.top);
+        maxX = Math.max(maxX, bounds.left + bounds.width);
+        maxY = Math.max(maxY, bounds.top + bounds.height);
+    });
+
+    // Add padding
+    const padding = 80;
+    minX = Math.max(0, minX - padding);
+    minY = Math.max(0, minY - padding);
+    maxX = Math.min(canvas.width, maxX + padding);
+    maxY = Math.min(canvas.height, maxY + padding);
+
+    const width = maxX - minX;
+    const height = maxY - minY;
+
+    // Get SVG string from Fabric.js
+    let svgString = canvas.toSVG({
+        viewBox: {
+            x: minX,
+            y: minY,
+            width: width,
+            height: height
+        },
+        width: width,
+        height: height,
+        suppressPreamble: false
+    });
+
+    // Add background color based on current theme
+    const isDarkMode = document.querySelector('.mode-btn.active[data-mode="dark"]') !== null;
+    const bgColor = isDarkMode ? '#000000' : '#ffffff';
+
+    // Insert background rectangle after the opening <svg> tag
+    // svgString = svgString.replace(
+    //     /(<svg[^>]*>)/,
+    //     `$1<rect x="0" y="0" width="${width}" height="${height}" fill="${bgColor}"/>`
+    // );
+
+    // Create blob and download
+    const blob = new Blob([svgString], { type: 'image/svg+xml;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+
+    const link = document.createElement('a');
+    link.download = `neon-sign-${Date.now()}.svg`;
+    link.href = url;
+    link.click();
+
+    // Clean up
+    setTimeout(() => URL.revokeObjectURL(url), 100);
+}
+
 function exportPreviewImage(stepNumber) {
     const canvasId = stepNumber === 1 ? 'neonCanvas' : `neonCanvas${stepNumber}`;
     const canvas = canvasInstances[canvasId];
@@ -2470,56 +2638,56 @@ function exportPreviewImage(stepNumber) {
     }
 
     const objects = canvas.getObjects();
-    let dataURL;
 
     if (objects.length === 0) {
-        dataURL = canvas.toDataURL({
-            format: 'png',
-            quality: 1,
-            multiplier: 2
-        });
-    } else {
-        // Calculate bounding box of all objects (text + measurements)
-        let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
-
-        objects.forEach(obj => {
-            const bounds = obj.getBoundingRect();
-            minX = Math.min(minX, bounds.left);
-            minY = Math.min(minY, bounds.top);
-            maxX = Math.max(maxX, bounds.left + bounds.width);
-            maxY = Math.max(maxY, bounds.top + bounds.height);
-        });
-
-        // Add padding around the content (60px on each side to accommodate blur of 40px)
-        const padding = 60;
-        minX = Math.max(0, minX - padding);
-        minY = Math.max(0, minY - padding);
-        maxX = Math.min(canvas.width, maxX + padding);
-        maxY = Math.min(canvas.height, maxY + padding);
-
-        const width = maxX - minX;
-        const height = maxY - minY;
-
-        // Create a temporary canvas to hold the cropped image
-        const tempCanvas = document.createElement('canvas');
-        const tempCtx = tempCanvas.getContext('2d');
-
-        // Set temp canvas size to the cropped dimensions
-        tempCanvas.width = width * 2; // 2x for better quality
-        tempCanvas.height = height * 2;
-
-        // Get the current canvas as image data
-        const canvasElement = canvas.getElement();
-
-        // Draw the cropped portion onto the temp canvas
-        tempCtx.drawImage(
-            canvasElement,
-            minX, minY, width, height,  // Source rectangle
-            0, 0, width * 2, height * 2 // Destination rectangle (2x size)
-        );
-
-        dataURL = tempCanvas.toDataURL('image/png', 1.0);
+        alert('Please add some text to your sign before exporting');
+        return;
     }
+
+    // Calculate bounding box of all objects (text + measurements)
+    let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+
+    objects.forEach(obj => {
+        const bounds = obj.getBoundingRect();
+        minX = Math.min(minX, bounds.left);
+        minY = Math.min(minY, bounds.top);
+        maxX = Math.max(maxX, bounds.left + bounds.width);
+        maxY = Math.max(maxY, bounds.top + bounds.height);
+    });
+
+    // Add padding around the content (80px on each side to accommodate blur effects)
+    const padding = 80;
+    minX = Math.max(0, minX - padding);
+    minY = Math.max(0, minY - padding);
+    maxX = Math.min(canvas.width, maxX + padding);
+    maxY = Math.min(canvas.height, maxY + padding);
+
+    const width = maxX - minX;
+    const height = maxY - minY;
+
+    // Use 6x multiplier for high-resolution, print-quality output
+    const multiplier = 6;
+
+    // Create a temporary canvas to hold the high-res image
+    const tempCanvas = document.createElement('canvas');
+    const tempCtx = tempCanvas.getContext('2d');
+
+    // Set temp canvas size to the cropped dimensions at high resolution
+    tempCanvas.width = width * multiplier;
+    tempCanvas.height = height * multiplier;
+
+    // Get the current canvas as image data
+    const canvasElement = canvas.getElement();
+
+    // Draw the cropped portion onto the temp canvas at high resolution
+    tempCtx.drawImage(
+        canvasElement,
+        minX, minY, width, height,  // Source rectangle (crop region)
+        0, 0, width * multiplier, height * multiplier // Destination rectangle (scaled up 6x)
+    );
+
+    // Export as high-quality PNG
+    const dataURL = tempCanvas.toDataURL('image/png', 1.0);
 
     const link = document.createElement('a');
     link.download = `neon-sign-preview-${Date.now()}.png`;

@@ -1883,7 +1883,7 @@ function attachPreviewControlListeners() {
 }
 
 // Generate SVG string for preview (helper function)
-function generatePreviewSVG(canvas) {
+async function generatePreviewSVG(canvas) {
     if (!canvas) return '';
 
     const objects = canvas.getObjects();
@@ -1929,6 +1929,8 @@ function generatePreviewSVG(canvas) {
     const isDarkMode = document.querySelector('.mode-btn.active[data-mode="dark"]') !== null;
     const bgColor = isDarkMode ? '#000000' : '#ffffff';
 
+    // Embed font in SVG
+    svgString = await embedFontInSVG(svgString, appState.fontFamily);
 
     return svgString;
 }
@@ -1948,8 +1950,8 @@ async function capturePreviewSnapshot() {
         )
     ));
 
-    // Generate and return SVG string directly for inline embedding
-    const svgString = generatePreviewSVG(canvas);
+    // Generate and return SVG string directly for inline embedding (with embedded font)
+    const svgString = await generatePreviewSVG(canvas);
     return svgString || '';
 }
 // Generate features summary for modal
@@ -2456,6 +2458,53 @@ function updateBackgroundTheme() {
     }
 }
 
+// Helper function to load font and convert to base64
+async function getFontAsBase64(fontFamily) {
+    try {
+        const fontPath = `/easyneonsignsfont/${fontFamily}.ttf`;
+        const response = await fetch(fontPath);
+        if (!response.ok) {
+            console.warn(`Failed to load font: ${fontPath}`);
+            return null;
+        }
+        const blob = await response.blob();
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onloadend = () => resolve(reader.result);
+            reader.onerror = reject;
+            reader.readAsDataURL(blob);
+        });
+    } catch (error) {
+        console.error('Error loading font:', error);
+        return null;
+    }
+}
+
+// Helper function to embed font in SVG
+async function embedFontInSVG(svgString, fontFamily) {
+    if (!fontFamily) return svgString;
+
+    const fontBase64 = await getFontAsBase64(fontFamily);
+    if (!fontBase64) return svgString;
+
+    // Create font-face style
+    const fontStyle = `
+        <defs>
+            <style type="text/css">
+                @font-face {
+                    font-family: '${fontFamily}';
+                    src: url('${fontBase64}') format('truetype');
+                }
+            </style>
+        </defs>
+    `;
+
+    // Insert after the opening <svg> tag
+    svgString = svgString.replace(/(<svg[^>]*>)/, `$1${fontStyle}`);
+
+    return svgString;
+}
+
 function showExportMenu(stepNumber, buttonRect) {
     // Remove existing menu if any
     const existingMenu = document.querySelector('.export-format-menu');
@@ -2556,7 +2605,7 @@ function showExportMenu(stepNumber, buttonRect) {
     }, 100);
 }
 
-function exportPreviewAsSVG(stepNumber) {
+async function exportPreviewAsSVG(stepNumber) {
     const canvasId = stepNumber === 1 ? 'neonCanvas' : `neonCanvas${stepNumber}`;
     const canvas = canvasInstances[canvasId];
 
@@ -2616,6 +2665,9 @@ function exportPreviewAsSVG(stepNumber) {
     //     `$1<rect x="0" y="0" width="${width}" height="${height}" fill="${bgColor}"/>`
     // );
 
+    // Embed font in SVG
+    svgString = await embedFontInSVG(svgString, appState.fontFamily);
+
     // Create blob and download
     const blob = new Blob([svgString], { type: 'image/svg+xml;charset=utf-8' });
     const url = URL.createObjectURL(blob);
@@ -2629,7 +2681,7 @@ function exportPreviewAsSVG(stepNumber) {
     setTimeout(() => URL.revokeObjectURL(url), 100);
 }
 
-function exportPreviewImage(stepNumber) {
+async function exportPreviewImage(stepNumber) {
     const canvasId = stepNumber === 1 ? 'neonCanvas' : `neonCanvas${stepNumber}`;
     const canvas = canvasInstances[canvasId];
 
@@ -2645,8 +2697,8 @@ function exportPreviewImage(stepNumber) {
         return;
     }
 
-    // Generate SVG string
-    const svgString = generatePreviewSVG(canvas);
+    // Generate SVG string with embedded font
+    const svgString = await generatePreviewSVG(canvas);
     if (!svgString) {
         alert('Failed to generate preview');
         return;

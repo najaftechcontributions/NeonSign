@@ -1,5 +1,5 @@
 const CONFIG = {
-    mobileBreakpoint: 768,
+    mobileBreakpoint: 1200,
     maxMobileLinesCount: 999,
     maxDesktopLinesCount: 999,
 
@@ -202,7 +202,7 @@ function initializeActiveStates() {
         if (parent) parent.classList.add('active');
     }
 
-    const defaultPower = document.querySelector('.radio-pill input[value="usa"]');
+    const defaultPower = document.querySelector('.radio-pill input[value="canada"]');
     if (defaultPower) {
         const parent = defaultPower.closest('.radio-pill');
         if (parent) parent.classList.add('active');
@@ -658,12 +658,17 @@ function regenerateSizeCards(baseWidth, baseHeight) {
         const price = calculatePlanPrice(scaledWidth, scaledHeight);
 
         let totalPrice = price;
-        totalPrice += appState.outdoorSurcharge;
         totalPrice += appState.rgbSurcharge;
         totalPrice += appState.cutToPrice;
         appState.extras.forEach(extra => {
             totalPrice += extra.price;
         });
+
+        // Double the total if outdoor location is selected
+        if (appState.type === 'outdoor') {
+            totalPrice = totalPrice * 2;
+        }
+
         totalPrice = Math.floor(totalPrice) + 0.99;
 
         let discountedPrice = CONFIG.enableBaseDiscount ?
@@ -1160,9 +1165,13 @@ function recalculateTotalPrice() {
         total += extra.price;
     });
 
-    total += appState.outdoorSurcharge;
     total += appState.rgbSurcharge;
     total += appState.cutToPrice;
+
+    // Double the total if outdoor location is selected
+    if (appState.type === 'outdoor') {
+        total = total * 2;
+    }
 
     total = Math.floor(total) + 0.99;
     appState.totalPrice = total;
@@ -1221,7 +1230,7 @@ function updatePricingUI() {
             btn.setAttribute('data-original-text', originalText);
         }
 
-        const priceText = ` - $${appState.discountPrice.toFixed(2)}`;
+        const priceText = `$${appState.discountPrice.toFixed(2)}`;
         btn.innerHTML = btn.innerHTML.replace(/\s*-\s*\$[\d,.]+/, '');
 
         const svgIcon = btn.querySelector('svg');
@@ -1241,12 +1250,16 @@ function updateSizeCardPrices() {
         let basePrice = calculatePlanPrice(widthIn, heightIn);
 
         let totalPrice = basePrice;
-        totalPrice += appState.outdoorSurcharge;
         totalPrice += appState.rgbSurcharge;
         totalPrice += appState.cutToPrice;
         appState.extras.forEach(extra => {
             totalPrice += extra.price;
         });
+
+        // Double the total if outdoor location is selected
+        if (appState.type === 'outdoor') {
+            totalPrice = totalPrice * 2;
+        }
 
         totalPrice = Math.floor(totalPrice) + 0.99;
 
@@ -1299,9 +1312,6 @@ function attachLocationListeners() {
             parent?.classList.add('active');
 
             appState.type = e.target.value;
-            appState.outdoorSurcharge = e.target.value === 'outdoor'
-                ? CONFIG.outdoorSurcharge
-                : 0;
 
             recalculateTotalPrice();
         });
@@ -1640,10 +1650,10 @@ async function showPreviewModal() {
                     <span class="price-value">+$${appState.cutToPrice.toFixed(2)}</span>
                 </div>
                 ` : ''}
-                ${appState.outdoorSurcharge > 0 ? `
+                ${appState.type === 'outdoor' ? `
                 <div class="price-row">
-                    <span class="price-label">Outdoor Protection</span>
-                    <span class="price-value">+$${appState.outdoorSurcharge.toFixed(2)}</span>
+                    <span class="price-label">Outdoor Location (2x pricing applied)</span>
+                    <span class="price-value"></span>
                 </div>
                 ` : ''}
                 ${appState.rgbSurcharge > 0 ? `
@@ -2058,7 +2068,7 @@ function generateFeaturesSummary() {
         },
         {
             label: 'Power Adapter',
-            value: formatPowerAdapter(appState.powerAdapter || 'usa')
+            value: formatPowerAdapter(appState.powerAdapter || 'canada')
         }
     ];
 
@@ -2110,7 +2120,7 @@ function formatBackboardName(backboard) {
 
 function formatPowerAdapter(adapter) {
     const adapterNames = {
-        'usa': 'USA / Canada (120V)',
+        'canada': 'Canada (110V)',
         'uk': 'UK / Ireland (230V)',
         'europe': 'Europe (230V)',
         'australia': 'Australia / NZ (230V)',
@@ -2153,7 +2163,7 @@ function proceedToCheckout() {
         backboard: appState.backboard,
         cutTo: appState.cutTo,
         cutToPrice: appState.cutToPrice,
-        powerAdapter: appState.powerAdapter || 'usa',
+        powerAdapter: appState.powerAdapter || 'canada',
         totalPrice: appState.totalPrice,
         discountPrice: appState.discountPrice,
         discountCode: appState.discountCode,
@@ -2375,7 +2385,7 @@ function navigateToStep(stepNumber) {
     renderAllPreviews();
 
 
-    const isMobile = window.innerWidth < 768;
+    const isMobile = window.innerWidth < 1200;
     if (isMobile) {
         const leftPanel = targetStep.querySelector('.left-panel');
         if (leftPanel && leftPanel.classList.contains('expanded')) {

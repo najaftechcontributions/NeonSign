@@ -109,9 +109,13 @@
                         <p class="main-subtitle">Get your neon sign in just 4 steps..</p>
                     </div>
                     <button class="mobile-toggle-btn" id="mobileToggle" aria-label="Toggle panel">
-                        <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" class="arrow">
                             <path d="M5 7.5L10 12.5L15 7.5" stroke="currentColor" stroke-width="2"
                                 stroke-linecap="round" />
+                        </svg>
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" class="eye">
+                            <path d="M2 12C2 12 5 5 12 5C19 5 22 12 22 12C22 12 19 19 12 19C5 19 2 12 2 12Z" stroke="currentColor" stroke-width="2"></path>
+                            <circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="2"></circle>
                         </svg>
                     </button>
                 </div>
@@ -140,14 +144,14 @@
 
                     <div class="input-row">
                         <textarea class="text-input" id="neonText" placeholder="Type here.." rows="3"></textarea>
-                        <button class="upload-logo-btn" id="uploadLogoBtn">
+                        <!-- <button class="upload-logo-btn" id="uploadLogoBtn">
                             <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
                                 <path d="M12 5V19M5 12H19" stroke="currentColor" stroke-width="2"
                                     stroke-linecap="round" />
                             </svg>
                             Upload logo
-                        </button>
-                        <input type="file" id="logoInput" accept="image/*" hidden>
+                        </button> -->
+                        <!-- <input type="file" id="logoInput" accept="image/*" hidden> -->
                     </div>
 
                     <div class="uploaded-preview-inline hidden" id="uploadedPreview">
@@ -729,7 +733,7 @@
                             <input type="radio" name="location" value="outdoor">
                             <span class="radio-circle"></span>
                             <span class="radio-text">Outdoor</span>
-                            <span class="extra-price">+$65</span>
+                            <!-- <span class="extra-price">+$65</span> -->
                         </label>
                     </div>
 
@@ -1108,11 +1112,11 @@
 
                     <div class="power-adapter-grid">
                         <label class="radio-pill">
-                            <input type="radio" name="power" value="usa" checked>
-                            <span class="pill-text">USA / CANADA (120V)</span>
+                            <input type="radio" name="power" value="canada" checked>
+                            <span class="pill-text">CANADA (110V)</span>
                         </label>
 
-                        <label class="radio-pill">
+                        <!-- <label class="radio-pill">
                             <input type="radio" name="power" value="uk">
                             <span class="pill-text">UK / IRELAND (230)</span>
                         </label>
@@ -1135,7 +1139,7 @@
                         <label class="radio-pill">
                             <input type="radio" name="power" value="other">
                             <span class="pill-text">Other</span>
-                        </label>
+                        </label> -->
                     </div>
 
                     <h2 class="section-title">Hanging Options</h2>

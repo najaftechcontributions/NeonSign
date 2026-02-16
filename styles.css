@@ -166,7 +166,7 @@ body {
 }
 
 .left-panel.expanded .mobile-toggle-btn svg.arrow {
-    display: none;
+    display: none !important;
 }
 .left-panel.expanded .mobile-toggle-btn svg.eye {
     display: block;

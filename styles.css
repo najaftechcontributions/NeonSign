@@ -166,10 +166,10 @@ body {
 }
 
 .left-panel.expanded .mobile-toggle-btn svg.arrow {
-    display: none !important;
+    transform: rotate(-180deg);
 }
 .left-panel.expanded .mobile-toggle-btn svg.eye {
-    display: block;
+    display: none;
 }
 
 .mobile-toggle-btn:hover {

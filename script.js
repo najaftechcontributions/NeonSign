@@ -1141,7 +1141,6 @@ function calculatePlanPrice(widthIn, heightIn) {
         CONFIG.minProfitPercentage * (productCost + shippingCost + localShippingCostUSD),
         CONFIG.minProfitUSD
     );
-
     const totalCostUSD = productCost + shippingCost + profitUSD + localShippingCostUSD;
     const totalCostCADWithDiscount = totalCostUSD * usdToCadMultiplier;
     let totalCostCAD = totalCostCADWithDiscount * usdToCadMultiplier;
@@ -1151,7 +1150,7 @@ function calculatePlanPrice(widthIn, heightIn) {
     }
 
     const finalPrice = Math.max(totalCostCAD, CONFIG.basePrice);
-    return Math.ceil(finalPrice) - 0.01;
+    return finalPrice;
 }
 
 function recalculatePlanPrice() {
@@ -2341,15 +2340,15 @@ function setupMobilePanelToggle() {
     document.querySelectorAll('.step-tab').forEach(tab => {
         tab.addEventListener('click', () => {
             if (!isMobile()) return;
-    
+
             // Expand ALL left panels immediately
             document.querySelectorAll('.left-panel').forEach(leftPanel => {
                 leftPanel.classList.add('expanded');
             });
-    
+
             const stepNum = parseInt(tab.getAttribute('data-step'));
             const stepContainer = document.getElementById(`step${stepNum}`);
-            
+
         });
     });
 
@@ -2712,7 +2711,7 @@ async function exportPreviewImage(stepNumber) {
     // Create an Image element to load the SVG
     const img = new Image();
 
-    img.onload = function() {
+    img.onload = function () {
         // Use 6x multiplier for high-resolution, print-quality output
         const multiplier = 6;
 
@@ -2743,7 +2742,7 @@ async function exportPreviewImage(stepNumber) {
         URL.revokeObjectURL(url);
     };
 
-    img.onerror = function() {
+    img.onerror = function () {
         alert('Failed to convert SVG to PNG');
         URL.revokeObjectURL(url);
     };

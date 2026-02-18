@@ -1246,19 +1246,11 @@ function updateSizeCardPrices() {
         const widthIn = parseInt(card.getAttribute('data-width')) || 38;
         const heightIn = parseInt(card.getAttribute('data-height')) || 17;
 
+        // Calculate base price (only width, height, and font) - no extras
         let basePrice = calculatePlanPrice(widthIn, heightIn);
 
         let totalPrice = basePrice;
-        totalPrice += appState.rgbSurcharge;
-        totalPrice += appState.cutToPrice;
-        appState.extras.forEach(extra => {
-            totalPrice += extra.price;
-        });
-
-        // Double the total if outdoor location is selected
-        if (appState.type === 'outdoor') {
-            totalPrice = totalPrice * 2;
-        }
+        // Removed extra charges: RGB surcharge, shape charges, backboard charges, hanging options, outdoor multiplier
 
         totalPrice = Math.floor(totalPrice) + 0.99;
 

@@ -2998,8 +2998,8 @@ function drawMeasurementOverlays(canvas, textObject) {
     // Increase font size on mobile for better readability
     const isMobile = window.innerWidth < CONFIG.mobileBreakpoint;
     const labelFontSize = isMobile
-        ? Math.max(18, Math.min(28, 20 * sizeFactor))
-        : Math.max(12, Math.min(18, 14 * sizeFactor));
+        ? Math.max(22, Math.min(34, 24 * sizeFactor))
+        : Math.max(16, Math.min(24, 18 * sizeFactor));
 
     // Check if text + rulers would exceed canvas bounds and scale if needed
     const textWithRulerHeight = bounds.top + bounds.height + padding + labelFontSize + 40;

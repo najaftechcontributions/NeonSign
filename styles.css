@@ -2304,7 +2304,29 @@ canvas {
     font-weight: 400;
     white-space: nowrap;
 }
+.quick-pricing {
+    position: absolute;
+    top: 25px;
+    right: 80px;
+    z-index: 999;
+}
 
+.quick-pricing > div span {
+    font-size: 20px;
+    line-height: 1.2;
+    font-weight: 800;
+    text-decoration: none;
+    color: var(--accent-color);
+
+    &.original-price {
+        text-decoration: line-through;
+        color: var(--text-primary);
+    }
+}
+.quick-pricing .price-note {
+    font-size: 14px;
+    color: var(--accent-color);
+}
 @media (max-width: 768px) {
     .step-tabs {
         height: 35px;

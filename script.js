@@ -16,8 +16,8 @@ const CONFIG = {
     rgbSurcharge: 50,
     outdoorSurcharge: 65,
 
-    enableBaseDiscount: false,
-    basePromotionPercentage: 0.30,
+    enableBaseDiscount: true,
+    basePromotionPercentage: 0.20,
 
     productCostPerInchStandard: 0.2519,
     productCostPerInchRGB: 0.2947,

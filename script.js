@@ -1223,24 +1223,26 @@ function updatePricingUI() {
         finalElem.textContent = `$${appState.discountPrice.toFixed(2)}`;
     }
 
-    // Update .quick-pricing block (Step 1 top-right)
-    const quickOriginal = document.querySelector('.quick-pricing .original-price');
-    const quickSale = document.querySelector('.quick-pricing .sale-price');
-    const quickNote = document.querySelector('.quick-pricing .price-note');
+    // Update all .quick-pricing blocks across all steps
+    document.querySelectorAll('.quick-pricing').forEach(block => {
+        const quickOriginal = block.querySelector('.original-price');
+        const quickSale = block.querySelector('.sale-price');
+        const quickNote = block.querySelector('.price-note');
 
-    if (quickOriginal && quickSale && quickNote) {
-        if (CONFIG.enableBaseDiscount) {
-            quickOriginal.style.display = '';
-            quickOriginal.textContent = `$${appState.totalPrice.toFixed(2)}`;
-            quickSale.textContent = `$${appState.discountPrice.toFixed(2)}`;
-            const pct = (CONFIG.basePromotionPercentage * 100).toFixed(0);
-            quickNote.textContent = `${pct}% off for a limited time`;
-        } else {
-            quickOriginal.style.display = 'none';
-            quickSale.style.display = 'none';
-            quickNote.style.display = 'none';
+        if (quickOriginal && quickSale && quickNote) {
+            if (CONFIG.enableBaseDiscount) {
+                quickOriginal.style.display = '';
+                quickOriginal.textContent = `$${appState.totalPrice.toFixed(2)}`;
+                quickSale.textContent = `$${appState.discountPrice.toFixed(2)}`;
+                const pct = (CONFIG.basePromotionPercentage * 100).toFixed(0);
+                quickNote.textContent = `${pct}% off for a limited time`;
+            } else {
+                quickOriginal.style.display = 'none';
+                quickSale.style.display = 'none';
+                quickNote.style.display = 'none';
+            }
         }
-    }
+    });
 
     document.querySelectorAll('.btn-next, .btn-final').forEach(btn => {
         const originalText = btn.getAttribute('data-original-text') || btn.textContent.split('$')[0].trim();

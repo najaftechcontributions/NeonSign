@@ -117,7 +117,7 @@ const appState = {
     plan: {
         id: 'mini',
         name: 'Mini',
-        widthIn: 23,
+        widthIn: 17,
         heightIn: 10,
         price: 438.99
     },
@@ -133,7 +133,7 @@ const appState = {
     svgWidthPx: 800,
     svgHeightPx: 600,
 
-    measuredWidthIn: 23,
+    measuredWidthIn: 17,
     measuredHeightIn: 10,
 
     currentStep: 1,
@@ -152,7 +152,7 @@ const canvasInstances = {};
 const animationHandles = {};
 
 // Minimum dimensions for custom sizing (will be updated when cards regenerate)
-let MINIMUM_WIDTH = 23;
+let MINIMUM_WIDTH = 17;
 let MINIMUM_HEIGHT = 10;
 
 // Font loading utility - ensures fonts are loaded before rendering
@@ -521,78 +521,95 @@ function handleTextInput(event) {
 }
 
 function calculateIntelligentDimensions(text) {
-    // MATCHING neonText.js logic EXACTLY (lines 656-828)
+    // Matching neonText.js drawTextWithMeasurement logic exactly
 
-    // Handle empty text - return default dimensions
     if (!text || text.trim() === '') {
-        return { widthInches: 23, heightInches: 10 };
+        return { widthInches: 17, heightInches: 10 };
     }
 
     const lines = text.split('\n');
     const fontFamily = appState.fontFamily || 'Barcelona';
-    const fontSize = 60; // Matching neonText.js default fontSize (line 200)
+    let fontSize = 60; // Start at neonObject.fontSize (60px), same as neonText.js line 200/639
 
-    // Create a canvas for measuring text (matching neonText.js line 657-659)
+    // SVG dimensions matching appState (neonText.js uses actual SVG rect)
+    const svgWidth = appState.svgWidthPx || 800;
+    const svgHeight = appState.svgHeightPx || 600;
+
+    // Bounding box ratios matching neonText.js lines 679-682
+    const isMobile = window.innerWidth <= 767;
+    const targetWidthRatio = isMobile ? 0.42 : 0.9;
+    const targetHeightRatio = isMobile ? 0.14 : 0.9;
+    const boundingBoxWidth = svgWidth * targetWidthRatio;
+    const boundingBoxHeight = svgHeight * targetHeightRatio;
+
+    const extraSpacing = 3; // neonText.js line 683
+
+    // Create a canvas for measuring text (neonText.js lines 656-659)
     const canvas = document.createElement("canvas");
     const context = canvas.getContext("2d");
-    context.font = `${fontSize}px ${fontFamily}`;
 
-    // Function to get text metrics (matching neonText.js line 662-673)
-    function getTextMetrics(text) {
-        context.font = `${fontSize}px ${fontFamily}`;
-        const metrics = context.measureText(text);
+    // getTextMetrics matching neonText.js lines 662-673 (no fallback values)
+    function getTextMetrics(t, fs) {
+        context.font = `${fs}px ${fontFamily}`;
+        const metrics = context.measureText(t);
         return {
             width: metrics.width,
-            ascent: metrics.actualBoundingBoxAscent || fontSize * 0.8,
-            descent: metrics.actualBoundingBoxDescent || fontSize * 0.2,
+            ascent: metrics.actualBoundingBoxAscent,
+            descent: metrics.actualBoundingBoxDescent,
         };
     }
 
-    const extraSpacing = 3; // Matching neonText.js line 683
+    // calculateTextLayout matching neonText.js lines 686-714
+    function calculateTextLayout(testFontSize) {
+        const layout = { maxX: [], minX: [], maxY: [], minY: [] };
+        let currentY = svgHeight * 0.10;
+        lines.forEach((line) => {
+            const { width: lineWidth, ascent, descent } = getTextMetrics(line, testFontSize);
+            const xPos = (svgWidth - lineWidth) / 2;
+            const yPos = currentY + ascent;
+            layout.maxX.push(xPos + lineWidth);
+            layout.minX.push(xPos);
+            layout.maxY.push(yPos + descent);
+            layout.minY.push(currentY);
+            currentY += ascent + descent + extraSpacing;
+        });
+        return layout;
+    }
 
-    // Calculate text positions and dimensions (matching neonText.js line 686-713)
-    const maxX = [];
-    const minX = [];
-    const maxY = [];
-    const minY = [];
-    let currentY = 0;
+    // Font-size shrink loop matching neonText.js lines 717-736
+    let finalLayout = calculateTextLayout(fontSize);
+    while (fontSize > 5) {
+        const layout = calculateTextLayout(fontSize);
+        const textWidth = Math.max(...layout.maxX) - Math.min(...layout.minX);
+        const textHeight = Math.max(...layout.maxY) - Math.min(...layout.minY);
+        if (textWidth <= boundingBoxWidth && textHeight <= boundingBoxHeight) {
+            finalLayout = layout;
+            break;
+        }
+        fontSize--;
+        finalLayout = calculateTextLayout(fontSize);
+    }
 
-    lines.forEach((line) => {
-        const { width: lineWidth, ascent, descent } = getTextMetrics(line);
-        const xPos = 0; // Centered position doesn't affect width calculation
-        const yPos = currentY + ascent;
+    // Calculate pixel dimensions (neonText.js lines 818-819)
+    const maxWidth = Math.max(...finalLayout.maxX) - Math.min(...finalLayout.minX);
+    const totalCalculatedHeight = Math.max(...finalLayout.maxY) - Math.min(...finalLayout.minY);
 
-        maxX.push(xPos + lineWidth);
-        minX.push(xPos);
-        maxY.push(yPos + descent);
-        minY.push(currentY);
-
-        currentY += ascent + descent + extraSpacing; // Matching neonText.js line 710
-    });
-
-    // Calculate pixel dimensions (matching neonText.js line 818-819)
-    const maxWidth = Math.max(...maxX) - Math.min(...minX);
-    const totalCalculatedHeight = Math.max(...maxY) - Math.min(...minY);
-
-    // Calculate max characters (matching neonText.js line 821-825)
+    // Calculate max characters (neonText.js lines 821-824)
     let maxCharacters = 0;
     lines.forEach((line) => {
         maxCharacters = Math.max(maxCharacters, line.length);
     });
 
-    // Calculate width in inches (matching neonText.js line 824)
-    const maxWidthInches = maxCharacters * 2.5; // NO minimum, exactly as neonText.js
-
-    // Calculate aspect ratio and height in inches (matching neonText.js line 827-828)
+    // Width and height in inches (neonText.js lines 824-828)
+    const maxWidthInches = maxCharacters * 2.5;
     const aspectRatio = maxWidth / totalCalculatedHeight;
-    const maxHeightInches = maxWidthInches / aspectRatio; // NO minimum, exactly as neonText.js
+    const maxHeightInches = maxWidthInches / aspectRatio;
 
-    // Safety check for invalid values
-    const finalWidth = Math.round(maxWidthInches) || 23;
+    const finalWidth = Math.round(maxWidthInches) || 17;
     const finalHeight = Math.round(maxHeightInches) || 10;
 
     return {
-        widthInches: isFinite(finalWidth) ? finalWidth : 23,
+        widthInches: isFinite(finalWidth) ? finalWidth : 17,
         heightInches: isFinite(finalHeight) ? finalHeight : 10
     };
 }
@@ -602,20 +619,22 @@ function regenerateSizeCards(baseWidth, baseHeight) {
     if (!sizeGrid) return;
 
     const sizeConfigs = [
-        { id: 'mini', name: 'Mini', scale: 1.0, fontsize: 44 },
-        { id: 'small', name: 'Small', scale: 1.3, fontsize: 46 },
-        { id: 'medium', name: 'Medium', scale: 1.69, fontsize: 48 },
-        { id: 'large', name: 'Large', scale: 2.197, fontsize: 50 },
-        { id: 'xl', name: 'XL', scale: 2.8561, fontsize: 54 },
-        { id: 'xxl', name: 'XXL', scale: 3.71293, fontsize: 56 },
-        { id: 'xxxl', name: 'XXXL', scale: 4.826809, fontsize: 60 },
-        { id: '4xl', name: '4XL', scale: 6.274852, fontsize: 64 }
+        { id: 'mini',   name: 'Mini',   baseWidthIn: 17,  baseHeightIn: 10,  fontsize: 44 },
+        { id: 'small',  name: 'Small',  baseWidthIn: 22,  baseHeightIn: 12.8,  fontsize: 46 },
+        { id: 'medium', name: 'Medium', baseWidthIn: 28,  baseHeightIn: 16.5,  fontsize: 48 },
+        { id: 'large',  name: 'Large',  baseWidthIn: 36,  baseHeightIn: 22,  fontsize: 50 },
+        { id: 'xl',     name: 'XL',     baseWidthIn: 47,  baseHeightIn: 28,  fontsize: 54 },
+        { id: 'xxl',    name: 'XXL',    baseWidthIn: 61.5,  baseHeightIn: 36.5,  fontsize: 56 },
+        { id: 'xxxl',   name: 'XXXL',   baseWidthIn: 79.5,  baseHeightIn: 47.8,  fontsize: 60 },
+        { id: '4xl',    name: '4XL',    baseWidthIn: 104, baseHeightIn: 62.3,  fontsize: 64 }
     ];
 
-    // Update minimum dimensions based on mini size (first config)
-    const miniConfig = sizeConfigs[0];
-    MINIMUM_WIDTH = Math.round(baseWidth * miniConfig.scale);
-    MINIMUM_HEIGHT = Math.round(baseHeight * miniConfig.scale);
+    const widthRatio = baseWidth / 17;
+    const heightRatio = baseHeight / 10;
+
+    // Update minimum dimensions based on mini size (first config, scale=1.0)
+    MINIMUM_WIDTH = Math.round(baseWidth);
+    MINIMUM_HEIGHT = Math.round(baseHeight);
 
     // Update custom input min attributes
     const customWidth = document.getElementById('customWidth');
@@ -653,8 +672,8 @@ function regenerateSizeCards(baseWidth, baseHeight) {
     sizeGrid.innerHTML = '';
 
     sizeConfigs.forEach((config, index) => {
-        const scaledWidth = Math.round(baseWidth * config.scale);
-        const scaledHeight = Math.round(baseHeight * config.scale);
+        const scaledWidth = Math.round(config.baseWidthIn * widthRatio);
+        const scaledHeight = Math.round(config.baseHeightIn * heightRatio);
         const price = calculatePlanPrice(scaledWidth, scaledHeight);
 
         let totalPrice = price;
@@ -2778,12 +2797,12 @@ function renderCanvasPreview(canvas) {
     const isMobile = window.innerWidth < CONFIG.mobileBreakpoint;
 
     // Calculate proportional font size based on plan dimensions
-    const planWidth = appState.plan.widthIn || 23;
+    const planWidth = appState.plan.widthIn || 17;
     const planHeight = appState.plan.heightIn || 10;
     const baseFontSize = appState.fontSizePx;
 
-    // Scale font size proportionally with plan size (relative to MINI: 23x10)
-    const sizeRatio = Math.sqrt((planWidth * planHeight) / (23 * 10));
+    // Scale font size proportionally with plan size (relative to MINI: 17x10)
+    const sizeRatio = Math.sqrt((planWidth * planHeight) / (17 * 10));
     let renderingFontSize = baseFontSize * sizeRatio;
 
     if (isMobile) {

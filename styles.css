@@ -2145,7 +2145,7 @@ canvas {
 
 .mobile-panel-overlay {
     display: none;
-    position: fixed;
+    position: absolute;
     top: 0;
     left: 0;
     right: 0;
@@ -2447,6 +2447,7 @@ canvas {
         height: 100vh;
         min-height: 100vh;
         overflow: hidden;
+        position: relative;
     }
 
     .step-container {
@@ -2462,7 +2463,7 @@ canvas {
     }
 
     .left-panel {
-        position: fixed;
+        position: absolute;
         bottom: 0;
         left: 0;
         right: 0;
@@ -2497,7 +2498,7 @@ canvas {
     }
 
     .right-panel {
-        position: fixed;
+        position: absolute;
         top: 0;
         left: 0;
         width: 100%;
@@ -2578,7 +2579,7 @@ canvas {
         width: 44px;
         height: 44px;
         z-index: 1000;
-        position: fixed;
+        position: absolute;
         pointer-events: auto;
     }
 
@@ -2588,7 +2589,7 @@ canvas {
         padding: 8px 14px;
         font-size: 11px;
         z-index: 1000;
-        position: fixed;
+        position: absolute;
         pointer-events: auto;
     }
 
@@ -3265,3 +3266,162 @@ canvas {
         font-size: 10px !important;
     }
 }
+
+/* Page-level header (above the generator) */
+body > .header-section {
+    text-align: center;
+    padding: 80px 40px;
+    background: var(--primary-bg);
+    border-bottom: 1px solid var(--border-color);
+    position: relative;
+    flex-direction: column;
+}
+
+body > .header-section::after {
+    content: '';
+    display: block;
+    width: 72px;
+    height: 3px;
+    background: var(--accent-color);
+    margin: 24px auto 0;
+    border-radius: 2px;
+    box-shadow: 0 0 12px var(--neon-glow);
+}
+
+.product-title {
+    font-size: 42px;
+    font-weight: 700;
+    color: var(--text-primary);
+    letter-spacing: -0.5px;
+    margin-bottom: 16px;
+    line-height: 1.2;
+}
+
+.product-title-subtext {
+    font-size: 16px;
+    color: var(--text-secondary);
+    max-width: 615px;
+    margin: 0 auto;
+    line-height: 1.7;
+}
+
+.product-title-subtext a {
+    color: var(--accent-color);
+    text-decoration: none;
+    border-bottom: 1px solid transparent;
+    transition: border-color 0.2s;
+}
+
+.product-title-subtext a:hover {
+    border-bottom-color: var(--accent-color);
+}
+
+/* Logo / CTA section below the generator */
+.create-neon-sign-section {
+    background: var(--secondary-bg);
+    padding: 100px 40px;
+    border-top: 1px solid var(--border-color);
+    text-align: center;
+}
+
+.create-neon-sign-section .container {
+    max-width: 680px;
+    margin: 0 auto;
+}
+
+.create-neon-sign-section .section-title {
+    margin-bottom: 0;
+}
+
+.create-neon-sign-section .section-title span {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 3px;
+    color: var(--accent-color);
+    text-transform: uppercase;
+    padding: 6px 16px;
+    border: 1px solid var(--accent-color);
+    border-radius: 20px;
+    box-shadow: 0 0 10px rgba(200, 255, 0, 0.18);
+    margin-bottom: 28px;
+}
+
+.create-neon-sign-title {
+    font-size: 36px;
+    font-weight: 700;
+    color: var(--text-primary);
+    line-height: 1.25;
+    margin: 0 0 18px;
+}
+
+.create-neon-sign-section p {
+    font-size: 15px;
+    color: var(--text-secondary);
+    line-height: 1.7;
+    margin-bottom: 36px;
+}
+
+.button-custom {
+    display: inline-block;
+    padding: 14px 38px;
+    background: var(--accent-color);
+    color: #000;
+    font-family: "Montserrat", sans-serif;
+    font-weight: 700;
+    font-size: 14px;
+    letter-spacing: 0.5px;
+    text-decoration: none;
+    border-radius: 6px;
+    transition: box-shadow 0.2s, transform 0.2s;
+    box-shadow: 0 0 22px rgba(200, 255, 0, 0.35);
+}
+
+.button-custom:hover {
+    box-shadow: 0 0 36px rgba(200, 255, 0, 0.6);
+    transform: translateY(-2px);
+}
+
+@media (max-width: 768px) {
+    body > .header-section {
+        padding: 60px 24px;
+    }
+
+    .product-title {
+        font-size: 28px;
+    }
+
+    .product-title-subtext {
+        font-size: 14px;
+    }
+
+    .create-neon-sign-section {
+        padding: 72px 24px;
+    }
+
+    .create-neon-sign-title {
+        font-size: 26px;
+    }
+}
+
+@media (max-width: 480px) {
+    body > .header-section {
+        padding: 48px 20px;
+    }
+
+    .product-title {
+        font-size: 22px;
+    }
+
+    .create-neon-sign-section {
+        padding: 56px 20px;
+    }
+
+    .create-neon-sign-title {
+        font-size: 22px;
+    }
+}
+
+/* ============================================
+   END PLACEHOLDER STYLES
+   ============================================ */

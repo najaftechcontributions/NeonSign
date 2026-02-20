@@ -619,18 +619,20 @@ function regenerateSizeCards(baseWidth, baseHeight) {
     if (!sizeGrid) return;
 
     const sizeConfigs = [
-        { id: 'mini',   name: 'Mini',   baseWidthIn: 17,  baseHeightIn: 10,  fontsize: 44 },
-        { id: 'small',  name: 'Small',  baseWidthIn: 22,  baseHeightIn: 12.8,  fontsize: 46 },
-        { id: 'medium', name: 'Medium', baseWidthIn: 28,  baseHeightIn: 16.5,  fontsize: 48 },
-        { id: 'large',  name: 'Large',  baseWidthIn: 36,  baseHeightIn: 22,  fontsize: 50 },
-        { id: 'xl',     name: 'XL',     baseWidthIn: 47,  baseHeightIn: 28,  fontsize: 54 },
-        { id: 'xxl',    name: 'XXL',    baseWidthIn: 61.5,  baseHeightIn: 36.5,  fontsize: 56 },
-        { id: 'xxxl',   name: 'XXXL',   baseWidthIn: 79.5,  baseHeightIn: 47.8,  fontsize: 60 },
-        { id: '4xl',    name: '4XL',    baseWidthIn: 104, baseHeightIn: 62.3,  fontsize: 64 }
+        { id: 'mini',   name: 'Mini',   baseLengthIn: 10,  baseHeightIn: 17,  fontsize: 44 },
+        { id: 'small',  name: 'Small',  baseLengthIn: 13,  baseHeightIn: 22,  fontsize: 46 },
+        { id: 'medium', name: 'Medium', baseLengthIn: 17,  baseHeightIn: 28,  fontsize: 48 },
+        { id: 'large',  name: 'Large',  baseLengthIn: 22,  baseHeightIn: 37,  fontsize: 50 },
+        { id: 'xl',     name: 'XL',     baseLengthIn: 29,  baseHeightIn: 48,  fontsize: 54 },
+        { id: 'xxl',    name: 'XXL',    baseLengthIn: 37,  baseHeightIn: 63,  fontsize: 56 },
+        { id: 'xxxl',   name: 'XXXL',   baseLengthIn: 48,  baseHeightIn: 81,  fontsize: 60 },
+        { id: '4xl',    name: '4XL',    baseLengthIn: 63,  baseHeightIn: 106, fontsize: 64 }
     ];
 
-    const widthRatio = baseWidth / 17;
-    const heightRatio = baseHeight / 10;
+    // baseWidth and baseHeight now represent Length and Height (matching neonText.js)
+    // baseWidth = Length (horizontal), baseHeight = Height (vertical)
+    const lengthRatio = baseWidth / 10;  // base mini length is 10
+    const heightRatio = baseHeight / 17;  // base mini height is 17
 
     // Update minimum dimensions based on mini size (first config, scale=1.0)
     MINIMUM_WIDTH = Math.round(baseWidth);
@@ -672,7 +674,7 @@ function regenerateSizeCards(baseWidth, baseHeight) {
     sizeGrid.innerHTML = '';
 
     sizeConfigs.forEach((config, index) => {
-        const scaledWidth = Math.round(config.baseWidthIn * widthRatio);
+        const scaledWidth = Math.round(config.baseLengthIn * lengthRatio);
         const scaledHeight = Math.round(config.baseHeightIn * heightRatio);
         const price = calculatePlanPrice(scaledWidth, scaledHeight);
 

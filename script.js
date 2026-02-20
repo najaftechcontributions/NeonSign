@@ -44,7 +44,7 @@ const CONFIG = {
     couponApiEndpoint: 'https://apiv2.easyneonsigns.ca/apply-discount',
 
     lineHeightMultipliers: {
-        'Barcelona': 1.4,
+        'Barcelona': 1,
         'Alexa': 0.8,
         'Bayview': 1,
         'Amsterdam': 1,

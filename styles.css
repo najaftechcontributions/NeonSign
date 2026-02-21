@@ -2162,7 +2162,7 @@ canvas {
 
 .mobile-footer {
     display: none;
-    position: fixed;
+    position: absolute;
     bottom: 0;
     left: 0;
     right: 0;
@@ -3382,6 +3382,11 @@ body > .header-section::after {
     transform: translateY(-2px);
 }
 
+@media (max-width: 1200px) {
+    .hide-mobile {
+        display: none !important;
+    }
+}
 @media (max-width: 768px) {
     body > .header-section {
         padding: 60px 24px;

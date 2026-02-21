@@ -3226,6 +3226,7 @@ function createMobileOverlay() {
 }
 
 function createMobileFooter() {
+    let neoncontainer = document.querySelector('.neon-generator-container');
     let footer = document.getElementById('mobileFooter');
     if (!footer) {
         footer = document.createElement('div');
@@ -3242,7 +3243,7 @@ function createMobileFooter() {
                 </button>
             </div>
         `;
-        document.body.appendChild(footer);
+        neoncontainer.appendChild(footer);
 
 
         const mobileNextBtn = footer.querySelector('#mobileNextBtn');

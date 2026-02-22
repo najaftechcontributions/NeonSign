@@ -3344,7 +3344,7 @@ recalculateTotalPrice = function () {
 
 // Snap neon-generator-container to viewport when within 50px of both edges on small screens
 (function () {
-    const SNAP_THRESHOLD = 100;
+    const SNAP_THRESHOLD = 150;
     const MOBILE_WIDTH = 767;
     let isSnapping = false;
     let snapTimer = null;

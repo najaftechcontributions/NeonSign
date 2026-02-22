@@ -3341,3 +3341,36 @@ recalculateTotalPrice = function () {
     originalRecalculateTotalPrice();
     updateMobileFooter();
 };
+
+// Snap neon-generator-container to viewport when within 50px of both edges on small screens
+(function () {
+    const SNAP_THRESHOLD = 100;
+    const MOBILE_WIDTH = 767;
+    let isSnapping = false;
+    let snapTimer = null;
+
+    function checkViewportSnap() {
+        if (window.innerWidth > MOBILE_WIDTH) return;
+
+        const container = document.querySelector('.neon-generator-container');
+        if (!container) return;
+
+        const rect = container.getBoundingClientRect();
+        const nearTop = Math.abs(rect.top) <= SNAP_THRESHOLD;
+        const nearBottom = Math.abs(rect.bottom - window.innerHeight) <= SNAP_THRESHOLD;
+
+        if (nearTop && nearBottom && !isSnapping) {
+            isSnapping = true;
+            window.scrollTo({ top: window.scrollY + rect.top, behavior: 'smooth' });
+            setTimeout(function () { isSnapping = false; }, 700);
+        }
+    }
+
+    function scheduleSnap() {
+        if (snapTimer) clearTimeout(snapTimer);
+        snapTimer = setTimeout(checkViewportSnap, 120);
+    }
+
+    window.addEventListener('scroll', scheduleSnap, { passive: true });
+    window.addEventListener('resize', scheduleSnap, { passive: true });
+}());

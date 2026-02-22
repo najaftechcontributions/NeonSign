@@ -3107,6 +3107,12 @@ canvas {
     }
 }
 
+@media (max-width: 767px) {
+    html {
+        scroll-behavior: smooth;
+    }
+}
+
 @media (max-width: 768px) {
     .left-panel {
         transform: translateY(calc(100% - 240px));
@@ -3383,9 +3389,7 @@ body > .header-section::after {
 }
 
 @media (max-width: 1200px) {
-    .hide-mobile {
-        display: none !important;
-    }
+    
 }
 @media (max-width: 768px) {
     body > .header-section {

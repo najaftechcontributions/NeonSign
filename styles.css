@@ -3155,11 +3155,11 @@ canvas {
 
 @media (max-width: 600px) and (min-height: 700px) {
     .left-panel {
-        transform: translateY(calc(100% - 400px));
+        transform: translateY(calc(100% - 450px));
     }
 
     .right-panel {
-        height: calc(100vh - 400px) !important;
+        height: calc(100vh - 450px) !important;
     }
 }
 

@@ -872,6 +872,15 @@ function attachColorListeners() {
     const multiToggle = document.getElementById('multicolorToggle');
     const multiHelp = document.getElementById('multicolorHelp');
 
+    function setCanvasPointerEvents(enabled) {
+        document.querySelectorAll('canvas').forEach(canvas => {
+            canvas.style.pointerEvents = enabled ? '' : 'none';
+        });
+    }
+
+    // Canvases non-interactive by default (multicolor is off)
+    setCanvasPointerEvents(false);
+
     if (multiToggle) {
         multiToggle.addEventListener('change', () => {
             if (multiToggle.checked && appState.rgbMode) {
@@ -895,6 +904,7 @@ function attachColorListeners() {
                 multiHelp.classList.toggle('hidden', !multiToggle.checked);
             }
 
+            setCanvasPointerEvents(multiToggle.checked);
             renderAllPreviews();
         });
     }

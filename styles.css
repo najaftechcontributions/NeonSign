@@ -161,6 +161,7 @@ body {
     height: 20px;
     transition: transform 0.3s;
 }
+
 .left-panel .mobile-toggle-btn svg.eye {
     display: none;
 }
@@ -168,6 +169,7 @@ body {
 .left-panel.expanded .mobile-toggle-btn svg.arrow {
     transform: rotate(-180deg);
 }
+
 .left-panel.expanded .mobile-toggle-btn svg.eye {
     display: none;
 }
@@ -2304,6 +2306,7 @@ canvas {
     font-weight: 400;
     white-space: nowrap;
 }
+
 .quick-pricing {
     position: absolute;
     top: 25px;
@@ -2311,7 +2314,7 @@ canvas {
     z-index: 999;
 }
 
-.quick-pricing > div span {
+.quick-pricing>div span {
     font-size: 20px;
     line-height: 1.2;
     font-weight: 800;
@@ -2323,10 +2326,12 @@ canvas {
         color: var(--text-primary);
     }
 }
+
 .quick-pricing .price-note {
     font-size: 14px;
     color: var(--accent-color);
 }
+
 @media (max-width: 768px) {
     .step-tabs {
         height: 35px;
@@ -3142,8 +3147,19 @@ canvas {
     .canvas-wrapper .canvas-container {
         height: auto !important;
     }
+
     .canvas-wrapper canvas {
         max-height: calc(100vh - 280px);
+    }
+}
+
+@media (max-width: 600px) and (min-height: 700px) {
+    .left-panel {
+        transform: translateY(calc(100% - 400px));
+    }
+
+    .right-panel {
+        height: calc(100vh - 400px) !important;
     }
 }
 
@@ -3274,7 +3290,7 @@ canvas {
 }
 
 /* Page-level header (above the generator) */
-body > .header-section {
+body>.header-section {
     text-align: center;
     padding: 80px 40px;
     background: var(--primary-bg);
@@ -3283,7 +3299,7 @@ body > .header-section {
     flex-direction: column;
 }
 
-body > .header-section::after {
+body>.header-section::after {
     content: '';
     display: block;
     width: 72px;
@@ -3388,11 +3404,10 @@ body > .header-section::after {
     transform: translateY(-2px);
 }
 
-@media (max-width: 1200px) {
-    
-}
+@media (max-width: 1200px) {}
+
 @media (max-width: 768px) {
-    body > .header-section {
+    body>.header-section {
         padding: 60px 24px;
     }
 
@@ -3414,7 +3429,7 @@ body > .header-section::after {
 }
 
 @media (max-width: 480px) {
-    body > .header-section {
+    body>.header-section {
         padding: 48px 20px;
     }
 

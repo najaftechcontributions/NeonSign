@@ -3161,6 +3161,9 @@ canvas {
     .right-panel {
         height: calc(100vh - 450px) !important;
     }
+    .background-image {
+        object-position: top;
+    }
 }
 
 @media (max-width: 480px) {

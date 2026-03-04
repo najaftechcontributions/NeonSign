@@ -619,14 +619,14 @@ function regenerateSizeCards(baseWidth, baseHeight) {
     if (!sizeGrid) return;
 
     const sizeConfigs = [
-        { id: 'mini',   name: 'Mini',   baseLengthIn: 10,  baseHeightIn: 17,  fontsize: 44 },
-        { id: 'small',  name: 'Small',  baseLengthIn: 13,  baseHeightIn: 22,  fontsize: 46 },
-        { id: 'medium', name: 'Medium', baseLengthIn: 17,  baseHeightIn: 28,  fontsize: 48 },
-        { id: 'large',  name: 'Large',  baseLengthIn: 22,  baseHeightIn: 37,  fontsize: 50 },
-        { id: 'xl',     name: 'XL',     baseLengthIn: 29,  baseHeightIn: 48,  fontsize: 54 },
-        { id: 'xxl',    name: 'XXL',    baseLengthIn: 37,  baseHeightIn: 63,  fontsize: 56 },
-        { id: 'xxxl',   name: 'XXXL',   baseLengthIn: 48,  baseHeightIn: 81,  fontsize: 60 },
-        { id: '4xl',    name: '4XL',    baseLengthIn: 63,  baseHeightIn: 106, fontsize: 64 }
+        { id: 'mini', name: 'Mini', baseLengthIn: 10, baseHeightIn: 17, fontsize: 44 },
+        { id: 'small', name: 'Small', baseLengthIn: 13, baseHeightIn: 22, fontsize: 46 },
+        { id: 'medium', name: 'Medium', baseLengthIn: 17, baseHeightIn: 28, fontsize: 48 },
+        { id: 'large', name: 'Large', baseLengthIn: 22, baseHeightIn: 37, fontsize: 50 },
+        { id: 'xl', name: 'XL', baseLengthIn: 29, baseHeightIn: 48, fontsize: 54 },
+        { id: 'xxl', name: 'XXL', baseLengthIn: 37, baseHeightIn: 63, fontsize: 56 },
+        { id: 'xxxl', name: 'XXXL', baseLengthIn: 48, baseHeightIn: 81, fontsize: 60 },
+        { id: '4xl', name: '4XL', baseLengthIn: 63, baseHeightIn: 106, fontsize: 64 }
     ];
 
     // baseWidth and baseHeight now represent Length and Height (matching neonText.js)
@@ -3243,6 +3243,48 @@ function createMobileFooter() {
         footer.className = 'mobile-footer';
         footer.id = 'mobileFooter';
         footer.innerHTML = `
+            <div class="scroll-indicator">
+                <svg xml:space="preserve" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" class="arrow" id="Layer_1"
+                    version="1.1" style="display:block;shape-rendering:auto; " preserveAspectRatio="xMidYMid meet" width="200"
+                    height="200">
+                    <style>
+                        @keyframes animate {
+                            0% {
+                                transform: matrix3d(0.91, 0, 0, 0, 0, 0.91, 0, 0, 0, 0, 0.91, 0, 0, 0, 0, 1);
+                            }
+
+                            50% {
+                                transform: matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1);
+                            }
+
+                            100% {
+                                transform: matrix3d(0.91, 0, 0, 0, 0, 0.91, 0, 0, 0, 0, 0.91, 0, 0, 0, 0, 1);
+                            }
+                        }
+                    </style>
+                    <g class="ldl-scale" style="transform-origin:50% 50%;transform:rotate(0deg) scale(1,1)">
+                        <g class="ldl-ani">
+                            <g class="ldl-layer">
+                                <g class="ldl-ani"
+                                    style="transform-origin:50px 50px;animation:1s linear -0.75s infinite normal forwards running animate;transform-box:view-box">
+                                    <path fill="#bdc300"
+                                        d="M50 25.93c.53 0 1.061.213 1.451.638L84.612 52.41h5.916c1.713 0 2.608-2.036 1.451-3.298L51.451 15.235A1.961 1.961 0 0 0 50 14.597c-.53 0-1.061.213-1.451.638L8.021 49.112c-1.157 1.262-.262 3.298 1.451 3.298h5.916l33.161-25.842c.39-.425.921-.638 1.451-.638z"
+                                        style="stroke-width:1"></path>
+                                </g>
+                            </g>
+                            <g class="ldl-layer">
+                                <g class="ldl-ani"
+                                    style="transform-origin:50px 50px;animation:1s linear -1s infinite normal forwards running animate;transform-box:view-box">
+                                    <path fill="#ffff00"
+                                        d="M50 58.923c.53 0 1.061.213 1.451.638l33.161 25.842h5.916c1.713 0 2.608-2.036 1.451-3.298L51.451 48.228A1.961 1.961 0 0 0 50 47.59c-.53 0-1.061.213-1.451.638L8.021 82.104c-1.157 1.262-.262 3.298 1.451 3.298h5.916L48.549 59.56c.39-.424.921-.637 1.451-.637z"
+                                        style="stroke-width:1"></path>
+                                </g>
+                            </g>
+                            <metadata xmlns:d="https://loading.io/stock/"></metadata>
+                        </g>
+                    </g>
+                </svg>
+            </div>
             <div class="mobile-footer-content">
                 <div class="mobile-price-summary">
                     <div class="mobile-price-label">Total Price</div>

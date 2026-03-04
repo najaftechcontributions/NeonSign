@@ -3222,6 +3222,23 @@ function setupMobileBottomSheet() {
 
 
     updateMobileFooter();
+    setupScrollIndicator();
+}
+
+function setupScrollIndicator() {
+    const isMobile = () => window.innerWidth < 1200;
+    const scrollIndicator = document.querySelector('.scroll-indicator');
+    if (!scrollIndicator) return;
+
+    document.querySelectorAll('.left-panel').forEach(panel => {
+        panel.addEventListener('scroll', () => {
+            if (!isMobile()) return;
+            const nearBottom = panel.scrollTop + panel.clientHeight >= panel.scrollHeight - 50;
+            if (nearBottom) {
+                scrollIndicator.style.display = 'none';
+            }
+        }, { passive: true });
+    });
 }
 
 function createMobileOverlay() {
@@ -3267,7 +3284,7 @@ function createMobileFooter() {
                             <g class="ldl-layer">
                                 <g class="ldl-ani"
                                     style="transform-origin:50px 50px;animation:1s linear -0.75s infinite normal forwards running animate;transform-box:view-box">
-                                    <path fill="#bdc300"
+                                    <path fill="#ffffff"
                                         d="M50 25.93c.53 0 1.061.213 1.451.638L84.612 52.41h5.916c1.713 0 2.608-2.036 1.451-3.298L51.451 15.235A1.961 1.961 0 0 0 50 14.597c-.53 0-1.061.213-1.451.638L8.021 49.112c-1.157 1.262-.262 3.298 1.451 3.298h5.916l33.161-25.842c.39-.425.921-.638 1.451-.638z"
                                         style="stroke-width:1"></path>
                                 </g>
@@ -3275,7 +3292,7 @@ function createMobileFooter() {
                             <g class="ldl-layer">
                                 <g class="ldl-ani"
                                     style="transform-origin:50px 50px;animation:1s linear -1s infinite normal forwards running animate;transform-box:view-box">
-                                    <path fill="#ffff00"
+                                    <path fill="#ffffff"
                                         d="M50 58.923c.53 0 1.061.213 1.451.638l33.161 25.842h5.916c1.713 0 2.608-2.036 1.451-3.298L51.451 48.228A1.961 1.961 0 0 0 50 47.59c-.53 0-1.061.213-1.451.638L8.021 82.104c-1.157 1.262-.262 3.298 1.451 3.298h5.916L48.549 59.56c.39-.424.921-.637 1.451-.637z"
                                         style="stroke-width:1"></path>
                                 </g>
@@ -3374,6 +3391,14 @@ navigateToStep = function (stepNumber) {
 
     originalNavigateToStep(stepNumber);
     updateMobileFooter();
+
+    // Reset scroll indicator visibility on step change (mobile only)
+    if (isMobile) {
+        const scrollIndicator = document.querySelector('.scroll-indicator');
+        if (scrollIndicator) {
+            scrollIndicator.style.display = '';
+        }
+    }
 
     // Preserve expanded state after navigation
     if (isMobile && wasExpanded) {

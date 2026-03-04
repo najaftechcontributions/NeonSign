@@ -2443,7 +2443,7 @@ canvas {
     display: none;
     align-items: center;
     justify-content: center;
-    background: linear-gradient(to top, rgb(255 247 188 / 35%), rgb(37 37 37 / 33%));
+    background: linear-gradient(to top, rgb(200 255 0 / 31%), rgb(37 37 37 / 46%));
     position: absolute;
     top: 0;
     left: 50%;

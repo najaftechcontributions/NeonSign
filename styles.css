@@ -1902,6 +1902,8 @@ canvas {
     padding: 50px 0;
     display: flex;
     align-items: baseline;
+    scrollbar-width: thin;
+    scrollbar-color: #c8ff00 transparent;
 }
 
 @keyframes fadeIn {
@@ -2466,6 +2468,7 @@ canvas {
     .scroll-indicator {
         display: flex;
     }
+
     body {
         overflow-x: hidden;
         position: relative;
@@ -3125,6 +3128,15 @@ canvas {
 @media (max-width: 767px) {
     html {
         scroll-behavior: smooth;
+    }
+
+    button.export-option {
+        font-size: 10px !important;
+        padding: 5px !important;
+    }
+
+    .export-format-menu {
+        transform: translate(-80px, 20px);
     }
 }
 

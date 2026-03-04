@@ -3230,6 +3230,22 @@ function setupScrollIndicator() {
     const scrollIndicator = document.querySelector('.scroll-indicator');
     if (!scrollIndicator) return;
 
+    scrollIndicator.addEventListener('click', () => {
+        if (!isMobile()) return;
+        const activeContainer = document.querySelector('.step-container.active');
+        const panel = activeContainer ? activeContainer.querySelector('.left-panel') : null;
+        if (!panel) return;
+
+        const overlay = document.getElementById('mobileOverlay');
+        if (!panel.classList.contains('expanded')) {
+            expandPanel(panel, overlay);
+        }
+
+        setTimeout(() => {
+            panel.scrollTo({ top: panel.scrollHeight, behavior: 'smooth' });
+        }, 50);
+    });
+
     document.querySelectorAll('.left-panel').forEach(panel => {
         panel.addEventListener('scroll', () => {
             if (!isMobile()) return;

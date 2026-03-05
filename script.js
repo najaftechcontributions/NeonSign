@@ -433,7 +433,7 @@ function showColorPopup(canvasId, charObj) {
         }
     });
 
-    colorsGrid.appendChild(customColorBtn);
+    // colorsGrid.appendChild(customColorBtn);
 
 
     wrapper.appendChild(popup);
